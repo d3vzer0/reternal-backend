@@ -123,15 +123,30 @@ class MitreCommands(db.EmbeddedDocument):
     metta_id = db.StringField(max_length=35)
 
 
+class MitreReferences(db.EmbeddedDocument):
+    external_id = db.StringField(max_length=100)
+    url = db.StringField(max_length=1000)
+    source_name = db.StringField(max_length=100)
+    description = db.StringField(max_length=1000)
+
+
+class MitreKillChain(db.EmbeddedDocument):
+    phase_name = db.StringField(max_length=100)
+    kill_chain_name = db.StringField(max_length=100)
+    
+
 PLATFORMS = ('Windows', 'Linux', 'All', 'macOS')
 class Mitre(db.Document):
     commands = db.EmbeddedDocumentListField('MitreCommands')
-    platform = db.StringField(max_length=50, default="all")
-    category = db.StringField(max_length=100)
-    technique_id = db.StringField(max_length=100, unique_with=['platform', 'category'])
-    technique_name = db.StringField(max_length=100)
-    url = db.StringField(max_length=1000)
-
+    references = db.EmbeddedDocumentListField('MitreReferences')
+    platforms = db.ListField(db.StringField(max_length=50, default="all"))
+    kill_chain_phases = db.EmbeddedDocumentListField('MitreKillChain')
+    permissions_required = db.ListField(db.StringField(max_length=100))
+    technique_id = db.StringField(max_length=100, required=True, unique=True)
+    name = db.StringField(max_length=100, required=True)
+    description = db.StringField(max_length=9000)
+    data_sources = db.ListField(db.StringField(max_length=100))
+    detection = db.StringField(max_length=1000)
 
 class RecipeTechniques(db.EmbeddedDocument):
     technique = db.ReferenceField('Mitre')

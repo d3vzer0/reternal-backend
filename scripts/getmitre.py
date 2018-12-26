@@ -2,31 +2,48 @@ import requests
 import json
 from app.models import Mitre as MitreDB
 
-url_techniques = "https://attack.mitre.org/api.php?action=ask&format=json&query=[[Category:Technique]]|?Has%20tactic|?Has%20ID|?Has%20display%20name|?Has%20platform|limit=9999"
+url_techniques = "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json"
 
 class Mitre:
     def update_techniques(url):
         request_object = requests.get(url)
         json_object = request_object.json()
-        for key, value in json_object['query']['results'].items():
-            details = value['printouts']
-            technique_id = details['Has ID'][0]
-            technique_categories = details['Has tactic']
-            technique_platforms = details['Has platform']
-            technique_name = value['displaytitle']
-            url = value['fullurl']
-            for platform in technique_platforms:
-                for category in technique_categories:
-                    category_name = category['fulltext']
+        for technique_details in json_object['objects']:
+            if technique_details['type'] == 'attack-pattern':
+
+                # Single value
+                technique_id = technique_details['id']
+                name = technique_details['name']
+                description = technique_details['description']
+
+                # Unique lists
+                platforms = technique_details['x_mitre_platforms']
+                permissions_required = technique_details.get('x_mitre_permissions_required', None)
+                data_sources = technique_details.get('x_mitre_data_sources', None)
+
+                # List with key/value
+                references = technique_details['external_references']
+                kill_chain_phases = technique_details['kill_chain_phases']
+
+                try:
                     mitre_object = MitreDB(
-                        platform=platform,
-                        category=category_name,
-                        technique_id=technique_id,
-                        technique_name=technique_name,
-                        url=url
+                        name = name,
+                        technique_id = technique_id,
+                        description = description,
+                        platforms = platforms,
+                        permissions_required = permissions_required,
+                        data_sources = data_sources,
+                        references = references,
+                        kill_chain_phases = kill_chain_phases
                     ).save()
+
+                except Exception as err:
+                    print(err)
+                    pass
 
         return {'result':'success', 'message':'Done loading Mitre techniques'}
 
 if __name__ == "__main__":
     Mitre.update_techniques(url_techniques)
+
+
