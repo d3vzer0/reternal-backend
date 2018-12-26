@@ -8,14 +8,14 @@ from email.utils import parseaddr
 class Authentication:
     def login(username, password):
         try:
-            userAuth = Users.objects.get(username=username)
-            dbSalt = userAuth.salt
-            dbPassword = userAuth.password
-            completePass = dbSalt + password
-            calcPassword = hashlib.sha512(completePass.strip().encode('utf-8')).hexdigest()
+            user_object = Users.objects.get(username=username)
+            db_salt = user_object.salt
+            db_password = user_object.password
+            complete_pass = db_salt + password
+            calc_password = hashlib.sha512(complete_pass.strip().encode('utf-8')).hexdigest()
 
-            if calcPassword == dbPassword:
-                return {"result":"success", "data":"Succesfully logged in"}
+            if calc_password == db_password:
+                return {"result":"success", "data":"Succesfully logged in", "data":user_object}
 
             else:
                 return {"result":"failed", "data":"Username and/or Password incorrect"}
@@ -27,56 +27,31 @@ class Authentication:
 class Existance:
     def user(username):
         try:
-            userDetails = Users.objects.get(username=username)
+            user_details = Users.objects.get(username=username)
             return {"result":"failed", "data":"User already exist"}
 
         except db.DoesNotExist:
             return {"result":"success", "data":"User does exists exist"}
 
-    def project(projectname):
-        try:
-            projectDetails = Projects.objects.get(projectname=projectname)
-            return {"result":"failed", "data":"Project already exists"}
 
-        except db.DoesNotExist:
-            return {"result":"success", "data":"Project does not exist"}
-
-    def command(commandIdentifier):
-        if re.match(r'^[A-Za-z0-9_]+$', commandIdentifier):
+    def command(command_id):
+        if re.match(r'^[A-Za-z0-9_]+$', command_id):
             try:
-                commandDetails = Commands.objects.get(commandIdentifier=commandIdentifier)
-                return {"result":"exists", "data":str(commandDetails.id)}
+                command_details = Commands.objects.get(id=command_id)
+                return {"result":"exists", "data":str(command_details.id)}
 
             except db.DoesNotExist:
                 return {"result":"unique", "data":"Command does not exist"}
         else:
             return {"result":"failed", "data":"Command names can only have alphanumeric chars and underscores"}
 
-    def beacon(beaconid):
+    def beacon(beacon_id):
         try:
-            getRelavance = Beacons.objects.get(beaconId=beaconid)
+            getRelavance = Beacons.objects.get(beacon_id=beacon_id)
             return {"result":"success", "data":"Beacon exists"}
 
         except db.DoesNotExist:
             return {"result":"failed", "data":"Beacon does not exist"}
-
-
-    def membership(username, projectname):
-        try:
-            userObject = Users.objects.get(username=username)
-            projectObject = Projects.objects.get(projectname=projectname, projectUsers__contains=userObject.id)
-            return {"result":"success", "data":"Specified user is member of project"}
-
-        except db.DoesNotExist:
-            return {"result":"failed", "data":"User not member of specified project"}
-
-    def file(commandfile):
-        try:
-            fileDetails = Commands.objects.get(commandFile=commandfile)
-            return {"result":"failed", "data":"file already exists"}
-
-        except db.DoesNotExist:
-            return {"result":"success", "data":"file does not exist"}
 
 
 
@@ -92,7 +67,7 @@ class Permissions:
         except db.DoesNotExist:
             return {"result":"success", "data":"User does not exist"}
 
-    def delete_user(username, ownuser):
+    def delete_user(ownuser, username):
         if username == ownuser:
             return {"result":"failed", "data":"Unable to remove self from database"}
 
@@ -105,36 +80,8 @@ class Permissions:
 
     def administrator(username):
         try:
-            permissions = Users.objects(user=username, userRole="Administrator")
+            permissions = Users.objects(user=username, role="administrator")
             return {"result":"success", "data":"User has sufficient rights to update projects"}
 
         except db.DoesNotExist:
             return {"result":"failed", "data":"Project does not exist or user does not have proper permissions"}
-
-
-    def change_task(taskid, username):
-        try:
-            taskDetails = Tasks.objects.get(taskId=taskid)
-            taskbeacon = taskDetails.beaconId
-            beaconDetails = Beacons.objects.get(beaconId=taskbeacon)
-            beaconTag = beaconDetails.beaconTag
-
-            try:
-                userDetails = ProjectUsers.objects.get(tag=beaconTag, user=username)
-
-            except db.DoesNotExist:
-                return {"result":"failed", "data":"User not authorized"}
-
-            return {"result":"success", "data":"Task exists and user authorized"}
-
-        except db.DoesNotExist:
-            return {"result":"failed", "data":"Task does not exist"}
-
-    def membership(username, projectname):
-        try:
-            userObject = Users.objects.get(username=username)
-            projectObject = Projects.objects.get(projectname=projectname, projectUsers__contains=userObject.id)
-            return {"result":"success", "data":"Specified user is member of project"}
-
-        except db.DoesNotExist:
-            return {"result":"failed", "data":"User not member of specified project"}
