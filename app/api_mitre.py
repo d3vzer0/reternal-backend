@@ -8,7 +8,7 @@ from flask_jwt_extended import (
 )
 
 class APIMitre(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def get(self):
         pipeline = [
