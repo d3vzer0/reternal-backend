@@ -23,8 +23,11 @@ class Mitre:
 
                 # List with key/value
                 references = technique_details['external_references']
+                killchain = []
                 kill_chain_phases = technique_details['kill_chain_phases']
-
+                for phase in kill_chain_phases:
+                    killchain.append(phase['phase_name'])
+                    
                 try:
                     mitre_object = MitreDB(
                         name = name,
@@ -34,7 +37,7 @@ class Mitre:
                         permissions_required = permissions_required,
                         data_sources = data_sources,
                         references = references,
-                        kill_chain_phases = kill_chain_phases
+                        kill_chain_phases = killchain
                     ).save()
 
                 except Exception as err:

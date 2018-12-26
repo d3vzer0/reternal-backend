@@ -130,17 +130,13 @@ class MitreReferences(db.EmbeddedDocument):
     description = db.StringField(max_length=1000)
 
 
-class MitreKillChain(db.EmbeddedDocument):
-    phase_name = db.StringField(max_length=100)
-    kill_chain_name = db.StringField(max_length=100)
-    
 
 PLATFORMS = ('Windows', 'Linux', 'All', 'macOS')
 class Mitre(db.Document):
     commands = db.EmbeddedDocumentListField('MitreCommands')
     references = db.EmbeddedDocumentListField('MitreReferences')
     platforms = db.ListField(db.StringField(max_length=50, default="all"))
-    kill_chain_phases = db.EmbeddedDocumentListField('MitreKillChain')
+    kill_chain_phases = db.ListField(db.StringField(max_length=100))
     permissions_required = db.ListField(db.StringField(max_length=100))
     technique_id = db.StringField(max_length=100, required=True, unique=True)
     name = db.StringField(max_length=100, required=True)
