@@ -6,9 +6,10 @@ from flask_jwt_extended import (
     jwt_required, create_access_token,
     get_jwt_identity, get_jwt_claims
 )
+import json
 
-class APIMitre(Resource):
-    decorators = [jwt_required]
+class APIMitreAggregate(Resource):
+    decorators = []
 
     def get(self):
         pipeline = [
@@ -37,7 +38,19 @@ class APIMitre(Resource):
                 object_item['techniques'].append(technique_details)
             results.append(object_item)
 
-        return result
+        return results
 
 
-api.add_resource(APIMitre, '/api/v1/mitre/aggregate')
+api.add_resource(APIMitreAggregate, '/api/v1/mitre/aggregate')
+
+
+class APIMitreDetails(Resource):
+    decorators = []
+
+    def get(self, technique_id):
+        mitre_technique = Mitre.objects.get(technique_id=technique_id)
+        json_object = json.loads(mitre_technique.to_json())
+        return json_object
+
+
+api.add_resource(APIMitreDetails, '/api/v1/mitre/technique/<string:technique_id>')
