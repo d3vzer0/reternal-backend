@@ -11,7 +11,7 @@ class StartupTasks(db.EmbeddedDocument):
     platform = db.StringField(max_length=150, required=False)
 
 
-class Macros(db.EmbeddedDocument):
+class Macros(db.Document):
     command = db.ReferenceField('Commands')
     input = db.StringField(max_length=900, required=False)
     name = db.StringField(max_length=40, required=True, unique=True)
@@ -24,7 +24,6 @@ class Users(db.Document):
 
     role = db.StringField(max_length=20, required=True, default="User")
     email = db.EmailField(required=True)
-    macros = db.EmbeddedDocumentListField('Macros')
 
     meta = {
         'ordering': ['-username'],
@@ -78,35 +77,37 @@ class BeaconHistory(db.Document):
     beacon_id = db.StringField(max_length=150, required=True)
     timestamp = db.DateTimeField(default=datetime.datetime.now)
     ip = db.StringField(max_length=15)
+    username = db.StringField(max_length=100)
     data = db.DictField()
 
     meta = {
-        'ordering': ['-beaconTimestamp']
+        'ordering': ['-timestamp']
     }
 
 
 STATUSOPTIONS = ('Processed', 'Open', 'Processing')
-TASKTYPES = ('Single', 'Cron', 'Background')
 
+class TaskCommands(db.EmbeddedDocument):
+    name = db.StringField(max_length=150, required=True)
+    input = db.StringField(max_length=900, required=False)
+    timer = db.IntField()
+
+
+TASKTYPES = ("manual", "metta", "mitre")
 class Tasks(db.Document):
     beacon_id = db.StringField(max_length=150, required=True)
-    task_id = db.StringField(max_length=10, required=True, unique=True)
     type = db.StringField(max_length=10, required=True, choices=TASKTYPES)
-    options = db.StringField(max_length=100, required=False)
-    command_id = db.StringField(max_length=150, required=True)
-    input = db.StringField(max_length=900, required=False)
-    status = db.StringField(max_length=10, required=True, choices=STATUSOPTIONS)
     start_date = db.DateTimeField()
-
+    commands = db.EmbeddedDocumentListField('TaskCommands')
     meta = {
-        'ordering': ['-taskStartdate']
+        'ordering': ['-start_date']
     }
 
 
 class TaskResults(db.Document):
     beacon_id = db.StringField(max_length=150, required=True)
-    task_id = db.StringField(max_length=10, required=True)
-    enddate = db.DateTimeField()
+    task_id = db.StringField(max_length=100, required=True)
+    end_date = db.DateTimeField()
     output = db.FileField()
 
 

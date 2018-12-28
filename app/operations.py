@@ -1,7 +1,7 @@
 import hashlib
 import mongoengine
 from app.functions_generic import Generic
-from app.models import Users, Commands
+from app.models import Users, Commands, Macros
 
 class Command:
     def create(name, command_type="default"):
@@ -80,7 +80,6 @@ class Macro:
     def create(username, command_id, macro_name, macro_input):
         try:
             user_object = Users.objects.get(username=username)
-            macro_object = user_object.user_macros.filter(macroIdentifier=macro_name)
            # Todo
 
         except Exception as err:
@@ -90,8 +89,7 @@ class Macro:
 
     def delete(username, macro_id):
         try:
-            userObject = Users.objects.get(username=username)
-            userObject.update(pull__userMacros__macroIdentifier=mcr_id)
+            userObject = Macros.get(id=macro_id).delete()
             result = {"result": "success", "data": "Succesfully deleted macro"}
 
         except Exception as err:

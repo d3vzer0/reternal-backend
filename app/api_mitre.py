@@ -33,7 +33,7 @@ class APIMitreAggregate(Resource):
         json_object = json.loads(dumps(mitre_objects))
         return json_object
 
-api.add_resource(APIMitreAggregate, '/api/v1/mitre/aggregate')
+api.add_resource(APIMitreAggregate, '/api/v1/mitre/techniques')
 
 
 class APIMitreDetails(Resource):
@@ -45,3 +45,23 @@ class APIMitreDetails(Resource):
         return json_object
 
 api.add_resource(APIMitreDetails, '/api/v1/mitre/technique/<string:technique_id>')
+
+
+class APIMitrePhases(Resource):
+    decorators = []
+
+    def get(self):
+        mitre_phases = Mitre.objects().distinct('kill_chain_phases')
+        return mitre_phases
+
+api.add_resource(APIMitrePhases, '/api/v1/mitre/phases')
+
+class APIMitreDatasources(Resource):
+    decorators = []
+
+    def get(self):
+        mitre_datasources = Mitre.objects().distinct('data_sources')
+        return mitre_datasources
+
+api.add_resource(APIMitreDatasources, '/api/v1/mitre/datasources')
+
