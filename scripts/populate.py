@@ -27,16 +27,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--user", help="The username to perform the action on", required=False)
     parser.add_argument("-a", "--action", help="Action to perform: delete||add", required=True)
-    parser.add_argument("-c", "--command", help="Command name to add", required=False)
-    parser.add_argument("-t", "--type", help="Type of command", required=False)
+    parser.add_argument("-c", "--command", help="Create default exec_shell command", default="", required=False)
     args = parser.parse_args()
 
     if args.action == "create":
         if args.user:
             userdetails = ask_details()
-            print(User().create(args.user, userdetails['password'], userdetails['email'], "administrator"))
-        if args.command and args.type:
-            print(Command.create(args.command, args.type))
-
+            print(User.create(args.user, userdetails['password'], userdetails['email'], "administrator"))
+        if args.command:
+            print(Command.create("exec_shell"))
     else:
         print("Invalid options. Either supply add (-c or -u), delete (-c or -u), fill or delete_database as actions")

@@ -1,22 +1,24 @@
 import hashlib
 import mongoengine
 from app.functions_generic import Generic
-from app.models import Users
+from app.models import Users, Commands
 
 class Command:
-    def create(name, command_type):
+    def create(name, command_type="default"):
         try:
             commands = Commands(
-              commandIdentifier=name,
-              commandType=command_type,
+              name=name,
+              type=command_type,
             ).save()
             result = {"result":"success", "message":"Succesfully added command reference to DB"}
 
-        except db.NotUniqueError:
+        except mongoengine.errors.NotUniqueError:
             result = {"result":"failed", "message":"Command reference already exists"}
 
+        return result
+
 class User:
-    def get(self, user_id):
+    def get(user_id):
         try:
             user_object = Users.objects.get(id=user_id)
             result = {'username': user_object['username'], 'groups': [],
@@ -32,7 +34,7 @@ class User:
 
         return result
 
-    def create(self, username, password, email, role):
+    def create(username, password, email, role):
         try:
             salt = Generic.create_random(20)
             password_hash = hashlib.sha512()
@@ -60,7 +62,7 @@ class User:
 
         return result
 
-    def delete(self, user_id):
+    def delete(user_id):
         try:
             user_object = Users.objects.get(id=user_id).delete()
             result = {"result": "deleted", "message": "Deleted user from DB"}
@@ -71,5 +73,28 @@ class User:
         except Exception as err:
             result = {"result": "failed",
                       "message": "Failed to delete user from DB"}
+
+        return result
+
+class Macro:
+    def create(username, command_id, macro_name, macro_input):
+        try:
+            user_object = Users.objects.get(username=username)
+            macro_object = user_object.user_macros.filter(macroIdentifier=macro_name)
+           # Todo
+
+        except Exception as err:
+            result = {"result": "failed", "data": "Unable to add Macro"}
+
+        return result
+
+    def delete(username, macro_id):
+        try:
+            userObject = Users.objects.get(username=username)
+            userObject.update(pull__userMacros__macroIdentifier=mcr_id)
+            result = {"result": "success", "data": "Succesfully deleted macro"}
+
+        except Exception as err:
+            result = {"result": "failed", "data": "Unable to remove macro"}
 
         return result

@@ -9,6 +9,7 @@ from flask_jwt_extended import (
 from bson.json_util import dumps
 import json
 
+
 class APIMitreAggregate(Resource):
     decorators = []
 

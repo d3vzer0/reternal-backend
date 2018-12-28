@@ -14,7 +14,7 @@ class StartupTasks(db.EmbeddedDocument):
 class Macros(db.EmbeddedDocument):
     command = db.ReferenceField('Commands')
     input = db.StringField(max_length=900, required=False)
-    macroIdentifier = db.StringField(max_length=40, required=True, unique=True)
+    name = db.StringField(max_length=40, required=True, unique=True)
 
 
 class Users(db.Document):
@@ -93,7 +93,7 @@ class Tasks(db.Document):
     task_id = db.StringField(max_length=10, required=True, unique=True)
     type = db.StringField(max_length=10, required=True, choices=TASKTYPES)
     options = db.StringField(max_length=100, required=False)
-    command_identifier = db.StringField(max_length=150, required=True)
+    command_id = db.StringField(max_length=150, required=True)
     input = db.StringField(max_length=900, required=False)
     status = db.StringField(max_length=10, required=True, choices=STATUSOPTIONS)
     start_date = db.DateTimeField()
@@ -111,7 +111,7 @@ class TaskResults(db.Document):
 
 
 class Commands(db.Document):
-    commandIdentifier = db.StringField(max_length=100, required=False, unique=True)
+    name = db.StringField(max_length=100, required=True, unique=True)
     type = db.StringField(max_length=20, required=True)
     platform = db.ListField(db.StringField(max_length=50, default="all"))
 

@@ -20,3 +20,4 @@ celery = make_celery(app)
 # Import views
 from app import api_generic
 from app import api_mitre
+from app import api_commands
