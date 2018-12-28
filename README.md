@@ -9,14 +9,13 @@
 ---------------------
 
 RE:TERNAL is a centralised purple team simulation platform. Reternal uses agents installed on a simulation network to execute various known
-red-teaming techniques in order to test blue-teaming capabilities. The simulations are mapped to the MITRE ATT&CK framework.
+red-teaming techniques in order to test blue-teaming capabilities. The simulations are mapped to the MITRE ATT&CK framework. This repo contains
+parts of the back-end API. For the UI, pull/cone the reternal-ui repository: https://github.com/d3vzer0/reternal-ui
 
 #### Screenshot
 <img src="readme_img/main_window.png" alt="Drawing" style="width: 100%;"/>
 
 #### Features
-- **Interactive console**
-  * Direct and manual task execution is available via an interactive (JQuery) terminal.
 - **Builtin commands**
   * Ready to go- commands are already configured on each agent. Users are able to execute portscans, wmi commands, memory attacks and/or a combination of tasks in the form of a complete simulation.
 - **Custom Python and Powershell scripts**
