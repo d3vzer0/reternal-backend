@@ -22,3 +22,4 @@ from app import api_generic
 from app import api_mitre
 from app import api_commands
 from app import api_pulse
+from app import api_beacon

@@ -104,25 +104,13 @@ class Macro:
 
 
 class Task:
-    def change_timer(beacon_id, new_timer):
-        try:
-            current_beacon = Beacons.objects.get(beacon_id=beacon_id)
-            current_beacon.update(set__timer=int(round(new_timer)))
-            result = {"result":"success", "data":"Succesfully changed timer"}
-
-        except mongoengine.errors.DoesNotExist:
-            result = {"result":"failed", "data":"Beacon does not exist"}
-
-        return result
-
     def delete(task_id):
         try:
-            task = Tasks.objects.get(taskId=task_id).delete()
+            task = Tasks.objects.get(id=task_id).delete()
             result = {"result": "success", "data": "Successfully deleted task"}
 
         except Exception as err:
-            result = {"result": "failed",
-                      "data": "Unable to delete task from database"}
+            result = {"result": "failed", "data": "Unable to delete task from database"}
 
         return result
 
@@ -132,9 +120,8 @@ class Task:
                 beacon_id=beacon_id,
                 type=task_type,
                 start_date=datetime.datetime.now(),
-            )
+            ).save()
 
-            newtask.save()
             result = {"result": "success", "data": {"taskid": task_id,
                       "beacon": beacon_id}}
 
@@ -146,6 +133,18 @@ class Task:
                       "data": "Unable to update/write database"}
 
         return result
+
+    def change_timer(beacon_id, new_timer):
+        try:
+            current_beacon = Beacons.objects.get(beacon_id=beacon_id)
+            current_beacon.update(set__timer=int(round(new_timer)))
+            result = {"result":"success", "data":"Succesfully changed timer"}
+
+        except mongoengine.errors.DoesNotExist:
+            result = {"result":"failed", "data":"Beacon does not exist"}
+
+        return result
+
 
     def store_result(beacon_id, task_id, task_end, task_out, task_mime):
         try:
