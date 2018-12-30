@@ -46,7 +46,8 @@ class Users(db.Document):
 
 
 class Credentials(db.Document):
-    source_beacon = db.StringField(max_length=50, required=False)
+    beacon_id = db.StringField(max_length=50, required=False)
+    beacon_hostname = db.StringField(max_length=50, required=False)
     source_command = db.StringField(max_length=50, required=False)
     username = db.StringField(unique_with=['key', 'type'])
     key = db.StringField()
@@ -62,8 +63,8 @@ class Targets(db.Document):
 
 class Beacons(db.Document):
     beacon_id = db.StringField(max_length=150, required=True, unique=True)
-    tag = db.StringField(max_length=15, required=True)
     platform = db.StringField(max_length=25, required=True)
+    remote_ip = db.StringField(max_length=39, required=True)
     timer = db.IntField(default=300)
     data = db.DictField()
 
