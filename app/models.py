@@ -4,7 +4,7 @@ from app.functions_generic import Generic
 from app import db
 
 
-class StartupTasks(db.EmbeddedDocument):
+class StartupTasks(db.Document):
     command = db.ReferenceField('Commands')
     startup_id = db.StringField(max_length=24, required=True)
     input = db.StringField(max_length=150, required=False)
@@ -64,6 +64,7 @@ class Targets(db.Document):
 class Beacons(db.Document):
     beacon_id = db.StringField(max_length=150, required=True, unique=True)
     platform = db.StringField(max_length=25, required=True)
+    username = db.StringField(max_length=25, required=True)
     remote_ip = db.StringField(max_length=39, required=True)
     timer = db.IntField(default=300)
     data = db.DictField()
@@ -76,8 +77,9 @@ class BeaconKeylogger(db.Document):
 
 class BeaconHistory(db.Document):
     beacon_id = db.StringField(max_length=150, required=True)
+    platform = db.StringField(max_length=25, required=True)
     timestamp = db.DateTimeField(default=datetime.datetime.now)
-    ip = db.StringField(max_length=15)
+    remote_ip = db.StringField(max_length=15)
     username = db.StringField(max_length=100)
     data = db.DictField()
 
@@ -99,6 +101,7 @@ class Tasks(db.Document):
     beacon_id = db.StringField(max_length=150, required=True)
     type = db.StringField(max_length=10, required=True, choices=TASKTYPES)
     start_date = db.DateTimeField()
+    task_status = db.StringField(default="Open")
     commands = db.EmbeddedDocumentListField('TaskCommands')
     meta = {
         'ordering': ['-start_date']

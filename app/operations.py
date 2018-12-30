@@ -1,7 +1,7 @@
 import hashlib
 import mongoengine
 from app.functions_generic import Generic
-from app.models import Users, Commands, Macros
+from app.models import Users, Commands, Macros, Beacons, BeaconHistory
 
 
 class Command:
@@ -166,12 +166,14 @@ class Task:
 
 
 class Beacon:
-    def create(beacon_id, beacon_os, timer, beacon_data):
+    def create(beacon_id, beacon_os, username, timer, beacon_data, remote_ip=""):
         try:
             beacon_object = Beacons(
                 beacon_id=beacon_id,
                 platform=beacon_os,
-                data=beacon_data
+                data=beacon_data,
+                username=username,
+                remote_ip=remote_ip
             ).save()
 
             result = {"result": "success", "data": "Beacon succesfully added"}
@@ -185,18 +187,22 @@ class Beacon:
 
         return result
 
-    def pulse(beacon_id, beacon_ip, beacon_data):
+    def pulse(beacon_id, platform, username, data, remote_ip):
         try:
             history_object = BeaconHistory(
                 beacon_id=beacon_id,
-                ip=beacon_ip,
-                data=beacon_data
+                remote_ip=remote_ip,
+                data=data,
+                platform=platform,
+                username=username,
             ).save()
 
             result = {"result": "success",
                       "data": "Beacon history succesfully added"}
 
         except Exception as err:
+            print(err)
+
             result = {"result": "failed",
                       "data": "Unable to add beacon history to database"}
 

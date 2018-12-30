@@ -47,12 +47,29 @@ class Existance:
 
     def beacon(beacon_id):
         try:
-            getRelavance = Beacons.objects.get(beacon_id=beacon_id)
+            beacon_object = Beacons.objects.get(beacon_id=beacon_id)
             return {"result":"success", "data":"Beacon exists"}
 
         except db.DoesNotExist:
             return {"result":"failed", "data":"Beacon does not exist"}
 
+    def tasks(beacon_id, post_data, beacon_ip):
+        try:
+            result = {"result":"success", "tasks":[]}
+            get_tasks = Tasks.objects(beacon_id=beacon_id, task_status="Open")
+            for task in get_tasks:
+                commands_list = task.commands
+                for command in commands_list:
+                    result['tasks'].append({command['name'], command['input'], command['timer']})
+                task.update(set__taskStatus="Processing")
+
+        except db.DoesNotExist:
+            result = {"result":"failed", "data":"No tasks available"}
+
+        except Exception as err:
+            result = {"result":"failed", "data":"Unexpected error"}
+
+        return result
 
 
 class Permissions:
