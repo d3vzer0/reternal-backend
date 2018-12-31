@@ -66,6 +66,7 @@ class Beacons(db.Document):
     platform = db.StringField(max_length=25, required=True)
     username = db.StringField(max_length=25, required=True)
     remote_ip = db.StringField(max_length=39, required=True)
+    hostname = db.StringField(max_length=250, required=True)
     timer = db.IntField(default=300)
     data = db.DictField()
 
@@ -80,6 +81,7 @@ class BeaconHistory(db.Document):
     platform = db.StringField(max_length=25, required=True)
     timestamp = db.DateTimeField(default=datetime.datetime.now)
     remote_ip = db.StringField(max_length=15)
+    hostname = db.StringField(max_length=250, required=True)
     username = db.StringField(max_length=100)
     data = db.DictField()
 

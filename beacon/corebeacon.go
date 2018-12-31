@@ -50,7 +50,7 @@ func generate_id() {
 }
 
 func beacon_data() []byte {
-	base_content := map[string]interface{}{"beacon_id": beacon_id, "platform": beacon_platform, "timer": beacon_timer, "data": map[string]string{}}
+	base_content := map[string]interface{}{"beacon_id": beacon_id, "hostname": beacon_hostname, "platform": beacon_platform, "timer": beacon_timer, "data": map[string]string{}}
 	json_content, _ := json.Marshal(base_content)
 	return json_content
 }

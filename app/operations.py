@@ -165,12 +165,13 @@ class Task:
 
 
 class Beacon:
-    def create(beacon_id, beacon_os, username, timer, beacon_data, remote_ip=""):
+    def create(beacon_id, beacon_os, username, timer, hostname, beacon_data, remote_ip=""):
         try:
             beacon_object = Beacons(
                 beacon_id=beacon_id,
                 platform=beacon_os,
                 data=beacon_data,
+                hostname=hostname,
                 username=username,
                 remote_ip=remote_ip
             ).save()
@@ -186,11 +187,12 @@ class Beacon:
 
         return result
 
-    def pulse(beacon_id, platform, username, data, remote_ip):
+    def pulse(beacon_id, platform, username, hostname, data, remote_ip):
         try:
             history_object = BeaconHistory(
                 beacon_id=beacon_id,
                 remote_ip=remote_ip,
+                hostname=hostname,
                 data=data,
                 platform=platform,
                 username=username,

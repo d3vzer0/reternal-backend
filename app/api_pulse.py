@@ -17,6 +17,7 @@ class APIPulse(Resource):
         self.args.add_argument('beacon_id', location='json', required=True, help='Beacon ID')
         self.args.add_argument('platform', location='json', required=True, help='Platform')
         self.args.add_argument('username', location='json', required=True, help='Username')
+        self.args.add_argument('hostname', location='json', required=True, help='Username')
         self.args.add_argument('data', location='json', required=True, help='Data', type=dict)
         self.args.add_argument('tasks', location='json', required=False, help='Data', type=dict)
         self.args.add_argument('timer', location='json', required=False, help='Timer')

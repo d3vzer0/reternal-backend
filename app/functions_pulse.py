@@ -28,12 +28,13 @@ class Pulse:
 class Process:
     def pulse(post_data, remote_ip):
         create_history = Beacon.pulse(post_data['beacon_id'], post_data['platform'],
-            post_data['username'], post_data['data'], remote_ip)
+            post_data['username'], post_data['hostname'], post_data['data'], remote_ip)
         return create_history
 
     def first_beacon(post_data, remote_ip):
         create_beacon = Beacon.create(post_data['beacon_id'], post_data['platform'],
-            post_data['username'], post_data['timer'], post_data['data'], remote_ip)
+            post_data['username'], post_data['timer'], post_data['hostname'], 
+            post_data['data'], remote_ip)
 
         startup_tasks = StartupTasks.objects(platform=post_data['platform'])
         for tasks in startup_tasks:
