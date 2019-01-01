@@ -23,3 +23,5 @@ from app import api_mitre
 from app import api_commands
 from app import api_pulse
 from app import api_beacon
+from app import api_results
+from app import api_tasks

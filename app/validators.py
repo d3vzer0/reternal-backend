@@ -1,7 +1,7 @@
 from app import app
-from app import db
 from app.models import *
 import datetime, hashlib, random,json, re
+import mongoengine
 from email.utils import parseaddr
 
 
@@ -20,7 +20,7 @@ class Authentication:
             else:
                 return {"result":"failed", "data":"Username and/or Password incorrect"}
 
-        except db.DoesNotExist:
+        except mongoengine.errors.DoesNotExist:
             return {"result":"failed", "data":"Username and/or Password incorrect"}
 
 
@@ -30,7 +30,7 @@ class Existance:
             user_details = Users.objects.get(username=username)
             return {"result":"failed", "data":"User already exist"}
 
-        except db.DoesNotExist:
+        except mongoengine.errors.DoesNotExist:
             return {"result":"success", "data":"User does exists exist"}
 
 
@@ -40,7 +40,7 @@ class Existance:
                 command_details = Commands.objects.get(id=command_id)
                 return {"result":"exists", "data":str(command_details.id)}
 
-            except db.DoesNotExist:
+            except mongoengine.errors.DoesNotExist:
                 return {"result":"unique", "data":"Command does not exist"}
         else:
             return {"result":"failed", "data":"Command names can only have alphanumeric chars and underscores"}
@@ -50,23 +50,20 @@ class Existance:
             beacon_object = Beacons.objects.get(beacon_id=beacon_id)
             return {"result":"success", "data":"Beacon exists"}
 
-        except db.DoesNotExist:
+        except mongoengine.errors.DoesNotExist:
             return {"result":"failed", "data":"Beacon does not exist"}
 
-    def tasks(beacon_id, post_data, beacon_ip):
-        try:
-            result = {"result":"success", "tasks":[]}
-            get_tasks = Tasks.objects(beacon_id=beacon_id, task_status="Open")
-            for task in get_tasks:
-                commands_list = task.commands
-                for command in commands_list:
-                    result['tasks'].append({command['name'], command['input'], command['timer']})
-                task.update(set__taskStatus="Processing")
 
-        except db.DoesNotExist:
-            result = {"result":"failed", "data":"No tasks available"}
+    def task(beacon_id, task_id):
+        try:
+            verify_task = Tasks.objects.get(beacon_id=beacon_id, id=task_id)
+            result = {"result":"success", "data":"Beacon has tasks available"}
+
+        except mongoengine.errors.DoesNotExist:
+            result = {"result":"failed", "data":"No tasks available for beacon"}
 
         except Exception as err:
+            print(err)
             result = {"result":"failed", "data":"Unexpected error"}
 
         return result
@@ -81,7 +78,7 @@ class Permissions:
             userDetails = Users.objects.get(username=username)
             return {"result":"failed", "data":"User already exists"}
 
-        except db.DoesNotExist:
+        except mongoengine.errors.DoesNotExist:
             return {"result":"success", "data":"User does not exist"}
 
     def delete_user(ownuser, username):
@@ -92,7 +89,7 @@ class Permissions:
             Users.objects.get(username=username)
             return {"result":"success", "data":"User exist"}
 
-        except db.DoesNotExist:
+        except mongoengine.errors.DoesNotExist:
             return {"result":"failed", "data":"Target user does not exist in the system"}
 
     def administrator(username):
@@ -100,5 +97,5 @@ class Permissions:
             permissions = Users.objects(user=username, role="administrator")
             return {"result":"success", "data":"User has sufficient rights to update projects"}
 
-        except db.DoesNotExist:
+        except mongoengine.errors.DoesNotExist:
             return {"result":"failed", "data":"Project does not exist or user does not have proper permissions"}

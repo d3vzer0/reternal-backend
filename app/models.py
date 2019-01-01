@@ -67,6 +67,7 @@ class Beacons(db.Document):
     username = db.StringField(max_length=25, required=True)
     remote_ip = db.StringField(max_length=39, required=True)
     hostname = db.StringField(max_length=250, required=True)
+    working_dir = db.StringField(max_length=400, required=False)
     timer = db.IntField(default=300)
     data = db.DictField()
 
@@ -80,9 +81,11 @@ class BeaconHistory(db.Document):
     beacon_id = db.StringField(max_length=150, required=True)
     platform = db.StringField(max_length=25, required=True)
     timestamp = db.DateTimeField(default=datetime.datetime.now)
-    remote_ip = db.StringField(max_length=15)
+    remote_ip = db.StringField(max_length=15, required=True)
     hostname = db.StringField(max_length=250, required=True)
-    username = db.StringField(max_length=100)
+    username = db.StringField(max_length=100, required=True)
+    working_dir = db.StringField(max_length=400)
+    timer = db.IntField()
     data = db.DictField()
 
     meta = {
@@ -95,16 +98,17 @@ STATUSOPTIONS = ('Processed', 'Open', 'Processing')
 class TaskCommands(db.EmbeddedDocument):
     name = db.StringField(max_length=150, required=True)
     input = db.StringField(max_length=900, required=False)
-    timer = db.IntField()
+    timer = db.IntField(default=0)
 
 
 TASKTYPES = ("manual", "metta", "mitre")
 class Tasks(db.Document):
     beacon_id = db.StringField(max_length=150, required=True)
     type = db.StringField(max_length=10, required=True, choices=TASKTYPES)
-    start_date = db.DateTimeField()
+    task = db.StringField(max_length=100, required=True)
+    start_date = db.DateTimeField(default=datetime.datetime.now())
     task_status = db.StringField(default="Open")
-    commands = db.EmbeddedDocumentListField('TaskCommands')
+    commands = db.EmbeddedDocumentListField('TaskCommands', required=True)
     meta = {
         'ordering': ['-start_date']
     }
@@ -112,8 +116,9 @@ class Tasks(db.Document):
 
 class TaskResults(db.Document):
     beacon_id = db.StringField(max_length=150, required=True)
-    task_id = db.StringField(max_length=100, required=True)
-    end_date = db.DateTimeField()
+    task_id = db.ReferenceField('Tasks', required=True)
+    command = db.StringField(max_length=100, required=True) 
+    end_date = db.DateTimeField(default=datetime.datetime.now)
     output = db.FileField()
 
 

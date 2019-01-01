@@ -71,23 +71,3 @@ class APIBeacon(Resource):
         return result
 
 api.add_resource(APIBeacon, '/api/v1/agent/<string:beacon_id>')
-
-
-
-class APIAttachment(Resource):
-    decorators = []
-
-    def get(self, task_id):
-        task_result = TaskResults.objects.get(taskId=task_id)
-        task_file = task_result.output.read()
-        filename = "%s-output" %(task_id)
-        response = make_response(task_file)
-        response.headers['Content-Type'] = "application/octet-stream"
-        response.headers["Content-Disposition"] = "attachment; filename=%s" %(filename)
-        return response
-
-    def delete(self, task_id):
-        deleteTask = Task.delete(task_id)
-        return deleteTask
-
-api.add_resource(APIAttachment, '/api/v1/result/<string:task_id>')

