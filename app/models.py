@@ -94,20 +94,17 @@ class BeaconHistory(db.Document):
 
 
 STATUSOPTIONS = ('Processed', 'Open', 'Processing')
-
 class TaskCommands(db.EmbeddedDocument):
+    type = db.StringField(max_length=50, required=True)
     name = db.StringField(max_length=150, required=True)
     input = db.StringField(max_length=900, required=False)
     timer = db.IntField(default=0)
 
 
-TASKTYPES = ("manual", "metta", "mitre")
 class Tasks(db.Document):
     beacon_id = db.StringField(max_length=150, required=True)
-    type = db.StringField(max_length=10, required=True, choices=TASKTYPES)
-    task = db.StringField(max_length=100, required=True)
     start_date = db.DateTimeField(default=datetime.datetime.now())
-    task_status = db.StringField(default="Open")
+    task_status = db.StringField(default="Open", choices=STATUSOPTIONS)
     commands = db.EmbeddedDocumentListField('TaskCommands', required=True)
     meta = {
         'ordering': ['-start_date']

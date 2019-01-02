@@ -180,12 +180,11 @@ class Task:
 
         return result
 
-    def create(beacon_id, task_type, task, commands):
+    def create(beacon_id, commands, start_date):
         try:
             new_task = Tasks(
+                start_date=start_date,
                 beacon_id=beacon_id,
-                type=task_type,
-                task=task,
                 commands=commands
             ).save()
 

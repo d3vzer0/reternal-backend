@@ -17,16 +17,18 @@ class APITasks(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         if request.method == 'POST':
+            date_epoch = int(datetime.datetime.now().strftime("%s"))
             self.parser.add_argument('commands', type=list, required=True, location='json')
             self.parser.add_argument('beacon_id', type=str, required=True, location='json')
-            self.parser.add_argument('type', type=str, required=True, location='json')
-            self.parser.add_argument('task', type=str, required=True, location='json')
+            self.parser.add_argument('start_date', type=int, required=False, default=date_epoch, location='json')
+
 
     def post(self):
         args = self.parser.parse_args()
         verify_beacon = Existance.beacon(beacon_id=args['beacon_id'])
         if verify_beacon['result'] == "success":
-            result = Task.create(args['beacon_id'], args['type'], args['task'], args['commands'])
+            start_date = datetime.datetime.fromtimestamp(args['start_date'])
+            result = Task.create(args['beacon_id'], args['commands'], start_date)
         else:
             result = verify_beacon
 
