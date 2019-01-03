@@ -1,9 +1,0 @@
-name: Recipe 1
-author: Joey Dreijer
-purple_actions:
-  1:
-    technique: 6ef5be62-458c-4a9b-85e6-8942ea8aa1cb
-    idle_time: 1
-  2:
-    technique: f84dba18-f782-4bab-b724-e7dd20f94c09
-    idle_time: 2

@@ -19,7 +19,7 @@ pymongo
 python-geoip
 python-magic
 python-socketio
-redis==2.10.5
+redis==2.10.6
 requests
 rsa
 urllib3
