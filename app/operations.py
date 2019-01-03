@@ -194,6 +194,7 @@ class Task:
             result = {"result": "failed", "data": "Task requires explicit commands"}
 
         except Exception as err:
+            print(err)
             result = {"result": "failed", "data": "Unable to create task"}
 
         return result

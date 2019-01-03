@@ -98,7 +98,7 @@ class TaskCommands(db.EmbeddedDocument):
     type = db.StringField(max_length=50, required=True)
     name = db.StringField(max_length=150, required=True)
     input = db.StringField(max_length=900, required=False)
-    timer = db.IntField(default=0)
+    sleep = db.IntField(default=0)
 
 
 class Tasks(db.Document):
