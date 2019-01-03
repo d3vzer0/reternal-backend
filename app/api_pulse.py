@@ -1,6 +1,6 @@
 
 from app import app, api, celery, jwt
-from app.functions_pulse import Pulse, Process
+from app.operations import Pulse
 from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import (
@@ -45,8 +45,7 @@ class APIPulse(Resource):
             result = Pulse.process(args, remote_ip, 'http')
             # result = {"tasks":[]}
         else:
-            print(args)
-            result = Process.task(args['beacon_id'], args['task_id'], args['command'], args['type'], args['input'], args['output'])
+            result = Pulse.result(args['beacon_id'], args['task_id'], args['command'], args['type'], args['input'], args['output'])
 
         return result
 

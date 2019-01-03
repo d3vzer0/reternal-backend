@@ -28,6 +28,13 @@ type Result struct {
 	Output   string `json:"output"`
 }
 
+type Command struct {
+	Type  string `json:"type"`
+	Name  string `json:"name"`
+	Input string `json:"input"`
+	Sleep int    `json:"sleep"`
+}
+
 // Define Base URL
 var base_url = "http://localhost:5000/api/v1/ping"
 
