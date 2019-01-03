@@ -115,6 +115,8 @@ class TaskResults(db.Document):
     beacon_id = db.StringField(max_length=150, required=True)
     task_id = db.ReferenceField('Tasks', required=True)
     command = db.StringField(max_length=100, required=True) 
+    type = db.StringField(max_length=50, required=True)
+    input = db.StringField(max_length=900, required=True)
     end_date = db.DateTimeField(default=datetime.datetime.now)
     output = db.FileField()
 

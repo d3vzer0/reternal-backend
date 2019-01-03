@@ -122,10 +122,12 @@ class Result:
 
         return result
 
-    def store_result(beacon_id, task_id, command, output, magic_type):
+    def store_result(beacon_id, task_id, command, cmd_type, cmd_input, output, magic_type):
         try:
             taskoutput = TaskResults(
                 beacon_id=beacon_id,
+                input=cmd_input,
+                type=cmd_type,
                 task_id=task_id,
                 command=command
             )

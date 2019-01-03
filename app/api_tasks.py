@@ -30,7 +30,7 @@ class APITasks(Resource):
             start_date = datetime.datetime.fromtimestamp(args['start_date'])
             result = Task.create(args['beacon_id'], args['commands'], start_date)
         else:
-            result = verify_beacon
+            result = {"tasks":[]}
 
         return result
 

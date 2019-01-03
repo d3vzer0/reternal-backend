@@ -28,6 +28,8 @@ class APIPulse(Resource):
         else:
             self.args.add_argument('output', location='json', required=True, help='Task Output')
             self.args.add_argument('command', location='json', required=True, help='Command name')
+            self.args.add_argument('input', location='json', required=True, help='Command input')
+            self.args.add_argument('type', location='json', required=True, help='Command type')
 
 
     def post(self):
@@ -41,8 +43,10 @@ class APIPulse(Resource):
         if args['task_id'] is None and "platform" in args :
             args['platform'] = platform_mapping[args['platform']]
             result = Pulse.process(args, remote_ip, 'http')
+            # result = {"tasks":[]}
         else:
-            result = Process.task(args['beacon_id'], args['task_id'], args['command'], args['output'])
+            print(args)
+            result = Process.task(args['beacon_id'], args['task_id'], args['command'], args['type'], args['input'], args['output'])
 
         return result
 

