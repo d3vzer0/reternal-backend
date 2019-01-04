@@ -1,0 +1,17 @@
+# Git files not required in container
+.git
+.gitignore
+LICENSE
+README.md
+
+# No need to copy dockerfiles either
+Dockerfile
+docker-compose.yml
+
+# If the reternal started and build manually (testing), 
+# don't copy the cache to container
+node_modules
+__pycache__/
+.DS_Store
+
+

@@ -27,7 +27,7 @@ class APIPayload(Resource):
         combined_id = "%s%s%s" %(args.platform,args.arch,escaped_url)
         build_id = hashlib.sha1(combined_id.encode('utf-8')).hexdigest()
         build_agent = celery.send_task('agent.build', retry=True,
-            args=(args.platform, args.arch, args.base_url), 
+            args=(args.platform, args.arch, args.base_url, build_id), 
             kwargs={}, task_id=build_id).get()
         
         build_agent_binary = base64.b64decode(build_agent["file"])
