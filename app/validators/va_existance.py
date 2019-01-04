@@ -1,6 +1,7 @@
 from app import app
 from app.models import Users, Beacons, Commands, Tasks
 import mongoengine
+import re
 
 class Existance:
     def user(username):
@@ -12,14 +13,15 @@ class Existance:
             return {"result":"success", "data":"User does exists exist"}
 
 
-    def command(command_id):
-        if re.match(r'^[A-Za-z0-9_]+$', command_id):
+    def command(command_name):
+        if re.match(r'^[A-Za-z0-9_]+$', command_name):
             try:
-                command_details = Commands.objects.get(id=command_id)
+                print(command_name)
+                command_details = Commands.objects.get(name=command_name)
                 return {"result":"exists", "data":str(command_details.id)}
 
             except mongoengine.errors.DoesNotExist:
-                return {"result":"unique", "data":"Command does not exist"}
+                return {"result":"failed", "data":"Command does not exist"}
         else:
             return {"result":"failed", "data":"Command names can only have alphanumeric chars and underscores"}
 

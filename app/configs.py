@@ -11,8 +11,3 @@ app.config['MONGODB_SETTINGS'] = {
     'port': int(os.environ["MONGO_PORT"])
 }
 
-app.config.update(
-    CELERY_BROKER_URL=os.environ["CELERY_BROKER"],
-    result_backend=os.environ["CELERY_BACKEND"]
-)
-

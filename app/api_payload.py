@@ -11,8 +11,31 @@ import hashlib
 import os
 import base64
 
+class APIPayloads(Resource):
+    decorators = []
+
+    def get(self):
+        payload_types = [
+            {"platform": "windows", "types":[
+                {"arch":"amd64", "name":"64Bit Exe"},
+                {"arch":"386", "name":"32Bit Exe"}]},
+            {"platform": "linux", "types":[
+                {"arch":"amd64", "name":"64Bit ELF"},
+                {"arch":"386", "name":"32Bit ELF"}]},
+            {"platform": "darwin", "types":[
+                {"arch":"amd64", "name":"64Bit BIN"},
+                {"arch":"386", "name":"32Bit BIN"}]}
+            ]
+
+        return payload_types
+
+api.add_resource(APIPayloads, '/api/v1/payloads')
+
+
+
 class APIPayload(Resource):
     decorators = []
+
 
     def __init__(self):
         self.args = reqparse.RequestParser()

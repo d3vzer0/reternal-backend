@@ -26,3 +26,4 @@ from app import api_beacon
 from app import api_results
 from app import api_tasks
 from app import api_payload
+from app import api_macros

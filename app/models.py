@@ -12,7 +12,7 @@ class StartupTasks(db.Document):
 
 
 class Macros(db.Document):
-    command = db.ReferenceField('Commands')
+    command = db.StringField(max_length=100, required=True)
     input = db.StringField(max_length=900, required=False)
     name = db.StringField(max_length=40, required=True, unique=True)
 

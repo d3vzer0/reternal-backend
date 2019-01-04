@@ -1,12 +1,17 @@
-from app.models import Users, Macros
+from app.models import Macros
 import mongoengine
 
 
 class Macro:
-    def create(username, command_id, macro_name, macro_input):
+    def create(name, command, input):
         try:
-            user_object = Users.objects.get(username=username)
-           # Todo
+            macro_object = Macros(
+               name=name,
+               command=command,
+               input=input
+            ).save()
+
+            result = {"result": "success", "message": "Macro created"}
 
         except mongoengine.errors.NotUniqueError:
             result = {"result": "failed", "message": "Macro already exists"}
@@ -16,7 +21,7 @@ class Macro:
 
         return result
 
-    def delete(username, macro_id):
+    def delete(macro_id):
         try:
             userObject = Macros.get(id=macro_id).delete()
             result = {"result": "success", "data": "Succesfully deleted macro"}
