@@ -8,13 +8,19 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # ENV JWT_SECRET
 # ENV FLASK_SECRET
 
-ARG MONGO_DB=redis://redis_service:6379
+ARG CELERY_BROKER=redis://redis_service:6379
+ENV CELERY_BROKER="${CELERY_BROKER}"
+
+ARG CELERY_BACKEND=redis://redis_service:6379
+ENV CELERY_BACKEND="${CELERY_BACKEND}"
+
+ARG MONGO_DB=reternal
 ENV MONGO_DB="${MONGO_DB}"
 
-ARG MONGO_IP=redis://redis_service:6379
+ARG MONGO_IP=mongodb
 ENV MONGO_IP="${MONGO_IP}"
 
-ARG MONGO_PORT=redis://redis_service:6379
+ARG MONGO_PORT=27017
 ENV MONGO_PORT="${MONGO_PORT}"
 
 COPY . /reternal-backend
