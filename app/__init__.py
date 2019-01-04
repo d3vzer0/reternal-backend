@@ -13,7 +13,7 @@ cors = CORS(app)
 jwt = JWTManager(app)
 
 # Initialize DB and load models and views
-import app.config
+from  app.configs import *
 db = MongoEngine(app)
 celery = make_celery(app)
 
