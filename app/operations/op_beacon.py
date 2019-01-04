@@ -1,4 +1,3 @@
-from app.functions_generic import Generic
 from app.models import Beacons, BeaconHistory, TaskResults, Tasks
 import mongoengine
 

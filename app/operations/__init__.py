@@ -1,4 +1,3 @@
-from app.operations.op_generic import Random as Random
 from app.operations.op_user import User as User
 from app.operations.op_macro import Macro as Macro
 from app.operations.op_beacon import Beacon as Beacon

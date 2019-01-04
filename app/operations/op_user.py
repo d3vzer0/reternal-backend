@@ -1,4 +1,4 @@
-from app.operations import Random
+from app.generic import Random
 from app.models import Users, Commands, Macros, Beacons, BeaconHistory, Tasks, TaskResults
 import hashlib
 import mongoengine

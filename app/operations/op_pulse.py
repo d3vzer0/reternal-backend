@@ -1,8 +1,8 @@
 from flask import request
 from app.models import StartupTasks, Tasks
 from app.validators import Existance
-from app.operations import Beacon, Result, Task, Random
-from app.functions_generic import Generic
+from app.operations import Beacon, Result, Task
+from app.generic import Random
 import magic, base64, os, datetime, json
 from io import StringIO
 

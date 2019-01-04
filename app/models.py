@@ -1,7 +1,7 @@
 import datetime
 import random, string
-from app.functions_generic import Generic
 from app import db
+from app.generic import Random
 
 
 class StartupTasks(db.Document):
@@ -21,7 +21,7 @@ ROLE_OPTIONS = ('user', 'admin')
 class Users(db.Document):
     username = db.StringField(max_length=50, required=True, unique=True)
     password = db.StringField(max_length=128, required=True)
-    salt = db.StringField(default=Generic.create_random(20), max_length=20, required=True)
+    salt = db.StringField(default=Random.create(20), max_length=20, required=True)
 
     role = db.StringField(max_length=20, required=True, default="User", choices=ROLE_OPTIONS)
     email = db.EmailField(required=True)

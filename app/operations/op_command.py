@@ -1,4 +1,3 @@
-from app.functions_generic import Generic
 from app.models import Commands
 import mongoengine
 
