@@ -34,6 +34,12 @@ class APIMacros(Resource):
             self.parser.add_argument('input', type=str, required=True, location='json')
 
 
+    def get(self):
+        macro_list = Macros.objects()
+        result = json.loads(macro_list.to_json())
+        return result
+
+
     def post(self):
         args = self.parser.parse_args()
         verify_command = Existance.command(args.command)
