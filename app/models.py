@@ -17,12 +17,13 @@ class Macros(db.Document):
     name = db.StringField(max_length=40, required=True, unique=True)
 
 
+ROLE_OPTIONS = ('user', 'admin')
 class Users(db.Document):
     username = db.StringField(max_length=50, required=True, unique=True)
     password = db.StringField(max_length=128, required=True)
     salt = db.StringField(default=Generic.create_random(20), max_length=20, required=True)
 
-    role = db.StringField(max_length=20, required=True, default="User")
+    role = db.StringField(max_length=20, required=True, default="User", choices=ROLE_OPTIONS)
     email = db.EmailField(required=True)
 
     meta = {
@@ -127,11 +128,13 @@ class Commands(db.Document):
     platform = db.ListField(db.StringField(max_length=50, default="all"))
 
 
-class MitreCommands(db.EmbeddedDocument):
-    command = db.ReferenceField('Commands', required=True)
+class MitreCommands(db.Document):
+    technique_id = db.StringField(max_length=100, required=True, unique=True)
+    command = db.StringField(max_length=100, required=True)
     input = db.StringField(max_length=900, required=False)
     idle_time = db.IntField()
     metta_id = db.StringField(max_length=35)
+
 
 
 class MitreReferences(db.EmbeddedDocument):
@@ -139,7 +142,6 @@ class MitreReferences(db.EmbeddedDocument):
     url = db.StringField(max_length=1000)
     source_name = db.StringField(max_length=100)
     description = db.StringField(max_length=1000)
-
 
 
 PLATFORMS = ('Windows', 'Linux', 'All', 'macOS')
@@ -154,6 +156,7 @@ class Mitre(db.Document):
     description = db.StringField(max_length=9000)
     data_sources = db.ListField(db.StringField(max_length=100))
     detection = db.StringField(max_length=1000)
+
 
 class RecipeTechniques(db.EmbeddedDocument):
     technique = db.ReferenceField('Mitre')

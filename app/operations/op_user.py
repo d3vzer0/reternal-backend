@@ -1,4 +1,4 @@
-from app.functions_generic import Generic
+from app.operations import Random
 from app.models import Users, Commands, Macros, Beacons, BeaconHistory, Tasks, TaskResults
 import hashlib
 import mongoengine
@@ -23,7 +23,7 @@ class User:
 
     def create(username, password, email, role):
         try:
-            salt = Generic.create_random(20)
+            salt = Random.create(20)
             password_hash = hashlib.sha512()
             password_string = salt + password
             password_hash.update(password_string.encode('utf-8'))
