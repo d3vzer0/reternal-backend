@@ -27,4 +27,3 @@ Werkzeug
 WTForms
 flask-jwt-extended
 flask-cors
-python-libmagic
