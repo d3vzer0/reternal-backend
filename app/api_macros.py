@@ -16,9 +16,8 @@ class APIMacro(Resource):
     decorators = []
 
     def delete(self, macro_id):
-        username = get_jwt_identity()
-        delete_macro = Macro.delete(username, alias_id)
-        return jsonify(delete_macro)
+        result = Macro.delete(macro_id)
+        return result
 
 api.add_resource(APIMacro, '/api/v1/macro/<string:macro_id>')
 

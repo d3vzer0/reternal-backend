@@ -8,8 +8,8 @@ from app.tasks.task_celery import FlaskCelery
 
 #Initialize Flask Instance
 app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 api = Api(app)
-cors = CORS(app)
 jwt = JWTManager(app)
 
 # Initialize DB and load models and views
@@ -27,3 +27,4 @@ from app import api_results
 from app import api_tasks
 from app import api_payload
 from app import api_macros
+from app import api_startuptasks

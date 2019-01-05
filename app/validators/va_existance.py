@@ -16,7 +16,6 @@ class Existance:
     def command(command_name):
         if re.match(r'^[A-Za-z0-9_]+$', command_name):
             try:
-                print(command_name)
                 command_details = Commands.objects.get(name=command_name)
                 return {"result":"exists", "data":str(command_details.id)}
 

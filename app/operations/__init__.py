@@ -5,3 +5,4 @@ from app.operations.op_task import Task as Task
 from app.operations.op_result import Result as Result
 from app.operations.op_command import Command as Command
 from app.operations.op_pulse import Pulse as Pulse
+from app.operations.op_startuptask import StartupTask as StartupTask

@@ -4,13 +4,6 @@ from app import db
 from app.generic import Random
 
 
-class StartupTasks(db.Document):
-    command = db.ReferenceField('Commands')
-    startup_id = db.StringField(max_length=24, required=True)
-    input = db.StringField(max_length=150, required=False)
-    platform = db.StringField(max_length=150, required=False)
-
-
 class Macros(db.Document):
     command = db.StringField(max_length=100, required=True)
     input = db.StringField(max_length=900, required=False)
@@ -110,6 +103,11 @@ class Tasks(db.Document):
     meta = {
         'ordering': ['-start_date']
     }
+
+class StartupTasks(db.Document):
+    name = db.StringField(max_length=150, required=True, unique=True)
+    platform = db.StringField(max_length=150, required=True)
+    commands = db.EmbeddedDocumentListField('TaskCommands', required=True)
 
 
 class TaskResults(db.Document):

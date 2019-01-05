@@ -23,7 +23,7 @@ class Macro:
 
     def delete(macro_id):
         try:
-            userObject = Macros.get(id=macro_id).delete()
+            userObject = Macros.objects.get(id=macro_id).delete()
             result = {"result": "success", "data": "Succesfully deleted macro"}
 
         except mongoengine.errors.DoesNotExist:
