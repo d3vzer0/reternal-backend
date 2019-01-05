@@ -17,7 +17,7 @@ class APITasks(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         if request.method == 'POST':
-            date_epoch = int(datetime.datetime.now().strftime("%s"))
+            date_epoch = int(datetime.datetime.now().timestamp())
             self.parser.add_argument('commands', type=list, required=True, location='json')
             self.parser.add_argument('beacon_id', type=str, required=True, location='json')
             self.parser.add_argument('start_date', type=int, required=False, default=date_epoch, location='json')

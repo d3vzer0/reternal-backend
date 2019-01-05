@@ -58,10 +58,10 @@ class Targets(db.Document):
 class Beacons(db.Document):
     beacon_id = db.StringField(max_length=150, required=True, unique=True)
     platform = db.StringField(max_length=25, required=True)
-    username = db.StringField(max_length=25, required=True)
+    username = db.StringField(max_length=100, required=True)
     remote_ip = db.StringField(max_length=39, required=True)
     hostname = db.StringField(max_length=250, required=True)
-    working_dir = db.StringField(max_length=400, required=False)
+    working_dir = db.StringField(max_length=800, required=False)
     timer = db.IntField(default=300)
     data = db.DictField()
 

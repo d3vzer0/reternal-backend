@@ -35,8 +35,8 @@ class APIPulse(Resource):
     def post(self):
         platform_mapping = {
             "darwin": "macOS",
-            "Windows": "Windows",
-            "Linux": "Linux",
+            "windows": "Windows",
+            "linux": "Linux",
         }
         remote_ip = request.remote_addr
         args = self.args.parse_args()
@@ -46,7 +46,6 @@ class APIPulse(Resource):
             # result = {"tasks":[]}
         else:
             result = Pulse.result(args['beacon_id'], args['task_id'], args['command'], args['type'], args['input'], args['output'])
-
         return result
 
 api.add_resource(APIPulse, '/api/v1/ping')

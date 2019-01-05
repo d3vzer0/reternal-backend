@@ -10,6 +10,8 @@ from flask_jwt_extended import (
     get_jwt_identity, get_jwt_claims
 )
 
+from bson.json_util import dumps as loadbson
+
 
 class APIBeacons(Resource):
     decorators = []
@@ -21,21 +23,18 @@ class APIBeacons(Resource):
 
     def get(self):
         args = self.parser.parse_args()
-        get_beacons = Beacons.objects(Q(platform__contains=args['platform']) & (Q(username__contains=args['search']) | Q(hostname__contains=args['search'])))
-        beacon_list=[]
-        for beacon in get_beacons:
-            last_pulse = BeaconHistory.objects(beacon_id=str(beacon.beacon_id)).first()
-            last_timestamp = last_pulse.timestamp
-            beacon_timer = int(beacon.timer) * 1.80
-            compare_date = last_timestamp + datetime.timedelta(seconds=int(beacon_timer))
-            current_date = datetime.datetime.now()
-            online_state = "offline" if current_date > compare_date else "online"
-            beacon_data = {"beacon_id":beacon.beacon_id, "state":online_state, "timer":beacon.timer,
-                "username":beacon.username, "platform":beacon.platform, "remote_ip":beacon.remote_ip,
-                "last_beacon":str(last_timestamp), "hostname":beacon.hostname}
-            beacon_list.append(beacon_data)
+        pipeline = [{"$lookup":{"from":"beacon_history","let":{"beacon_id":"$beacon_id"},"as":"output","pipeline":[
+            {"$match":{"$expr":{"$eq":["$$beacon_id","$beacon_id"]}}},{"$sort":{"timestamp":-1}},{"$limit":1}]}},
+            {"$unwind":"$output"},{"$addFields":{"statecheck":{"$add":["$output.timestamp",{"$multiply":["$timer",1500]}]}}},
+            {"$addFields":{"state":{"$cond":{"if":{"$gte":["$statecheck","$output.timestamp"]},"then":"Offline","else":"Online"}}}}]
 
-        return beacon_list
+        get_beacons = Beacons.objects(Q(platform__contains=args['platform']) & (
+            Q(username__contains=args['search']) | Q(hostname__contains=args['search'])
+            )).aggregate(*pipeline)
+
+        results = json.loads(loadbson(get_beacons))
+
+        return results
 
 api.add_resource(APIBeacons, '/api/v1/agents')
 
@@ -71,3 +70,27 @@ class APIBeacon(Resource):
         return result
 
 api.add_resource(APIBeacon, '/api/v1/agent/<string:beacon_id>')
+
+
+class APIBeaconTasks(Resource):
+    decorators = []
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('limit', type=int, required=True, location='args')
+        self.parser.add_argument('skip', type=int, required=True, location='args')
+
+    def get(self, beacon_id):
+        args = self.parser.parse_args()
+        if args['limit'] > 1000:
+            args['limit'] = 1000
+
+        beacon_history = BeaconHistory.objects(beacon_id=beacon_id).skip(args['skip']).limit(args['limit'])
+        history_count = BeaconHistory.objects.count()
+        json_object = json.loads(beacon_history.to_json())
+        result = {"data":json_object, "count":history_count}
+        return result
+
+api.add_resource(APIBeaconTasks, '/api/v1/agent/tasks/<string:beacon_id>')
+
+

