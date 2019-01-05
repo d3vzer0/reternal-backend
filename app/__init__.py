@@ -8,7 +8,7 @@ from app.tasks.task_celery import FlaskCelery
 
 #Initialize Flask Instance
 app = Flask(__name__)
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 api = Api(app)
 jwt = JWTManager(app)
 

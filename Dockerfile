@@ -10,10 +10,10 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # ENV JWT_SECRET
 # ENV FLASK_SECRET
 
-ARG CELERY_BROKER=redis://redis_service:6379
+ARG CELERY_BROKER=redis://redis-service:6379
 ENV CELERY_BROKER="${CELERY_BROKER}"
 
-ARG CELERY_BACKEND=redis://redis_service:6379
+ARG CELERY_BACKEND=redis://redis-service:6379
 ENV CELERY_BACKEND="${CELERY_BACKEND}"
 
 ARG MONGO_DB=reternal
