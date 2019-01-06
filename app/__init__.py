@@ -29,3 +29,4 @@ from app import api_payload
 from app import api_macros
 from app import api_startuptasks
 from app import api_stats
+from app import api_mapping
