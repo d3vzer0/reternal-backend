@@ -57,6 +57,7 @@ class Targets(db.Document):
 
 class Beacons(db.Document):
     beacon_id = db.StringField(max_length=150, required=True, unique=True)
+    timestamp =  db.DateTimeField(default=datetime.datetime.now)
     platform = db.StringField(max_length=25, required=True)
     username = db.StringField(max_length=100, required=True)
     remote_ip = db.StringField(max_length=39, required=True)
