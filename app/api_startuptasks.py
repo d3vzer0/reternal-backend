@@ -13,17 +13,17 @@ import json
 import datetime
 
 
-class APIBoot(Resource):
+class APIStartupTask(Resource):
     decorators = []
 
-    def delete(self, macro_id):
-        result = StartupTask.delete(macro_id)
+    def delete(self, startup_id):
+        result = StartupTask.delete(startup_id)
         return result
 
-api.add_resource(APIBoot, '/api/v1/startuptask/<string:boot_id>')
+api.add_resource(APIStartupTask, '/api/v1/startuptask/<string:startup_id>')
 
 
-class APIBoots(Resource):
+class APIStartupTasks(Resource):
     decorators = []
 
     def __init__(self):
@@ -49,4 +49,4 @@ class APIBoots(Resource):
         return result
 
 
-api.add_resource(APIBoots, '/api/v1/startuptasks')
+api.add_resource(APIStartupTasks, '/api/v1/startuptasks')

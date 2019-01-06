@@ -21,9 +21,9 @@ class StartupTask:
 
         return result
 
-    def delete(boot_id):
+    def delete(startup_id):
         try:
-            boot_object = StartupTasks.objects.get(id=boot_id).delete()
+            startup_object = StartupTasks.objects.get(id=startup_id).delete()
             result = {"result": "success", "data": "Succesfully deleted macro"}
 
         except mongoengine.errors.DoesNotExist:
