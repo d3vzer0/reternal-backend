@@ -21,8 +21,8 @@ class APIStats(Resource):
                 "month": {"$month":"$timestamp" },
                 "day": {"$dayOfMonth":"$timestamp" }, 
                 "hour":{"$hour":"$timestamp" }, 
-                "minute": {"$minute":"$timestamp" }}, 
-                "total": {"$sum": 1} }},{ "$sort" : { "_id.month" : -1, "_id.day" : -1, "_id.hour" : -1, "_id.minute" : -1 } }]
+                }, 
+                "total": {"$sum": 1} }},{ "$sort" : { "_id.month" : -1, "_id.day" : -1, "_id.hour" : -1 } }]
             last_week = datetime.today() - timedelta(days=7)
             stats = json.loads(bsonload(BeaconHistory.objects(timestamp__gte=last_week).order_by('-timestamp').aggregate(*pipeline)))
 
