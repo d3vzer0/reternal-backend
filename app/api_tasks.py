@@ -1,6 +1,6 @@
 import datetime, hashlib, random,json, urllib, time
 from app import app, api, celery, jwt
-from app.models import Tasks
+from app.models import Tasks, TaskResults
 from app.operations import Task
 from app.validators import Existance
 from flask import Flask, request, g
@@ -10,6 +10,7 @@ from flask_jwt_extended import (
     jwt_required, create_access_token,
     get_jwt_identity, get_jwt_claims
 )
+
 
 class APITasks(Resource):
     decorators = []

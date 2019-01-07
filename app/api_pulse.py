@@ -18,7 +18,7 @@ class APIPulse(Resource):
         self.args.add_argument('task_id', location='json', required=False, help='Task ID', type=str)
         parse_args = self.args.parse_args()
         if parse_args["task_id"] is None:
-            self.args.add_argument('platform', location='json', required=True, help='Platform')
+            self.args.add_argument('platform', location='json', required=True, help='Platform', choices=('darwin','windows','linux'))
             self.args.add_argument('username', location='json', required=True, help='Username')
             self.args.add_argument('hostname', location='json', required=True, help='Username')
             self.args.add_argument('data', location='json', required=True, help='Data', type=dict)

@@ -36,7 +36,7 @@ class Existance:
     def task(beacon_id, task_id):
         try:
             verify_task = Tasks.objects.get(beacon_id=beacon_id, id=task_id)
-            result = {"result":"success", "data":"Beacon has tasks available"}
+            result = {"result":"success", "data": verify_task}
 
         except mongoengine.errors.DoesNotExist:
             result = {"result":"failed", "data":"No tasks available for beacon"}
