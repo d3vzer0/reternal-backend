@@ -29,9 +29,10 @@ class Task:
 
         return result
 
-    def create(beacon_id, commands, start_date):
+    def create(beacon_id, commands, start_date, name):
         try:
             new_task = Tasks(
+                name=name,
                 start_date=start_date,
                 beacon_id=beacon_id,
                 commands=commands

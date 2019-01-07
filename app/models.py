@@ -97,6 +97,7 @@ class TaskCommands(db.EmbeddedDocument):
 
 
 class Tasks(db.Document):
+    name = db.StringField(max_length=150, required=True)
     beacon_id = db.StringField(max_length=150, required=True)
     start_date = db.DateTimeField(default=datetime.datetime.now())
     task_status = db.StringField(default="Open", choices=STATUSOPTIONS)
