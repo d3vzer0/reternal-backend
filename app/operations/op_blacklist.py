@@ -1,5 +1,5 @@
 import mongoengine
-from core.models import RevokedTokens
+from app.models import RevokedTokens
 
 class RevokeToken:
     def create(token):

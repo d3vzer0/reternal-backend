@@ -9,7 +9,8 @@ from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import (
     jwt_required, create_access_token,
-    get_jwt_identity, get_jwt_claims
+    get_jwt_identity, get_jwt_claims,
+    get_raw_jwt, jwt_refresh_token_required
 )
 
 @jwt.user_claims_loader
