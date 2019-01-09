@@ -4,10 +4,8 @@ from app import db
 from app.generic import Random
 
 
-class Macros(db.Document):
-    command = db.StringField(max_length=100, required=True)
-    input = db.StringField(max_length=900, required=False)
-    name = db.StringField(max_length=40, required=True, unique=True)
+class RevokedTokens(db.Document):
+    token = db.StringField(max_length=100, required=True, unique=True)
 
 
 ROLE_OPTIONS = ('user', 'admin')
@@ -37,6 +35,12 @@ class Users(db.Document):
 
     def get_id(self):
         return self.username
+
+
+class Macros(db.Document):
+    command = db.StringField(max_length=100, required=True)
+    input = db.StringField(max_length=900, required=False)
+    name = db.StringField(max_length=40, required=True, unique=True)
 
 
 class Credentials(db.Document):

@@ -21,3 +21,17 @@ class Authentication:
 
         except mongoengine.errors.DoesNotExist:
             return {"result":"failed", "data":"Username and/or Password incorrect"}
+
+
+    def blacklist(token):
+        try:
+            profile = RevokedTokens.objects.get(token=token)
+            result = True
+
+        except mongoengine.errors.DoesNotExist:
+            result = False
+
+        except Exception as err:
+            result = False
+            
+        return result
