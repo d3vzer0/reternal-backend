@@ -15,8 +15,8 @@ import json
 class APIRecipe(Resource):
     decorators = [jwt_required]
 
-    def delete(self, startup_id):
-        result = Recipe.delete(startup_id)
+    def delete(self, recipe_id):
+        result = Recipe.delete(recipe_id)
         return result
 
 api.add_resource(APIRecipe, '/api/v1/recipe/<string:recipe_id>')
