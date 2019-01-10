@@ -7,3 +7,4 @@ from app.operations.op_command import Command as Command
 from app.operations.op_pulse import Pulse as Pulse
 from app.operations.op_startuptask import StartupTask as StartupTask
 from app.operations.op_blacklist import RevokeToken as RevokeToken
+from app.operations.op_recipe import Recipe as Recipe

@@ -100,6 +100,11 @@ class TaskCommands(db.EmbeddedDocument):
     sleep = db.IntField(default=0)
 
 
+class Recipes(db.Document):
+    name = db.StringField(max_length=150, required=True, unique=True)
+    commands = db.EmbeddedDocumentListField('TaskCommands', required=True)
+
+
 class Tasks(db.Document):
     name = db.StringField(max_length=150, required=True)
     beacon_id = db.StringField(max_length=150, required=True)
