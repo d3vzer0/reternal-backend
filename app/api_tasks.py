@@ -13,7 +13,7 @@ from flask_jwt_extended import (
 
 
 class APITasks(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def __init__(self):
         self.parser = reqparse.RequestParser()
@@ -41,7 +41,7 @@ api.add_resource(APITasks, '/api/v1/tasks')
 
 
 class APITask(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def get(self, task_id):
         task_details = Task.get(task_id)

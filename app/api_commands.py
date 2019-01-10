@@ -12,7 +12,7 @@ import json
 
 
 class APICommands(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def get(self):
         get_commands = Commands.objects()

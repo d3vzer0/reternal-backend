@@ -14,7 +14,7 @@ from bson.json_util import dumps as loadbson
 
 
 class APIBeacons(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def __init__(self):
         self.parser = reqparse.RequestParser()
@@ -40,7 +40,7 @@ api.add_resource(APIBeacons, '/api/v1/agents')
 
 
 class APICredentials(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def get(self):
         credentials = Credentials.objects()
@@ -51,7 +51,7 @@ api.add_resource(APICredentials, '/api/v1/credentials')
 
 
 class APIBeacon(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def __init__(self):
         self.parser = reqparse.RequestParser()
@@ -73,7 +73,7 @@ api.add_resource(APIBeacon, '/api/v1/agent/<string:beacon_id>')
 
 
 class APIBeaconTasks(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def __init__(self):
         self.parser = reqparse.RequestParser()

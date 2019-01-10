@@ -14,7 +14,7 @@ import datetime
 
 
 class APIStartupTask(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def delete(self, startup_id):
         result = StartupTask.delete(startup_id)
@@ -24,7 +24,7 @@ api.add_resource(APIStartupTask, '/api/v1/startuptask/<string:startup_id>')
 
 
 class APIStartupTasks(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def __init__(self):
         self.parser = reqparse.RequestParser()

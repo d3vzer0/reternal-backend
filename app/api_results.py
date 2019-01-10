@@ -13,7 +13,7 @@ from flask_jwt_extended import (
 from bson.json_util import dumps as loadbson
 
 class APIResults(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def __init__(self):
         self.args = reqparse.RequestParser()
@@ -39,7 +39,7 @@ api.add_resource(APIResults, '/api/v1/results')
 
 
 class APIAttachment(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def get(self, task_id):
         task_result = TaskResults.objects.get(taskId=task_id)

@@ -13,7 +13,7 @@ import json
 from datetime import datetime, timedelta
 
 class APIStats(Resource):
-    decorators = []
+    decorators = [jwt_required]
     def get(self, stats_type):
         if stats_type == "pulse":
             pipeline = [{ "$group":{ "_id": { 

@@ -11,7 +11,7 @@ import json
 
 
 class APIMitreAggregate(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def __init__(self):
         self.args = reqparse.RequestParser()
@@ -37,7 +37,7 @@ api.add_resource(APIMitreAggregate, '/api/v1/mitre/techniques')
 
 
 class APIMitreDetails(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def get(self, technique_id):
         mitre_technique = Mitre.objects.get(technique_id=technique_id)
@@ -48,7 +48,7 @@ api.add_resource(APIMitreDetails, '/api/v1/mitre/technique/<string:technique_id>
 
 
 class APIMitrePhases(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def get(self):
         mitre_phases = Mitre.objects().distinct('kill_chain_phases')
@@ -57,7 +57,7 @@ class APIMitrePhases(Resource):
 api.add_resource(APIMitrePhases, '/api/v1/mitre/phases')
 
 class APIMitreDatasources(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def get(self):
         mitre_datasources = Mitre.objects().distinct('data_sources')

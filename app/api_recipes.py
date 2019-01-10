@@ -13,7 +13,7 @@ import json
 
 
 class APIRecipe(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def delete(self, startup_id):
         result = Recipe.delete(startup_id)
@@ -23,7 +23,7 @@ api.add_resource(APIRecipe, '/api/v1/recipe/<string:recipe_id>')
 
 
 class APIRecipes(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def __init__(self):
         self.parser = reqparse.RequestParser()

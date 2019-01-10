@@ -12,7 +12,7 @@ import os
 import base64
 
 class APIPayloads(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def get(self):
         payload_types = [
@@ -34,8 +34,7 @@ api.add_resource(APIPayloads, '/api/v1/payloads')
 
 
 class APIPayload(Resource):
-    decorators = []
-
+    decorators = [jwt_required]
 
     def __init__(self):
         self.args = reqparse.RequestParser()
