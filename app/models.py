@@ -128,13 +128,18 @@ class Commands(db.Document):
     platform = db.ListField(db.StringField(max_length=50, default="all"))
 
 
-class MitreCommands(db.Document):
+class CommandMapping(db.Document):
+    author = db.StringField(max_length=100, required=False)
+    name = db.StringField(max_length=100, required=True, unique_with=['technique_id', 'platform', 'kill_chain_phase'])
+    description = db.StringField(max_length=200, required=False)
+    reference = db.StringField(max_length=100, required=False, default=None)
+
     technique_id = db.StringField(max_length=200, required=True)
+    technique_name = db.StringField(max_length=100, required=True)
     external_id = db.StringField(max_length=100, required=True)
     kill_chain_phase = db.StringField(max_length=100, required=True)
-    commands = db.EmbeddedDocumentListField('TaskCommands', required=True)
     platform = db.StringField(max_length=30, choices=PLATFORMS, required=True)
-    name = db.StringField(max_length=100, required=True) 
+    commands = db.EmbeddedDocumentListField('TaskCommands', required=True)
 
 
 class MitreReferences(db.EmbeddedDocument):
