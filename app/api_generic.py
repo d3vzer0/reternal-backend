@@ -14,6 +14,7 @@ from flask_jwt_extended import (
     create_refresh_token
 )
 
+
 @jwt.user_claims_loader
 def add_claims_to_access_token(user):
     result = {'role':user.role}
@@ -41,10 +42,8 @@ def check_if_token_in_blacklist(decrypted_token):
 class APILogin(Resource):
     def __init__(self):
         self.args = reqparse.RequestParser()
-        self.username = self.args.add_argument('username', location='json',
-                                               required=True, help='Username')
-        self.password = self.args.add_argument('password', location='json',
-                                               required=True, help='Password')
+        self.username = self.args.add_argument('username', location='json', required=True, help='Username')
+        self.password = self.args.add_argument('password', location='json', required=True, help='Password')
 
     def post(self):
         args = self.args.parse_args()
