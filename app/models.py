@@ -3,38 +3,25 @@ import random, string
 from app import db
 from app.generic import Random
 
+PLATFORMS = ('Windows', 'Linux', 'All', 'macOS')
+STATUSOPTIONS = ('Processed', 'Open', 'Processing')
+TYPEOPTIONS = ('Manual', 'Mitre', 'Actor')
+ROLEOPTIONS = ('User', 'Admin')
 
 class RevokedTokens(db.Document):
     token = db.StringField(max_length=100, required=True, unique=True)
 
 
-ROLE_OPTIONS = ('user', 'admin')
 class Users(db.Document):
     username = db.StringField(max_length=50, required=True, unique=True)
     password = db.StringField(max_length=128, required=True)
     salt = db.StringField(default=Random.create(20), max_length=20, required=True)
-
-    role = db.StringField(max_length=20, required=True, default="User", choices=ROLE_OPTIONS)
+    role = db.StringField(max_length=20, required=True, default="User", choices=ROLEOPTIONS)
     email = db.EmailField(required=True)
 
     meta = {
         'ordering': ['-username'],
     }
-
-    @property
-    def is_authenticated(self):
-        return True
-
-    @property
-    def is_active(self):
-        return True
-
-    @property
-    def is_anonymous(self):
-        return False
-
-    def get_id(self):
-        return self.username
 
 
 class Macros(db.Document):
@@ -91,10 +78,9 @@ class BeaconHistory(db.Document):
         'ordering': ['-timestamp']
     }
 
-
-STATUSOPTIONS = ('Processed', 'Open', 'Processing')
 class TaskCommands(db.EmbeddedDocument):
-    type = db.StringField(max_length=50, required=True)
+    reference = db.StringField(max_length=100, required=False, default=None)
+    type = db.StringField(max_length=50, required=True, choices=TYPEOPTIONS)
     name = db.StringField(max_length=150, required=True)
     input = db.StringField(max_length=900, required=False)
     sleep = db.IntField(default=0)
@@ -115,6 +101,7 @@ class Tasks(db.Document):
         'ordering': ['-start_date']
     }
 
+
 class StartupTasks(db.Document):
     name = db.StringField(max_length=150, required=True, unique=True)
     platform = db.StringField(max_length=150, required=True)
@@ -129,24 +116,26 @@ class TaskResults(db.Document):
     input = db.StringField(max_length=900, required=True)
     end_date = db.DateTimeField(default=datetime.datetime.now)
     output = db.FileField()
+    meta = {
+        'ordering': ['-end_date'],
+    }
 
 
 class Commands(db.Document):
     name = db.StringField(max_length=100, required=True, unique=True)
-    type = db.StringField(max_length=20, required=True)
+    reference = db.StringField(max_length=100, required=False, default=None)
+    type = db.StringField(max_length=20, required=True, choices=TYPEOPTIONS)
     platform = db.ListField(db.StringField(max_length=50, default="all"))
 
-
-PLATFORMS = ('Windows', 'Linux', 'All', 'macOS')
 
 class MitreCommands(db.Document):
     technique_id = db.StringField(max_length=200, required=True)
     external_id = db.StringField(max_length=100, required=True)
     kill_chain_phase = db.StringField(max_length=100, required=True)
     commands = db.EmbeddedDocumentListField('TaskCommands', required=True)
-    metta_id = db.StringField(max_length=105)
     platform = db.StringField(max_length=30, choices=PLATFORMS, required=True)
     name = db.StringField(max_length=100, required=True) 
+
 
 class MitreReferences(db.EmbeddedDocument):
     external_id = db.StringField(max_length=100)
