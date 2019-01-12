@@ -160,12 +160,3 @@ class Mitre(db.Document):
     data_sources = db.ListField(db.StringField(max_length=100))
     detection = db.StringField(max_length=1000)
 
-
-class RecipeTechniques(db.EmbeddedDocument):
-    technique = db.ReferenceField('Mitre')
-    idle_time = db.IntField()
-
-
-class Recipe(db.Document):
-    name = db.StringField(max_length=100)
-    techniques = db.EmbeddedDocumentListField(RecipeTechniques)

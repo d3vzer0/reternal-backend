@@ -10,7 +10,7 @@ from flask_jwt_extended import (
 
 
 class APIPulse(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def __init__(self):
         self.args = reqparse.RequestParser()
