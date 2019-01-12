@@ -27,14 +27,15 @@ class APITasks(Resource):
 
     def post(self):
         args = self.parser.parse_args()
+        print(args.commands)
         verify_beacon = Existance.beacon(beacon_id=args['beacon_id'])
         if verify_beacon['result'] == "success":
-            start_date = datetime.datetime.fromtimestamp(args['start_date'])
-            result = Task.create(args['beacon_id'], args['commands'], start_date, args['name'])
+            start_date = datetime.datetime.fromtimestamp(args.start_date)
+            result = Task.create(args.beacon_id, args.commands, start_date, args.name)
         else:
             result = {"tasks":[]}
 
-        return result
+        return "result"
 
  
 api.add_resource(APITasks, '/api/v1/tasks')
