@@ -33,7 +33,7 @@ class APIResults(Resource):
             "pipeline":[{"$match":{"$expr":{"$and":[{"$eq":["$_id", "$$file_id"]}, {"$eq":["$contentType", content_mapping[args.content_type]]}]}}}]}},{'$unwind':'$file'}]
         task_results = TaskResults.objects(beacon_id=args.beacon_id).aggregate(*pipeline)
         results = json.loads(loadbson(task_results))
-        return results
+        return {'count':0, 'data':results}
 
 
 
