@@ -3,16 +3,29 @@ import mongoengine
 
 
 class Beacon:
-    def create(beacon_id, beacon_os, username, timer, hostname, beacon_data, working_dir, remote_ip=""):
+    def __init__(self, beacon_id):
+        self.beacon_id = beacon_id
+
+    def get(self):
+        try:
+            beacon_object = Beacons.objects.get(beacon_id=self.beacon_id)
+            result = {"result":"success", "data":"Beacon exists"}
+
+        except mongoengine.errors.DoesNotExist:
+            result = {"result":"failed", "data":"Beacon does not exist"}
+
+        except Exception as err:
+            result = {"result":"failed", "data":"Unable to query beacon"}
+
+        return result
+
+
+    def create(self, beacon_os, username, timer, hostname, beacon_data, working_dir, remote_ip=""):
         try:
             beacon_object = Beacons(
-                beacon_id=beacon_id,
-                platform=beacon_os,
-                data=beacon_data,
-                hostname=hostname,
-                username=username,
-                working_dir=working_dir,
-                remote_ip=remote_ip
+                beacon_id=self.beacon_id, platform=beacon_os,
+                data=beacon_data, hostname=hostname, username=username,
+                working_dir=working_dir, remote_ip=remote_ip
             ).save()
 
             result = {"result": "success", "data": "Beacon succesfully added"}
@@ -21,32 +34,11 @@ class Beacon:
             result = {"result": "failed", "message": "Beacon already exists"}
 
         except Exception as err:
-            result = {"result": "failed",
-                      "data": "Unable to add beacon to database"}
+            result = {"result": "failed", "data": "Unable to add beacon to database"}
 
         return result
 
-    def pulse(beacon_id, platform, username, hostname, data, working_dir, remote_ip):
-        try:
-            history_object = BeaconHistory(
-                beacon_id=beacon_id,
-                remote_ip=remote_ip,
-                hostname=hostname,
-                data=data,
-                platform=platform,
-                working_dir=working_dir,
-                username=username,
-            ).save()
-
-            result = {"result": "success", "data": "Beacon history succesfully added"}
-
-        except Exception as err:
-            result = {"result": "failed",
-                      "data": "Unable to add beacon history to database"}
-
-        return result
-
-    def results(beacon_id, task_id):
+    def results(self, beacon_id, task_id):
         try:
             pipeline = [{"$lookup": {"from": "task_results", "localField": "_id","foreignField": "task_id", "as": "taskdetails"}}]
             task_aggregation = TaskResults.objects(beacon_id=beacon_id, task_id=task_id).aggregate(*pipeline)

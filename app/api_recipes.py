@@ -1,7 +1,6 @@
 from app import app, api, celery, jwt
 from app.models import Recipes
 from app.operations import Recipe
-from app.validators import Existance
 from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import (

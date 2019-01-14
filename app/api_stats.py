@@ -1,7 +1,6 @@
 from app import app, api, celery, jwt
 from app.models import Macros, Beacons, BeaconHistory
 from app.operations import Macro
-from app.validators import Existance
 from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import (

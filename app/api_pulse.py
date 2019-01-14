@@ -1,6 +1,6 @@
 
 from app import app, api, celery, jwt
-from app.operations import Pulse
+from app.processors import Pulse, Response
 from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import (
@@ -42,10 +42,9 @@ class APIPulse(Resource):
         args = self.args.parse_args()
         if args['task_id'] is None and "platform" in args :
             args['platform'] = platform_mapping[args['platform']]
-            result = Pulse.process(args, remote_ip, 'http')
-            # result = {"tasks":[]}
+            result = Pulse(args.beacon_id).process(args, remote_ip, 'http')
         else:
-            result = Pulse.result(args['beacon_id'], args['task_id'], args['command'], args['type'], args['input'], args['output'])
+            result = Response(args.beacon_id, args.task_id).process(args)
         return result
 
 api.add_resource(APIPulse, '/api/v1/ping')

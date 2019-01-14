@@ -2,7 +2,6 @@ import datetime, hashlib, random,json, urllib, time
 from app import app, api, celery, jwt
 from app.models import Commands, Tasks, TaskResults, BeaconHistory
 from app.operations import Task, Result
-from app.validators import Existance
 from flask import Flask, request, g, make_response
 from flask_restful import Api, Resource, reqparse
 from mongoengine.queryset.visitor import Q

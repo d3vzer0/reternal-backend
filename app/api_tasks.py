@@ -2,8 +2,7 @@ import datetime, hashlib, random,json, urllib, time
 from bson.json_util import dumps as loadbson
 from app import app, api, celery, jwt
 from app.models import Tasks, TaskResults
-from app.operations import Task
-from app.validators import Existance
+from app.operations import Task, Beacon
 from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse
 from mongoengine.queryset.visitor import Q
@@ -37,10 +36,10 @@ class APITasks(Resource):
 
     def post(self):
         args = self.args.parse_args()
-        verify_beacon = Existance.beacon(beacon_id=args['beacon_id'])
+        verify_beacon = Beacon(args.beacon_id).get()
         if verify_beacon['result'] == "success":
             start_date = datetime.datetime.fromtimestamp(args.start_date)
-            result = Task.create(args.beacon_id, args.commands, start_date, args.name)
+            result = Task().create(args.beacon_id, args.commands, start_date, args.name)
         else:
             result = verify_beacon
 

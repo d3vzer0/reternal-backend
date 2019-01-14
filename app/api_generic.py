@@ -3,8 +3,7 @@ import random
 import json
 from app import app, api, celery, jwt
 from app.models import Users
-from app.operations import User, RevokeToken
-from app.validators import Authentication, Permissions
+from app.operations import User, Token
 from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import (
@@ -35,7 +34,7 @@ def expired_token_callback():
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
-    is_revoked = Authentication.blacklist(jti)
+    is_revoked = Token.verify(jti)
     return is_revoked
 
 
@@ -47,7 +46,7 @@ class APILogin(Resource):
 
     def post(self):
         args = self.args.parse_args()
-        validate = Authentication.login(args['username'], args['password'])
+        validate = User(args.username).login(args.password)
         if validate['result'] == 'success':
             username = str(validate['data'].username)
             access_token = create_access_token(identity=validate['data'])
@@ -78,7 +77,7 @@ class APILogoutRefresh(Resource):
     decorators = [jwt_refresh_token_required]
     def get(self):
         jti = get_raw_jwt()['jti']
-        revoke_token = RevokeToken.create(jti)
+        revoke_token = Token(jti).blacklist()
         return revoke_token
 
 api.add_resource(APILogoutRefresh, '/api/v1/logout/refresh')
@@ -88,7 +87,7 @@ class APILogout(Resource):
     decorators = [jwt_required]
     def get(self):
         jti = get_raw_jwt()['jti']
-        revoke_token = RevokeToken.create(jti)
+        revoke_token = Token(jti).blacklist()
         return revoke_token
 
 api.add_resource(APILogout, '/api/v1/logout/token')
@@ -142,16 +141,12 @@ class APIUser(Resource):
         get_user = User().get(user_id)
         return get_user
 
-    def delete(self, user_id=None):
+    def delete(self, target_user=None):
         if user_id is None:
             result = {"result": "failed", "message": "Requires user ID"}
         else:
             current_user = str(g.currentUser.id)
-            validate_admin = Permissions.delete_user(current_user, user_id)
-            if validate_admin['result'] == "success":
-                result = User().delete(user_id)
-            else:
-                result = validate_admin
+            result = User(current_user).delete(target_user)
 
         return result
 
@@ -159,4 +154,4 @@ class APIUser(Resource):
         args = self.args.parse_args()
 
 
-api.add_resource(APIUser, '/api/v1/user', '/api/v1/user/<string:user_id>')
+api.add_resource(APIUser, '/api/v1/user', '/api/v1/user/<string:target_user>')
