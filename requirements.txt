@@ -27,3 +27,5 @@ Werkzeug
 WTForms
 flask-jwt-extended
 flask-cors
+flask_socketio
+

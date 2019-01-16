@@ -9,15 +9,15 @@ from app.tasks.task_celery import FlaskCelery
 
 #Initialize Flask Instance
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:8080"}})
 api = Api(app)
 jwt = JWTManager(app)
-socketio = SocketIO(app)
 
 # Initialize DB and load models and views
 from  app.configs import *
+socketio = SocketIO(app, message_queue=app.config['CELERY_BACKEND'])
 db = MongoEngine(app)
-celery = FlaskCelery.make(app)
+celery = FlaskCelery(app).make()
+CORS(app, resources={r"/api/*": {"origins": app.config['CORS_DOMAIN']}})
 
 # Import views
 from app import api_generic
