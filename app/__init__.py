@@ -4,13 +4,15 @@ from flask_restful import Api, Resource
 from flask_mongoengine import MongoEngine
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from flask_socketio import SocketIO
 from app.tasks.task_celery import FlaskCelery
 
 #Initialize Flask Instance
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:8080"}})
 api = Api(app)
 jwt = JWTManager(app)
+socketio = SocketIO(app)
 
 # Initialize DB and load models and views
 from  app.configs import *
@@ -31,3 +33,4 @@ from app import api_startuptasks
 from app import api_stats
 from app import api_mapping
 from app import api_recipes
+from app.sockets import so_connect

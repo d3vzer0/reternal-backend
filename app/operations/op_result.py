@@ -19,24 +19,6 @@ class Result:
             result = {"result": "failed", "data": "Failed to save task results"}
 
         return result
-
-    # def store_creds(beacon_id, application, username, key, key_type):
-    #     try:
-    #         credential = Credentials(
-    #             source_beacon=beacon_id,
-    #             source_command=application,
-    #             username=username,
-    #             key=key,
-    #             type=key_type,
-    #         ).save()
-    #         result = {"result": "success",
-    #                     "data": "Successfully added credentials to db"}
-
-    #     except Exception as err:
-    #         result = {"result": "failed", "data": "Unable to save credentials"}
-
-    #     return result
-
    
 
     def change_timer(beacon_id, new_timer):
