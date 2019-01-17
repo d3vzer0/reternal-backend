@@ -42,11 +42,10 @@ def connectsocket():
 def authenticate(token):
     sid = request.sid
     decode_token = jwt_validate(token['access_token'])
-    print(decode_token)
     if decode_token['result'] == 'success':
         socket_key = 'socket-%s' %(sid)
         session_key = 'session-%s' %(decode_token['data']['identity'])
         rsession.set(socket_key, 'Authenticated', ex=2500)
-        rsession.set(session_key, sid, ex=1200)
+        rsession.set(session_key, sid, ex=2500)
     else:
         disconnect()

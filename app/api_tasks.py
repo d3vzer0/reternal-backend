@@ -1,5 +1,6 @@
 import datetime, hashlib, random,json, urllib, time
 from bson.json_util import dumps as loadbson
+from app.sockets import rsession
 from app import app, api, jwt
 from app.models import Tasks, TaskResults
 from app.operations import Task, Beacon
@@ -40,6 +41,8 @@ class APITasks(Resource):
         if verify_beacon['result'] == "success":
             start_date = datetime.datetime.fromtimestamp(args.start_date)
             result = Task().create(args.beacon_id, args.commands, start_date, args.name)
+            task_key = 'task-%s' %(result['data']['task_id'])
+            rsession.set(task_key, get_jwt_identity(), ex=3600)
         else:
             result = verify_beacon
 
