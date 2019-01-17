@@ -11,13 +11,4 @@ class FlaskCelery:
         celery.conf.task_routes = celery_routes
         celery.conf.broker_transport_options = {'fanout_prefix': True}
         celery.conf.broker_transport_options = {'fanout_patterns': True}
-        TaskBase = celery.Task
-
-        class ContextTask(TaskBase):
-            abstract = True
-
-            def __call__(self, *args, **kwargs):
-                with self.app.app_context():
-                    return TaskBase.__call__(self, *args, **kwargs)
-        celery.Task = ContextTask
         return celery

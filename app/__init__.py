@@ -16,14 +16,12 @@ jwt = JWTManager(app)
 from  app.configs import *
 socketio = SocketIO(app, message_queue=app.config['CELERY_BACKEND'])
 db = MongoEngine(app)
-celery = FlaskCelery(app).make()
 CORS(app, resources={r"/api/*": {"origins": app.config['CORS_DOMAIN']}})
 
 # Import views
 from app import api_generic
 from app import api_mitre
 from app import api_commands
-from app import api_pulse
 from app import api_beacon
 from app import api_results
 from app import api_tasks

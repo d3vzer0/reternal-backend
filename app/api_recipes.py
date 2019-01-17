@@ -1,4 +1,4 @@
-from app import app, api, celery, jwt
+from app import app, api, jwt
 from app.models import Recipes
 from app.operations import Recipe
 from flask import Flask, request, g

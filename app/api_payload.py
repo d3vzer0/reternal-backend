@@ -1,4 +1,5 @@
-from app import app, api, celery, jwt
+from app import app, api, jwt
+from app.runner import celery
 from flask import make_response
 from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import (

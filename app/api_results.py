@@ -1,5 +1,5 @@
 import datetime, hashlib, random,json, urllib, time
-from app import app, api, celery, jwt
+from app import app, api, jwt
 from app.models import Commands, Tasks, TaskResults, BeaconHistory
 from app.operations import Task, Result
 from flask import Flask, request, g, make_response

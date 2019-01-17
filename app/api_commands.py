@@ -1,4 +1,4 @@
-from app import app, api, celery, jwt
+from app import app, api, jwt
 from app.models import Commands
 from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse

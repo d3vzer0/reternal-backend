@@ -1,6 +1,6 @@
 import datetime, hashlib, random,json, urllib, time
 from bson.json_util import dumps as loadbson
-from app import app, api, celery, jwt
+from app import app, api, jwt
 from app.models import Tasks, TaskResults
 from app.operations import Task, Beacon
 from flask import Flask, request, g

@@ -1,4 +1,4 @@
-from app import app, api, celery, jwt
+from app import app, api, jwt
 from app.models import StartupTasks
 from app.operations import StartupTask
 from flask import Flask, request, g

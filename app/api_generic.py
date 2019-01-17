@@ -1,7 +1,7 @@
 import hashlib
 import random
 import json
-from app import app, api, celery, jwt
+from app import app, api, jwt
 from app.models import Users
 from app.operations import User, Token
 from flask import Flask, request, g
