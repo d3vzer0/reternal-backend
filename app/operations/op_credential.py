@@ -1,5 +1,6 @@
 from app.models import Credentials
 
+
 class Credential:
     def __init__(self, **kwargs):
           self.kwargs = kwargs

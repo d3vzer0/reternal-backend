@@ -14,9 +14,11 @@ jwt = JWTManager(app)
 
 # Initialize DB and load models and views
 from  app.configs import *
+celery = FlaskCelery(app).make()
 socketio = SocketIO(app, message_queue=app.config['CELERY_BACKEND'])
 db = MongoEngine(app)
 CORS(app, resources={r"/api/*": {"origins": app.config['CORS_DOMAIN']}})
+
 
 # Import views
 from app import api_generic
