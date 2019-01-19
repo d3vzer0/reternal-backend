@@ -11,7 +11,7 @@ import json
 
 
 class APIMapping(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def __init__(self):
         self.args = reqparse.RequestParser()
