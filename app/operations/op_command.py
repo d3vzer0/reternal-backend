@@ -20,7 +20,7 @@ class Command:
 
     def get(self):
         try:
-            commands = Commands.objects.get(name=self.command, type=command_type).save()
+            commands = Commands.objects.get(name=self.command).save()
             result = {"result":"success", "data":commands}
 
         except mongoengine.errors.DoesNotExist:
@@ -28,3 +28,5 @@ class Command:
 
         except Exception as err:
             result = {"result": "failed", "message": "Error querying DB"}
+
+        return result

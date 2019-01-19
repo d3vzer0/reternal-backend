@@ -11,24 +11,27 @@ import json
 
 
 class APIMapping(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def __init__(self):
         self.args = reqparse.RequestParser()
-        self.args.add_argument('name', location='args', help='Technique_name', default="")
-        self.args.add_argument('phase', location='args', help='Phase', default="")
+        self.args.add_argument('name', location='args', help='Technique_name', default='')
+        self.args.add_argument('phase', location='args', help='Phase', default='')
         self.args.add_argument('platform', location='args', help='Platform', default="Windows")
-  
+        self.args.add_argument('technique', location='args', help='Technique', default='')
+        self.args.add_argument('distinct', location='args', help='Distinct', required=False,
+            choices=('technique_name', 'kill_chain_phase'))
+
     def get(self):
         args = self.args.parse_args()
-        pipeline = [{'$group':{'_id':{'kill_chain_phase':'$kill_chain_phase'},'techniques':{'$push': 
-            {'_id':'$_id', 'technique_id':'$technique_id', 'name':'$name', 'technique_name':'$technique_name'}}}}]
         mitre_objects = CommandMapping.objects(platform__contains=args['platform'],
-            technique_id__contains=args['name'], kill_chain_phase__contains=args['phase']).aggregate(*pipeline)
-        json_object = json.loads(dumps(mitre_objects))
-        return json_object
+            technique_id__contains=args['name'], technique_name__contains=args['technique'], 
+            kill_chain_phase__contains=args['phase'])
+        result = mitre_objects.distinct(field=args.distinct) if args.distinct else json.loads(mitre_objects.to_json())
+        return result
 
-api.add_resource(APIMapping, '/api/v1/mitre/mapping')
+api.add_resource(APIMapping, '/api/v1/mapping')
+
 
 
 class APIMappingDetails(Resource):
