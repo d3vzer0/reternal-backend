@@ -1,0 +1,13 @@
+language: python
+python:
+  - 3.6
+
+services:
+  - docker
+
+install:
+  - docker build -t reternal-backend .
+  - docker run -e "JWT_SECRET=test_build_token_jwt" -e "FLASK_SECRET=test_build_token_flask" -d -p 127.0.0.1:5000:5000 --name reternal-backend reternal-backend
+
+script:
+  - docker ps | grep -q reternal-backend
