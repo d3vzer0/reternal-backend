@@ -5,6 +5,7 @@ import os
 
 # Todo - set MongoDB username and Password as variables for DB
 app.config['SECRET_KEY'] = os.environ["FLASK_SECRET"]
+app.config['FLASK_PORT'] = int(os.environ['FLASK_PORT'])
 app.config['CELERY_BACKEND'] = os.environ["CELERY_BACKEND"]
 app.config['CELERY_BROKER'] = os.environ['CELERY_BROKER']
 app.config['REDIS_IP'] = os.environ['REDIS_IP']
