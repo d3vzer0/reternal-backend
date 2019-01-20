@@ -55,21 +55,29 @@ class APIBeacon(Resource):
 
     def __init__(self):
         self.parser = reqparse.RequestParser()
+        self.parser.add_argument('beacon_id', type=str, required=True, location='args')
         self.parser.add_argument('limit', type=int, required=True, location='args')
         self.parser.add_argument('skip', type=int, required=True, location='args')
+        self.parser.add_argument('start_date', type=int, required=False, location='args', default=1514764800)
+        self.parser.add_argument('end_date', type=int, required=False, location='args',
+            default=int(datetime.datetime.now().timestamp()))
 
-    def get(self, beacon_id):
+    def get(self):
         args = self.parser.parse_args()
         if args['limit'] > 1000:
             args['limit'] = 1000
 
-        beacon_history = BeaconHistory.objects(beacon_id=beacon_id).skip(args['skip']).limit(args['limit'])
+        start_date = datetime.datetime.fromtimestamp(args.start_date )
+        end_date = datetime.datetime.fromtimestamp(args.end_date)
+        beacon_history = BeaconHistory.objects(beacon_id=args.beacon_id, timestamp__lte=end_date,
+            timestamp__gte=start_date).skip(args['skip']).limit(args['limit'])
+
         history_count = BeaconHistory.objects.count()
         json_object = json.loads(beacon_history.to_json())
         result = {"data":json_object, "count":history_count}
         return result
 
-api.add_resource(APIBeacon, '/api/v1/agent/<string:beacon_id>')
+api.add_resource(APIBeacon, '/api/v1/history')
 
 
 class APIBeaconTasks(Resource):

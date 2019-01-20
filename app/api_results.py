@@ -20,6 +20,10 @@ class APIResults(Resource):
             content_choices = ('image', 'text', 'other')
             self.args.add_argument('beacon_id', location='args', required=True, help='Beacon ID', type=str)
             self.args.add_argument('content_type', location='args', required=True, help='Content Type (Magic)', choices=content_choices, type=str)
+            self.args.add_argument('name', type=str, required=False, default='')
+            self.args.add_argument('start_date', type=int, required=False, location='args', default=1514764800)
+            self.args.add_argument('end_date', type=int, required=False, location='args',
+                default=int(datetime.datetime.now().timestamp()))
 
     def get(self):
         args = self.args.parse_args()
@@ -29,10 +33,15 @@ class APIResults(Resource):
             'other':''
         }
         pipeline = [{'$lookup': {"from":"fs.files", "as":"file", "let":{"file_id":"$output"},
-            "pipeline":[{"$match":{"$expr":{"$and":[{"$eq":["$_id", "$$file_id"]}, {"$eq":["$contentType", content_mapping[args.content_type]]}]}}}]}},{'$unwind':'$file'}]
-        task_results = TaskResults.objects(beacon_id=args.beacon_id).aggregate(*pipeline)
+            "pipeline":[{"$match":{"$expr":{"$and":[{"$eq":["$_id", "$$file_id"]}, {"$eq":["$contentType",
+            content_mapping[args.content_type]]}]}}}]}},{'$unwind':'$file'}]
+
+        start_date = datetime.datetime.fromtimestamp(args.start_date )
+        end_date = datetime.datetime.fromtimestamp(args.end_date)
+        task_results = TaskResults.objects(beacon_id=args.beacon_id, end_date__gte=start_date,
+            end_date__lte=end_date, task_id__in=Tasks.objects(name__contains=args.name)).aggregate(*pipeline)
         results = json.loads(loadbson(task_results))
-        return {'count':0, 'data':results}
+        return {'count':len(results), 'data':results}
 
 
 

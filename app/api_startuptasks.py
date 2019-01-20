@@ -26,24 +26,24 @@ class APIStartupTasks(Resource):
     decorators = [jwt_required]
 
     def __init__(self):
-        self.parser = reqparse.RequestParser()
+        self.args = reqparse.RequestParser()
         if request.method == 'POST':
-            self.parser.add_argument('commands', type=list, required=True, location='json')
-            self.parser.add_argument('platform', type=str, required=True, location='json', choices=("Windows", "Linux", "macOS"))
-            self.parser.add_argument('name', type=str, required=True, location='json')
+            self.args.add_argument('commands', type=list, required=True, location='json')
+            self.args.add_argument('platform', type=str, required=True, location='json', choices=("Windows", "Linux", "macOS"))
+            self.args.add_argument('name', type=str, required=True, location='json')
 
         if request.method == 'GET':
-            self.parser.add_argument('platform', type=str, required=True, location='args', choices=("Windows", "Linux", "macOS"))
+            self.args.add_argument('platform', type=str, required=True, location='args', choices=("Windows", "Linux", "macOS"))
 
 
     def get(self):
-        args = self.parser.parse_args()
+        args = self.args.parse_args()
         startup_tasks = StartupTasks.objects(platform=args.platform)
         result = json.loads(startup_tasks.to_json())
         return result
 
     def post(self):
-        args = self.parser.parse_args()
+        args = self.args.parse_args()
         result = StartupTask.create(args.platform, args.commands, args.name)
         return result
 

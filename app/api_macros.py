@@ -26,10 +26,10 @@ class APIMacros(Resource):
 
     def __init__(self):
         if request.method == 'POST':
-            self.parser = reqparse.RequestParser()
-            self.parser.add_argument('name', type=str, required=True, location='json')
-            self.parser.add_argument('command', type=str, required=True, location='json')
-            self.parser.add_argument('input', type=str, required=True, location='json')
+            self.args = reqparse.RequestParser()
+            self.args.add_argument('name', type=str, required=True, location='json')
+            self.args.add_argument('command', type=str, required=True, location='json')
+            self.args.add_argument('input', type=str, required=True, location='json')
 
 
     def get(self):
@@ -39,7 +39,7 @@ class APIMacros(Resource):
 
 
     def post(self):
-        args = self.parser.parse_args()
+        args = self.args.parse_args()
         verify_command = Command(args.command).get()
         if verify_command['result'] == "success":
             result = Macro.create(args.name, args.command, args.input)

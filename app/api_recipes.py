@@ -25,10 +25,10 @@ class APIRecipes(Resource):
     decorators = [jwt_required]
 
     def __init__(self):
-        self.parser = reqparse.RequestParser()
+        self.args = reqparse.RequestParser()
         if request.method == 'POST':
-            self.parser.add_argument('commands', type=list, required=True, location='json')
-            self.parser.add_argument('name', type=str, required=True, location='json')
+            self.args.add_argument('commands', type=list, required=True, location='json')
+            self.args.add_argument('name', type=str, required=True, location='json')
 
     def get(self):
         recipes = Recipes.objects()
@@ -36,7 +36,7 @@ class APIRecipes(Resource):
         return result
 
     def post(self):
-        args = self.parser.parse_args()
+        args = self.args.parse_args()
         result = Recipe.create(args.name, args.commands)
         return result
 
