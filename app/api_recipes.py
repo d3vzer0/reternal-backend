@@ -12,13 +12,21 @@ import json
 
 
 class APIRecipe(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
-    def delete(self, recipe_id):
-        result = Recipe.delete(recipe_id)
+    def get(self, recipe):
+        pipeline = [{ '$unwind': '$commands' },{'$lookup': {'from':'command_mapping',
+            'localField':'commands.reference', 'foreignField':'_id', 'as':'metadata'},},
+            {'$unwind': {'path':'$metadata', 'preserveNullAndEmptyArrays':True}}]
+        recipes = Recipes.objects(name=recipe).aggregate(*pipeline)
+        result = json.loads(dumps(recipes))
         return result
 
-api.add_resource(APIRecipe, '/api/v1/recipe/<string:recipe_id>')
+    def delete(self, recipe):
+        result = Recipe(recipe).delete()
+        return result
+
+api.add_resource(APIRecipe, '/api/v1/recipe/<string:recipe>')
 
 
 class APIRecipes(Resource):
@@ -37,7 +45,7 @@ class APIRecipes(Resource):
 
     def post(self):
         args = self.args.parse_args()
-        result = Recipe.create(args.name, args.commands)
+        result = Recipe(args.name).create(args.commands)
         return result
 
 

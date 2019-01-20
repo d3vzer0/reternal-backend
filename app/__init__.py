@@ -33,4 +33,5 @@ from app import api_startuptasks
 from app import api_stats
 from app import api_mapping
 from app import api_recipes
+from app    import api_network
 from app.sockets import so_connect

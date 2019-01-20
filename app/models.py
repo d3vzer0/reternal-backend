@@ -79,7 +79,7 @@ class BeaconHistory(db.Document):
     }
 
 class TaskCommands(db.EmbeddedDocument):
-    reference = db.StringField(max_length=100, required=False, default=None)
+    reference = db.ReferenceField('CommandMapping', required=False)
     type = db.StringField(max_length=50, required=True, choices=TYPEOPTIONS)
     name = db.StringField(max_length=150, required=True)
     input = db.StringField(max_length=900, required=False)
@@ -126,6 +126,7 @@ class Commands(db.Document):
     reference = db.StringField(max_length=100, required=False, default=None)
     type = db.StringField(max_length=20, required=True, choices=TYPEOPTIONS)
     platform = db.ListField(db.StringField(max_length=50, default="all"))
+
 
 
 class CommandMapping(db.Document):
