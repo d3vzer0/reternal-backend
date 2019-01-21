@@ -40,7 +40,7 @@ class APIPayload(Resource):
     def __init__(self):
         self.args = reqparse.RequestParser()
         self.args.add_argument('platform', location='args', default="darwin", help='Platform', choices=("windows", "linux", "darwin"))
-        self.args.add_argument('base_url', location='args', help='Base URL', default="http://localhost:5000")
+        self.args.add_argument('base_url', location='args', help='Base URL', default="http://localhost:9000/api/v1/ping")
         self.args.add_argument('arch', location='args', help='Architecture', default="amd64", choices=("amd64", "386"))
 
   
