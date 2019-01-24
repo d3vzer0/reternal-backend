@@ -1,5 +1,6 @@
 import datetime
 import random, string
+import pyotp
 from app import db
 from app.generic import Random
 
@@ -17,7 +18,7 @@ class Users(db.Document):
     password = db.StringField(max_length=128, required=True)
     salt = db.StringField(default=Random.create(20), max_length=20, required=True)
     role = db.StringField(max_length=20, required=True, default="User", choices=ROLEOPTIONS)
-    email = db.EmailField(required=True)
+    otp = db.StringField(max_length=16, required=False, default=pyotp.random_base32())
 
     meta = {
         'ordering': ['-username'],
