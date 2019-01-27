@@ -96,7 +96,7 @@ api.add_resource(APILogout, '/api/v1/logout/token')
 
 ROLEOPTIONS = ('User', 'Admin')
 class APIUsers(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def __init__(self):
         self.args = reqparse.RequestParser()
