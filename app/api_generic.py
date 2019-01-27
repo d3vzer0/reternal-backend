@@ -1,6 +1,7 @@
 import hashlib
 import random
 import json
+from functools import wraps
 from app import app, api, jwt
 from app.models import Users
 from app.operations import User, Token
@@ -36,6 +37,7 @@ def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
     is_revoked = Token.verify(jti)
     return is_revoked
+
 
 
 class APILogin(Resource):
@@ -92,25 +94,27 @@ class APILogout(Resource):
 
 api.add_resource(APILogout, '/api/v1/logout/token')
 
-
+ROLEOPTIONS = ('User', 'Admin')
 class APIUsers(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def __init__(self):
         self.args = reqparse.RequestParser()
         if request.method == "POST":
             self.args.add_argument('username', location='json', required=True, help='Username')
             self.args.add_argument('password', location='json', required=True, help='Password')
-            self.args.add_argument('email', location='json',required=True, help='Username')
+            self.args.add_argument('role', location='json', required=True, help='Role', choices=ROLEOPTIONS)
 
     def post(self):
         args = self.args.parse_args()
-        operation = User().create(args['username'], args['password'],args['email'])
+        operation = User(args['username']).create(args['password'], args['role'])
         return operation
 
     def get(self):
-        users_objects = Users.objects().to_json()
-        result = json.loads(users_object)
+        users_object = Users.objects().only('id', 'username', 'role')
+        users_count = users_object.count()
+        users_data = json.loads(users_object.to_json())
+        result = {'count':users_count, 'data':users_data}
         return result
 
 
@@ -121,7 +125,8 @@ class APISesion(Resource):
     decorators = [jwt_required]
     def get(self):
         claims = get_jwt_claims()
-        return {"username":get_jwt_identity(), "role":get_jwt_claims()['role']}
+        result = {'username':get_jwt_identity(), 'role': get_jwt_claims()['role']}
+        return result
 
 api.add_resource(APISesion, '/api/v1/session')
 
@@ -130,28 +135,29 @@ class APIUser(Resource):
     decorators = [jwt_required]
 
     def __init__(self):
+        self.current_user = get_jwt_identity()
+        self.role = get_jwt_claims()['role']
         self.args = reqparse.RequestParser()
         if request.method == "POST":
             self.args.add_argument('password', location='json', required=False)
-            self.args.add_argument('email', location='json',required=False)
+            self.args.add_argument('role', location='json',required=False)
 
-    def get(self, user_id=None):
-        if user_id is None:
-            user_id = str(g.currentUser.id)
-        get_user = User().get(user_id)
-        return get_user
-
-    def delete(self, target_user=None):
-        if user_id is None:
-            result = {"result": "failed", "message": "Requires user ID"}
+    def delete(self, target_user):
+        if self.role == 'Admin':
+            result = User(self.current_user).delete(target_user)
         else:
-            current_user = str(g.currentUser.id)
-            result = User(current_user).delete(target_user)
+            result = {'result':'failed', 'data':'Insufficient permissions', 'status': 401}
 
-        return result
+        return result, result['status']
 
-    def post(self, user_id):
+    def post(self, target_user):
         args = self.args.parse_args()
+        if self.role == 'Admin' or target_user == self.current_user:
+            result = User(self.current_user).change(target_user, args['role'], args['password'])
+        else:
+            result = {'result':'failed', 'data':'Insufficient permissions', 'status': 401}
+
+        return result, result['status']
 
 
-api.add_resource(APIUser, '/api/v1/user', '/api/v1/user/<string:target_user>')
+api.add_resource(APIUser, '/api/v1/user/<string:target_user>')
