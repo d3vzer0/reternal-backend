@@ -31,7 +31,6 @@ class User:
             user_object = Users.objects.get(username=self.username)
             result = {"result": "success", "data": user_object, "status": 200}
 
-
         except mongoengine.errors.DoesNotExist:
             result = {"result": "failed", "data": "User does not exist", "status": 403}
 

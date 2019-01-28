@@ -1,6 +1,7 @@
 import hashlib
 import random
 import json
+import pyotp
 from functools import wraps
 from app import app, api, jwt
 from app.models import Users
@@ -158,6 +159,17 @@ class APIUser(Resource):
             result = {'result':'failed', 'data':'Insufficient permissions', 'status': 401}
 
         return result, result['status']
+
+    def get(self, target_user):
+        if self.role == 'Admin' or target_user == self.current_user:
+            prov_url = "%s@reternal" %(self.current_user)
+            user_object = User(target_user).get()
+            otp_prov = pyotp.totp.TOTP(user_object['data'].otp).provisioning_uri(prov_url, issuer_name="ReternalAPI") 
+            result = {'result':'success', 'data':otp_prov, 'status':200}
+        else:
+            result = {'result':'failed', 'data':'Insufficient permissions', 'status': 401}
+
+        return result
 
 
 api.add_resource(APIUser, '/api/v1/user/<string:target_user>')
