@@ -4,22 +4,21 @@ import datetime
 import os
 
 # Todo - set MongoDB username and Password as variables for DB
-app.config['SECRET_KEY'] = os.environ["FLASK_SECRET"]
-app.config['FLASK_PORT'] = int(os.environ['FLASK_PORT'])
-app.config['CELERY_BACKEND'] = os.environ["CELERY_BACKEND"]
-app.config['CELERY_BROKER'] = os.environ['CELERY_BROKER']
-app.config['REDIS_IP'] = os.environ['REDIS_IP']
-app.config['REDIS_PORT'] = int(os.environ['REDIS_PORT'])
-app.config['REDIS_DB'] = int(os.environ['REDIS_DB'])
-app.config['JWT_SECRET_KEY'] = os.environ["JWT_SECRET"]
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET')
+app.config['FLASK_PORT'] = int(os.getenv('FLASK_PORT', 5000))
+app.config['CELERY_BACKEND'] = os.getenv('CELERY_BACKEND', 'redis://localhost:6379')
+app.config['CELERY_BROKER'] = os.getenv('CELERY_BACKEND', 'redis://localhost:6379')
+app.config['REDIS_IP'] = os.getenv('REDIS_IP', 'localhost')
+app.config['REDIS_PORT'] = int(os.getenv('REDIS_PORT', '6379'))
+app.config['REDIS_DB'] = int(os.getenv('REDIS_DB', 1))
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=10)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
-app.config['CORS_DOMAIN'] = os.environ['CORS_DOMAIN']
+app.config['CORS_DOMAIN'] = os.getenv('CORS_DOMAIN', 'http://localhost:8080')
 app.config['MONGODB_SETTINGS'] = {
-    'db': os.environ["MONGO_DB"],
-    'host': os.environ["MONGO_IP"],
-    'port': int(os.environ["MONGO_PORT"])
+    'db': os.getenv('MONGO_DB', 'reternal'),
+    'host': os.getenv('MONGO_IP', 'localhost'),
+    'port': int(os.getenv('MONGO_PORT', 27017))
 }
-

@@ -20,12 +20,12 @@ class APIMapping(Resource):
         self.args.add_argument('platform', location='args', help='Platform', default="Windows")
         self.args.add_argument('technique', location='args', help='Technique', default='')
         self.args.add_argument('distinct', location='args', help='Distinct', required=False,
-            choices=('technique_name', 'kill_chain_phase'))
+            choices=('technique_name', 'kill_chain_phase', 'name'))
 
     def get(self):
         args = self.args.parse_args()
         mitre_objects = CommandMapping.objects(platform__contains=args['platform'],
-            technique_id__contains=args['name'], technique_name__contains=args['technique'], 
+            name__contains=args['name'], technique_name__contains=args['technique'], 
             kill_chain_phase__contains=args['phase'])
         result = mitre_objects.distinct(field=args.distinct) if args.distinct else json.loads(mitre_objects.to_json())
         return result
