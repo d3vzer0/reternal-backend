@@ -1,4 +1,4 @@
-amqp==2.1.4
+amqp
 celery
 ducktoolkit
 Flask
@@ -20,7 +20,7 @@ python-geoip
 python-magic
 python-socketio
 pyotp
-redis==2.10.6
+redis
 requests
 rsa
 urllib3
