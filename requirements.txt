@@ -19,6 +19,7 @@ pymongo
 python-geoip
 python-magic
 python-socketio
+pyotp
 redis==2.10.6
 requests
 rsa
