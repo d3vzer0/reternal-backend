@@ -40,7 +40,7 @@ class APIPayload(Resource):
     def __init__(self):
         self.args = reqparse.RequestParser()
         self.args.add_argument('platform', location='args', default="darwin", help='Platform', choices=("windows", "linux", "darwin"))
-        self.args.add_argument('base_url', location='args', help='Base URL', default="http://localhost:9000/api/v1/ping")
+        self.args.add_argument('base_url', location='args', help='Base URL', default=app.config['C2_DEST'])
         self.args.add_argument('arch', location='args', help='Architecture', default="amd64", choices=("amd64", "386"))
 
   
@@ -48,7 +48,7 @@ class APIPayload(Resource):
         args = self.args.parse_args()
         escaped_url = shlex.quote(args.base_url)
         combined_id = "%s%s%s" %(args.platform,args.arch,escaped_url)
-        build_id = hashlib.sha1(combined_id.encode('utf-8')).hexdigest()
+        build_id = hashlib.sha1(combined_id.encode('utf-8')).hexdigest()    
         build_agent = celery.send_task('agent.build', retry=True,
             args=(args.platform, args.arch, args.base_url, build_id), 
             kwargs={}, task_id=build_id).get()
