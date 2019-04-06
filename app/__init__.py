@@ -6,6 +6,8 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from app.tasks.task_celery import FlaskCelery
+import eventlet
+eventlet.monkey_patch()
 
 #Initialize Flask Instance
 app = Flask(__name__)
@@ -17,7 +19,7 @@ from  app.configs import *
 celery = FlaskCelery(app).make()
 socketio = SocketIO(app, message_queue=app.config['CELERY_BACKEND'])
 db = MongoEngine(app)
-CORS(app, resources={r"/api/*": {"origins": app.config['CORS_DOMAIN']}})
+CORS(app, resources={r"*": {"origins": app.config['CORS_DOMAIN']}})
 
 
 # Import views

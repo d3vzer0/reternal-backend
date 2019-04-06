@@ -18,11 +18,12 @@ pyaes
 pymongo
 python-geoip
 python-magic
-python-socketio
+python-socketio<4,>=2.1.0
 pyotp
 redis
 requests
 rsa
+vine>=1.3.0
 urllib3
 Werkzeug
 WTForms
