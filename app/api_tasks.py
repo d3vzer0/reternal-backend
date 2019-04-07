@@ -1,4 +1,3 @@
-import datetime, hashlib, random,json, urllib, time
 from bson.json_util import dumps as loadbson
 from app.sockets import rsession
 from app import app, api, jwt
@@ -11,7 +10,7 @@ from flask_jwt_extended import (
     jwt_required, create_access_token,
     get_jwt_identity, get_jwt_claims
 )
-
+import datetime, hashlib, random, json, urllib, time
 
 class APITasks(Resource):
     decorators = [jwt_required]
