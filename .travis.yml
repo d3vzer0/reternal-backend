@@ -9,5 +9,8 @@ install:
   - docker build -t reternal-backend .
   - docker run -e "JWT_SECRET=test_build_token_jwt" -e "FLASK_SECRET=test_build_token_flask" -d -p 127.0.0.1:5000:5000 --name reternal-backend reternal-backend
 
+before_script:
+  - sleep 10
+
 script:
   - docker ps | grep -q reternal-backend
