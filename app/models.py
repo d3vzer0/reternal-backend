@@ -4,6 +4,7 @@ import pyotp
 from app import db
 from app.generic import Random
 
+INPUTOPTIONS = ('text', 'agent', 'options', 'none')
 PLATFORMS = ('Windows', 'Linux', 'All', 'macOS')
 STATUSOPTIONS = ('Processed', 'Open', 'Processing')
 TYPEOPTIONS = ('Manual', 'Mitre', 'Actor')
@@ -79,6 +80,7 @@ class BeaconHistory(db.Document):
         'ordering': ['-timestamp']
     }
 
+
 class TaskCommands(db.EmbeddedDocument):
     reference = db.ReferenceField('CommandMapping', required=False)
     type = db.StringField(max_length=50, required=True, choices=TYPEOPTIONS)
@@ -127,7 +129,8 @@ class Commands(db.Document):
     reference = db.StringField(max_length=100, required=False, default=None)
     type = db.StringField(max_length=20, required=True, choices=TYPEOPTIONS)
     platform = db.ListField(db.StringField(max_length=50, default="all"))
-
+    input_type = db.StringField(max_length=10, required=True, default="text", choices=INPUTOPTIONS)
+    input_options = db.ListField(db.StringField(max_length=40, required=False))
 
 
 class CommandMapping(db.Document):

@@ -12,7 +12,7 @@ import json
 
 
 class APIRecipe(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def get(self, recipe):
         pipeline = [{ '$unwind': '$commands' },{'$lookup': {'from':'command_mapping',
