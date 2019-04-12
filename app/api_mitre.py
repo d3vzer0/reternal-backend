@@ -1,5 +1,5 @@
 from app import app, api, jwt
-from app.models import Mitre
+from app.models import Techniques
 from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import (
@@ -10,7 +10,7 @@ from bson.json_util import dumps
 import json
 
 
-class APIMitreAggregate(Resource):
+class APITechniquesAggregate(Resource):
     decorators = [jwt_required]
 
     def __init__(self):
@@ -27,41 +27,41 @@ class APIMitreAggregate(Resource):
                         }
                      }]
         args = self.args.parse_args()
-        mitre_objects = Mitre.objects(platforms__contains=args['platform'],
+        mitre_objects = Techniques.objects(platforms__contains=args['platform'],
             name__contains=args['name'], kill_chain_phases__contains=args['phase']).only('name',
             'kill_chain_phases', 'platforms').aggregate(*pipeline)
         json_object = json.loads(dumps(mitre_objects))
         return json_object
 
-api.add_resource(APIMitreAggregate, '/api/v1/mitre/techniques')
+api.add_resource(APITechniquesAggregate, '/api/v1/mitre/techniques')
 
 
-class APIMitreDetails(Resource):
+class APITechniqueDetails(Resource):
     decorators = [jwt_required]
 
     def get(self, technique_id):
-        mitre_technique = Mitre.objects.get(technique_id=technique_id)
+        mitre_technique = Techniques.objects.get(technique_id=technique_id)
         json_object = json.loads(mitre_technique.to_json())
         return json_object
 
-api.add_resource(APIMitreDetails, '/api/v1/mitre/technique/<string:technique_id>')
+api.add_resource(APITechniqueDetails, '/api/v1/mitre/technique/<string:technique_id>')
 
 
-class APIMitrePhases(Resource):
+class APITechniquePhases(Resource):
     decorators = [jwt_required]
 
     def get(self):
-        mitre_phases = Mitre.objects().distinct('kill_chain_phases')
+        mitre_phases = Techniques.objects().distinct('kill_chain_phases')
         return mitre_phases
 
-api.add_resource(APIMitrePhases, '/api/v1/mitre/phases')
+api.add_resource(APITechniquePhases, '/api/v1/mitre/phases')
 
-class APIMitreDatasources(Resource):
+class APITechniqueDatasources(Resource):
     decorators = [jwt_required]
 
     def get(self):
-        mitre_datasources = Mitre.objects().distinct('data_sources')
+        mitre_datasources = Techniques.objects().distinct('data_sources')
         return mitre_datasources
 
-api.add_resource(APIMitreDatasources, '/api/v1/mitre/datasources')
+api.add_resource(APITechniqueDatasources, '/api/v1/mitre/datasources')
 
