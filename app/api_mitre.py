@@ -46,16 +46,6 @@ class APITechniqueDetails(Resource):
 api.add_resource(APITechniqueDetails, '/api/v1/mitre/technique/<string:technique_id>')
 
 
-class APIActors(Resource):
-    decorators = [jwt_required]
-
-    def get(self):
-        mitre_actors = Actors.objects().distinct('name')
-        return mitre_actors
-
-api.add_resource(APIActors, '/api/v1/mitre/actors')
-
-
 class APITechniquePhases(Resource):
     decorators = [jwt_required]
 

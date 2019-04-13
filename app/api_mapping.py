@@ -33,22 +33,6 @@ class APIMapping(Resource):
 api.add_resource(APIMapping, '/api/v1/mapping')
 
 
-
-class APIActorMapping(Resource):
-    decorators = [jwt_required]
-
-    def __init__(self):
-        self.args = reqparse.RequestParser()
-        self.args.add_argument('actor', location='args', help='Technique_name', required=True)
-
-    def get(self):  
-        args = self.args.parse_args()
-        actor_objects = CommandMapping.objects(actors__name=args.actor)
-        json_object = json.loads(actor_objects.to_json())
-        return json_object
-
-api.add_resource(APIActorMapping, '/api/v1/mapping/actors')
-
 class APIMappingDetails(Resource):
     decorators = [jwt_required]
 
