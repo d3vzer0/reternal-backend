@@ -33,69 +33,21 @@ api.add_resource(APITechniques, '/api/v1/techniques')
 
 
 class APITechnique(Resource):
-    decorators = []
+    decorators = [jwt_required]
 
     def __init__(self):
         self.args = reqparse.RequestParser()
         self.args.add_argument('phase', location='args', help='Phase', required=True)
         self.args.add_argument('platform', location='args', help='Platform', required=True)
-        self.args.add_argument('technique', location='args', help='Technique', required=True)
        
-
     def get(self):
         args = self.args.parse_args()
         techniques_objects = CommandMapping.objects(platform=args['platform'],
-            technique_name=args['technique'], kill_chain_phase=args['phase'])
+            kill_chain_phase=args['phase'])
         result = json.loads(techniques_objects.to_json())
         return result
 
 api.add_resource(APITechnique, '/api/v1/technique')
-
-
-class APIMapping(Resource):
-    decorators = [jwt_required]
-
-    def __init__(self):
-        self.args = reqparse.RequestParser()
-        self.args.add_argument('name', location='args', help='Technique_name', default='')
-        self.args.add_argument('phase', location='args', help='Phase', default='')
-        self.args.add_argument('platform', location='args', help='Platform', default="Windows")
-        self.args.add_argument('technique', location='args', help='Technique', default='')
-        self.args.add_argument('distinct', location='args', help='Distinct', required=False,
-            choices=('technique_name', 'kill_chain_phase', 'name'))
-
-    def get(self):
-        args = self.args.parse_args()
-        mitre_objects = CommandMapping.objects(platform__contains=args['platform'],
-            name__contains=args['name'], technique_name__contains=args['technique'], 
-            kill_chain_phase__contains=args['phase'])
-        result = mitre_objects.distinct(field=args.distinct) if args.distinct else json.loads(mitre_objects.to_json())
-        return result
-
-api.add_resource(APIMapping, '/api/v1/mapping')
-
-
-
-# class APIMapping(Resource):
-#     decorators = [jwt_required]
-
-#     def __init__(self):
-#         self.args = reqparse.RequestParser()
-#         self.args.add_argument('phase', location='args', help='Phase', default='')
-#         self.args.add_argument('platform', location='args', help='Platform', default="Windows")
-#         self.args.add_argument('technique', location='args', help='Technique', default='')
-#         self.args.add_argument('distinct', location='args', help='Distinct', required=False,
-#             choices=('technique_name', 'kill_chain_phase'))
-
-#     def get(self):
-#         args = self.args.parse_args()
-#         mitre_objects = CommandMapping.objects(platform__contains=args['platform'],
-#             technique_name__contains=args['technique'], kill_chain_phase__contains=args['phase'])
-#         result = mitre_objects.distinct(field=args.distinct) if args.distinct else json.loads(mitre_objects.to_json())
-#         return result
-
-# api.add_resource(APIMapping, '/api/v1/mapping')
-
 
 
 class APIMappingDetails(Resource):
