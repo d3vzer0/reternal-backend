@@ -23,10 +23,10 @@ class APIBeacons(Resource):
 
     def get(self):
         args = self.parser.parse_args()
-        pipeline = [{"$lookup":{"from":"beacon_history","let":{"beacon_id":"$beacon_id"},"as":"output","pipeline":[
-            {"$match":{"$expr":{"$eq":["$$beacon_id","$beacon_id"]}}},{"$sort":{"timestamp":-1}},{"$limit":1}]}},
-            {"$unwind":"$output"},{"$addFields":{"statecheck":{"$add":["$output.timestamp",{"$multiply":["$timer",1500]}]}}},
-            {"$addFields":{"state":{"$cond":{"if":{"$gte":["$statecheck","$output.timestamp"]},"then":"Offline","else":"Online"}}}}]
+        pipeline = [{
+            '$lookup': { 'from': 'beacon_history', 'let': { 'beacon_id': '$beacon_id' }, 
+            'as': 'output',  'pipeline': [ { '$match': { '$expr': { '$eq': [ '$$beacon_id', '$beacon_id' ] } } }, { 
+                '$sort': { 'timestamp': -1 } }, { '$limit': 1 } ] } }, { '$unwind': { 'path': '$output' } } ]
 
         get_beacons = Beacons.objects(Q(platform__contains=args['platform']) & (
             Q(username__contains=args['search']) | Q(hostname__contains=args['search'])

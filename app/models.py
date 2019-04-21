@@ -57,6 +57,7 @@ class Beacons(db.Document):
     hostname = db.StringField(max_length=250, required=True)
     working_dir = db.StringField(max_length=800, required=False)
     timer = db.IntField(default=300)
+    jitter = db.FloatField(default=1)
     data = db.DictField()
 
 
@@ -118,6 +119,7 @@ class TaskResults(db.Document):
     type = db.StringField(max_length=50, required=True)
     input = db.StringField(max_length=900, required=True)
     end_date = db.DateTimeField(default=datetime.datetime.now)
+    task_result = db.BooleanField(default=True)
     output = db.FileField()
     meta = {
         'ordering': ['-end_date'],
