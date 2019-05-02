@@ -28,8 +28,9 @@ def user_identity_lookup(user):
 
 
 @jwt.expired_token_loader
-def expired_token_callback():
-    result = {'status':401, 'sub_status':42, 'data':'Token expired'}
+def expired_token_callback(expired_token):
+    token_type = expired_token['type']
+    result = {'status':401, 'sub_status':42, 'token_type':token_type, 'data':'Token expired'}
     return json.dumps(result), 401
 
 
