@@ -23,5 +23,6 @@ app.config['MONGODB_SETTINGS'] = {
     'host': os.getenv('MONGO_IP', 'localhost'),
     'port': int(os.getenv('MONGO_PORT', 27017)),
     'username': os.getenv('MONGO_USER', 'reternal'),
-    'password': os.getenv('MONGO_PASSWORD', None)
+    'password': os.getenv('MONGO_PASSWORD', None),
+    'authentication_source': 'admin'
 }
