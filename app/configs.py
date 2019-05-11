@@ -16,10 +16,12 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=10)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
-app.config['C2_DEST'] = os.getenv('C2_DEST', 'http://192.168.1.35:9090/api/v1/ping')
+app.config['C2_DEST'] = os.getenv('C2_DEST', 'http://127.0.0.1:9000/api/v1/ping')
 app.config['CORS_DOMAIN'] = os.getenv('CORS_DOMAIN', 'http://localhost:8080')
 app.config['MONGODB_SETTINGS'] = {
     'db': os.getenv('MONGO_DB', 'reternal'),
     'host': os.getenv('MONGO_IP', 'localhost'),
-    'port': int(os.getenv('MONGO_PORT', 27017))
+    'port': int(os.getenv('MONGO_PORT', 27017)),
+    'username': os.getenv('MONGO_USER', 'reternal'),
+    'password': os.getenv('MONGO_PASSWORD', None)
 }

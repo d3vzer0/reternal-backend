@@ -1,8 +1,8 @@
+from app import db
+from app.generic import Random
 import datetime
 import random, string
 import pyotp
-from app import db
-from app.generic import Random
 
 INPUTOPTIONS = ('text', 'agent', 'options', 'none')
 PLATFORMS = ('Windows', 'Linux', 'All', 'macOS')
@@ -39,6 +39,11 @@ class Credentials(db.Document):
     username = db.StringField(unique_with=['key', 'type'])
     key = db.StringField()
     type = db.StringField()
+
+
+class Files(db.Document):
+    name = db.StringField(max_length=50, required=True, unique=True)
+    content = db.FileField()
 
 
 class Targets(db.Document):
