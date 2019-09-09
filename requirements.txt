@@ -2,6 +2,7 @@ amqp
 celery
 ducktoolkit
 Flask
+flask-socketio
 flask-mongoengine
 Flask-RESTful
 Flask-Script
@@ -18,7 +19,7 @@ pyaes
 pymongo
 python-geoip
 python-magic
-python-socketio<4,>=2.1.0
+python-socketio
 pyotp
 redis
 requests
