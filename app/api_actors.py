@@ -11,7 +11,7 @@ import json
 
 
 class APIActors(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def get(self):
         mitre_actors = Actors.objects().distinct('name')
@@ -21,7 +21,7 @@ api.add_resource(APIActors, '/api/v1/mitre/actors')
 
 
 class APIActor(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def get(self, actor_name):
         mitre_actor = Actors.objects.get(name=actor_name)
@@ -32,7 +32,7 @@ api.add_resource(APIActor, '/api/v1/mitre/actors/<string:actor_name>')
 
 
 class APIActorsMapping(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def get(self):
         mitre_actors = CommandMapping.objects().distinct('actors.name')

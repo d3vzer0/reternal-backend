@@ -11,7 +11,7 @@ import json
 
 
 class APITechniques(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def __init__(self):
         self.args = reqparse.RequestParser()
@@ -33,7 +33,7 @@ api.add_resource(APITechniques, '/api/v1/techniques')
 
 
 class APITechnique(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def __init__(self):
         self.args = reqparse.RequestParser()
@@ -51,7 +51,7 @@ api.add_resource(APITechnique, '/api/v1/technique')
 
 
 class APIMappingDetails(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def get(self, map_id):
         mitre_technique = CommandMapping.objects.get(id=map_id)

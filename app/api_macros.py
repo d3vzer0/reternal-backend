@@ -12,7 +12,7 @@ import json
 
 
 class APIMacro(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def delete(self, macro_id):
         result = Macro.delete(macro_id)
@@ -22,7 +22,7 @@ api.add_resource(APIMacro, '/api/v1/macro/<string:macro_id>')
 
 
 class APIMacros(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def __init__(self):
         if request.method == 'POST':

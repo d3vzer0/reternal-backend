@@ -2,6 +2,7 @@ import datetime, hashlib, random,json, urllib, time
 from app import app, api, jwt
 from app.models import Commands, Macros, Beacons, BeaconHistory
 from app.operations import Task
+from app.runner import celery
 from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse
 from mongoengine.queryset.visitor import Q
@@ -13,30 +14,23 @@ from flask_jwt_extended import (
 from bson.json_util import dumps as loadbson
 
 
-class APIBeacons(Resource):
-    decorators = [jwt_required]
+class APIAgents(Resource):
+    decorators = []
 
     def __init__(self):
         self.parser = reqparse.RequestParser()
-        self.parser.add_argument('platform', type=str, required=False, location='args', default="")
-        self.parser.add_argument('search', type=str, required=False, location='args', default="")
+        self.parser.add_argument('operating_system', type=str, required=False, location='args', default='')
+        self.parser.add_argument('name', type=str, required=False, location='args', default='')
+        self.parser.add_argument('integration', type=str, required=True, location='args')
 
     def get(self):
         args = self.parser.parse_args()
-        pipeline = [{
-            '$lookup': { 'from': 'beacon_history', 'let': { 'beacon_id': '$beacon_id' }, 
-            'as': 'output',  'pipeline': [ { '$match': { '$expr': { '$eq': [ '$$beacon_id', '$beacon_id' ] } } }, { 
-                '$sort': { 'timestamp': -1 } }, { '$limit': 1 } ] } }, { '$unwind': { 'path': '$output' } } ]
+        get_tasks = celery.send_task('c2.system.agents', args=(args.integration,)).get()
+        if not get_tasks['get']: return {'agents': { } }
+        get_agents = celery.send_task(get_tasks['get']).get()
+        return get_agents
 
-        get_beacons = Beacons.objects(Q(platform__contains=args['platform']) & (
-            Q(username__contains=args['search']) | Q(hostname__contains=args['search'])
-            )).aggregate(*pipeline)
-
-        results = json.loads(loadbson(get_beacons))
-
-        return results
-
-api.add_resource(APIBeacons, '/api/v1/agents')
+api.add_resource(APIAgents, '/api/v1/agents')
 
 
 class APICredentials(Resource):

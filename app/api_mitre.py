@@ -11,7 +11,7 @@ import json
 
 
 class APITechniquesAggregate(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def __init__(self):
         self.args = reqparse.RequestParser()
@@ -21,6 +21,7 @@ class APITechniquesAggregate(Resource):
         self.args.add_argument('actor', location='args', help='Actor', default='')
   
     def get(self):
+        print("neen")
         pipeline = [{"$unwind":"$kill_chain_phases"},
             {'$group':{ '_id':{'kill_chain_phases':'$kill_chain_phases'},
             'techniques':{'$push': {'name':'$name', 'technique_id':'$technique_id'}}}}]
@@ -36,7 +37,7 @@ api.add_resource(APITechniquesAggregate, '/api/v1/mitre/techniques')
 
 
 class APITechniqueDetails(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def get(self, technique_id):
         mitre_technique = Techniques.objects.get(technique_id=technique_id)
@@ -47,7 +48,7 @@ api.add_resource(APITechniqueDetails, '/api/v1/mitre/technique/<string:technique
 
 
 class APITechniquePhases(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def get(self):
         mitre_phases = Techniques.objects().distinct('kill_chain_phases')
@@ -56,7 +57,7 @@ class APITechniquePhases(Resource):
 api.add_resource(APITechniquePhases, '/api/v1/mitre/phases')
 
 class APITechniqueDatasources(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def get(self):
         mitre_datasources = Techniques.objects().distinct('data_sources')
