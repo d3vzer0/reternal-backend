@@ -1,73 +1,50 @@
-from bson.json_util import dumps as loadbson
-from app.sockets import rsession
-from app import app, api, jwt
-from app.models import Tasks, TaskResults
-from app.operations import Task, Beacon
-from flask import Flask, request, g
-from flask_restful import Api, Resource, reqparse
-from mongoengine.queryset.visitor import Q
-from flask_jwt_extended import (
-    jwt_required, create_access_token,
-    get_jwt_identity, get_jwt_claims
-)
-import datetime, hashlib, random, json, urllib, time
+from app import api, celery
+from app.utils.depends import validate_worker
+from app.schema import CampaignIn, CampaignsOut, CampaignOut
+from app.database.models import Campaigns
+from fastapi import Depends, Body
+from datetime import datetime, timedelta
+from celery.task.control import inspect
 
-class APITasks(Resource):
-    decorators = [jwt_required]
+task_inspector = inspect()
+task_schema = ''
 
-    def __init__(self):
-        self.args = reqparse.RequestParser()
-        if request.method == 'POST':
-            self.args.add_argument('name', type=str, required=True, location='json')
-            self.args.add_argument('commands', type=list, required=True, location='json')
-            self.args.add_argument('beacon_id', type=str, required=True, location='json')
-            self.args.add_argument('start_date', type=int, required=False,
-                default=int(datetime.datetime.now().timestamp()), location='json')
-
-        if request.method == "GET":
-            self.args.add_argument('beacon_id', location='args', required=True, help='Beacon ID', type=str)
-            self.args.add_argument('start_date', type=int, required=False, location='args', default=1514764800)
-            self.args.add_argument('name', type=str, required=False, default='')
-            self.args.add_argument('end_date', type=int, required=False, location='args',
-                default=int(datetime.datetime.now().timestamp()))
-
-    def get(self):
-        args = self.args.parse_args()
-        pipeline = [{"$lookup": {"from": "task_results", "localField": "_id","foreignField": "task_id", "as": "output"}}]
-        start_date = datetime.datetime.fromtimestamp(args.start_date )
-        end_date = datetime.datetime.fromtimestamp(args.end_date)
-        task_results = Tasks.objects(beacon_id=args.beacon_id, start_date__gte=start_date,
-            start_date__lte=end_date, name__contains=args.name).aggregate(*pipeline)
-        results = json.loads(loadbson(task_results))
-        return {'count':len(results), 'data':results}
-
-    def post(self):
-        args = self.args.parse_args()
-        verify_beacon = Beacon(args.beacon_id).get()
-        if verify_beacon['result'] == "success":
-            start_date = datetime.datetime.fromtimestamp(args.start_date)
-            result = Task().create(args.beacon_id, args.commands, start_date, args.name)
-            task_key = 'task-%s' %(result['data']['task_id'])
-            rsession.set(task_key, get_jwt_identity(), ex=3600)
-        else:
-            result = verify_beacon
-
-        return result
-
- 
-api.add_resource(APITasks, '/api/v1/tasks')
+@api.get('/api/v1/campaigns', response_model=CampaignsOut)
+async def get_campaigns():
+    get_campaigns = Campaigns.get()
+    return {'campaigns': get_campaigns }
 
 
-class APITask(Resource):
-    decorators = [jwt_required]
+@api.post('/api/v1/campaigns')
+async def create_campaign(campaign: CampaignIn):
+    save_campaign = Campaigns.create(campaign.dict())
+    return save_campaign
 
-    def get(self, task_id):
-        task_details = Task.get(task_id)
-        return task_details
+@api.get('/api/v1/campaign/{campaign_id}', response_model=CampaignsOut)
+async def get_campaign(campaign_id: str):
+    get_campaign = Campaigns.get(campaign_id)
+    return get_campaign
 
-    def delete(self, task_id):
-        result = Task.delete(task_id)
-        return result
+@api.post('/api/v1/tasks/{worker_name}')
+async def create_task(worker_name: str, context: dict = Depends(validate_worker)):
+    soon_tm = datetime.now() + timedelta(days=2)
+    # schedule_task = celery.send_task(context[worker_name]['tasks']['create'],
+    #         retry=True, eta=soon_tm )
+    return 'schedule_task'
 
 
-api.add_resource(APITask, '/api/v1/task/<string:task_id>')
+# @api.post('/api/v1/tasks/{worker_name}')
+# async def create_task(worker_name: str, context: dict = Depends(validate_worker)):
+#     soon_tm = datetime.now() + timedelta(minutes=2)
+#     schedule_task = celery.send_task(context[worker_name]['tasks']['create'],
+#             retry=True, eta=soon_tm)
+#     return schedule_task
+
+
+@api.get('/api/v1/tasks/queue')
+async def get_task_queue():
+    scheduled_tasks = []
+    for worker, tasks in task_inspector.scheduled().items():
+        scheduled_tasks = [{'name': task['request']['name'], 'eta':task['eta'],
+            'options':task['request']['args'], 'id': task['request']['id']}  for task in tasks]
+    return scheduled_tasks

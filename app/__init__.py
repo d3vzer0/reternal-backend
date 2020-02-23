@@ -1,40 +1,31 @@
+from fastapi import FastAPI
 from celery import Celery
-from flask import Flask
-from flask_restful import Api, Resource
-from flask_mongoengine import MongoEngine
-from flask_jwt_extended import JWTManager
-from flask_cors import CORS
-from flask_socketio import SocketIO
-from app.tasks.task_celery import FlaskCelery
-import eventlet
-eventlet.monkey_patch()
-
-#Initialize Flask Instance
-app = Flask(__name__)
-api = Api(app)
-jwt = JWTManager(app)
-
-# Initialize DB and load models and views
-from  app.configs import *
-celery = FlaskCelery(app).make()
-socketio = SocketIO(app, message_queue=app.config['CELERY_BACKEND'])
-db = MongoEngine(app)
-CORS(app, resources={r"*": {"origins": app.config['CORS_DOMAIN']}})
+from app.environment import config
+from starlette.middleware.cors import CORSMiddleware
 
 
-# Import views
-from app import api_generic
-from app import api_mitre
-from app import api_commands
-from app import api_beacon
-from app import api_results
-from app import api_tasks
-from app import api_payload
-from app import api_macros
-from app import api_actors
-from app import api_startuptasks
-from app import api_stats
-from app import api_mapping
-from app import api_recipes
-from app import api_navigator
-from app.sockets import so_connect
+api = FastAPI()
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=['http://localhost:9090'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+celery = Celery('reternal', broker=config['CELERY_BROKER'],
+    backend=config['CELERY_BACKEND'])
+
+celery.conf.broker_transport_options = {'fanout_prefix': True}
+celery.conf.broker_transport_options = {'fanout_patterns': True}
+# celery.conf.task_routes = celery_routes
+
+from app.database.models import *
+from app.api_workers import *
+from app.api_listeners import *
+from app.api_agents import *
+from app.api_modules import *
+from app.api_mitre import *
+from app.api_mapping import *
+from app.api_stagers import *
+from app.api_tasks import *

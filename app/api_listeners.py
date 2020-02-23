@@ -1,51 +1,28 @@
-from app import app, api, jwt
-from app.runner import celery
-from app.decorators.validworkers import validate_worker
-from flask import request
-from flask_restful import Api, Resource, reqparse
-from flask_jwt_extended import (
-    jwt_required, create_access_token,
-    get_jwt_identity, get_jwt_claims
-)
-
-class APIListeners(Resource):
-    decorators = []
-
-    @validate_worker
-    def get(self, worker_name):
-        get_listeners = celery.send_task(self.all_workers[worker_name]['listeners']['get'],
-            retry=True).get()
-        return get_listeners
-
-    @validate_worker
-    def post(self, worker_name, listener_type):
-        create_listener = celery.send_task(self.all_workers[worker_name]['listeners']['create'],
-            args=(listener_type, request.get_json(),), retry=True).get()
-        return create_listener
-
-api.add_resource(APIListeners, '/api/v1/listeners/<string:worker_name>',
-    '/api/v1/listeners/<string:worker_name>/<string:listener_type>')
+from app import api, celery
+from app.utils.depends import validate_worker
+from fastapi import Depends, Body
 
 
-class APIListener(Resource):
-    decorators = []
+@api.get('/api/v1/listeners/{worker_name}')
+async def get_listeners(worker_name: str, context: dict = Depends(validate_worker)):
+    get_listeners = celery.send_task(context[worker_name]['listeners']['get'],
+            retry=True).get()['response']
+    return get_listeners
 
-    @validate_worker
-    def delete(self, worker_name, listener_name):
-        delete_listener = celery.send_task(self.all_workers[worker_name]['listeners']['delete'],
-            args=(listener_name,), retry=True).get()
-        return delete_listener
+@api.post('/api/v1/listeners/{worker_name}/{listener_type}')
+async def create_listener(worker_name: str, listener_type: str, listener_opts: dict = Body(...),
+    context: dict = Depends(validate_worker)):
+    create_listener = celery.send_task(context[worker_name]['listeners']['create'],
+            args=(listener_type, listener_opts,)).get()['response']
+    return create_listener
 
-api.add_resource(APIListener, '/api/v1/listener/<string:worker_name>/<string:listener_name>')
+@api.delete('/api/v1/listener/{worker_name}/{listener_name}')
+async def delete_listener(worker_name: str, listener_name: str, context: dict = Depends(validate_worker)):
+    delete_listener = celery.send_task(context[worker_name]['listeners']['delete'],
+        args=(listener_name,)).get()['response']
+    return delete_listener   
 
-
-class APIListenerOptions(Resource):
-    decorators = []
-
-    @validate_worker
-    def get(self, worker_name):
-        get_listeners = celery.send_task(self.all_workers[worker_name]['listeners']['options'],
-            retry=True).get()
-        return get_listeners
-
-api.add_resource(APIListenerOptions, '/api/v1/listeners/options/<string:worker_name>')
+@api.get('/api/v1/listeners/options/{worker_name}')
+async def get_listner_options(worker_name: str, context: dict = Depends(validate_worker)):
+    get_listeners = celery.send_task(context[worker_name]['listeners']['options']).get()['response']
+    return get_listeners
