@@ -1,45 +1,64 @@
 from app import api, celery
 from app.utils.depends import validate_worker
-from app.schema import CampaignIn, CampaignsOut, CampaignOut
-from app.database.models import Campaigns
+from app.schema import CampaignIn, CampaignsOut, CampaignOut, SchedulesOut
+from app.schemas import TasksOut
+from app.database.models import Tasks
 from fastapi import Depends, Body
 from datetime import datetime, timedelta
 from celery.task.control import inspect
+from bson.json_util import dumps
+from typing import List, Dict
+
+import json
 
 task_inspector = inspect()
 task_schema = ''
 
-@api.get('/api/v1/campaigns', response_model=CampaignsOut)
-async def get_campaigns():
-    get_campaigns = Campaigns.get()
-    return {'campaigns': get_campaigns }
 
+# @api.get('/api/v1/campaigns', response_model=CampaignsOut)
+# async def get_campaigns():
+#     get_campaigns = Campaigns.get()
+#     return {'campaigns': get_campaigns }
 
-@api.post('/api/v1/campaigns')
-async def create_campaign(campaign: CampaignIn):
-    save_campaign = Campaigns.create(campaign.dict())
-    return save_campaign
+# @api.post('/api/v1/campaigns')
+# async def create_campaign(campaign: CampaignIn):
+#     save_campaign = Campaigns.create(campaign.dict())
+#     return save_campaign
 
-@api.get('/api/v1/campaign/{campaign_id}', response_model=CampaignsOut)
-async def get_campaign(campaign_id: str):
-    get_campaign = Campaigns.get(campaign_id)
-    return get_campaign
+# @api.get('/api/v1/campaign/{campaign_id}', response_model=CampaignOut)
+# async def get_campaign(campaign_id: str):
+#     get_campaign = Campaigns.get(campaign_id)[0]
+#     return get_campaign
 
-@api.post('/api/v1/tasks/{worker_name}')
-async def create_task(worker_name: str, context: dict = Depends(validate_worker)):
-    soon_tm = datetime.now() + timedelta(days=2)
-    # schedule_task = celery.send_task(context[worker_name]['tasks']['create'],
-    #         retry=True, eta=soon_tm )
-    return 'schedule_task'
+def commit_task(task, campaign_data):
+    # print(campaign_data['dependencies'])
+    # print(task['name'])
+    task_content = { 'task': task['name'], 'campaign': campaign_data['name'],
+        'commands': task['commands'], 'sleep': task['sleep'], 'agents': task['agents'],
+        'state': 'Open', 'dependencies': [dep['source'] for dep in \
+            campaign_data['dependencies'] if dep['destination'] == task['name']] }
+    save_task = Tasks.create(task_content)
+    return save_task
 
+@api.get('/api/v1/tasks', response_model=List[TasksOut])
+async def get_tasks():
+    all_tasks = json.loads(Tasks.objects().to_json())
+    return all_tasks
 
-# @api.post('/api/v1/tasks/{worker_name}')
-# async def create_task(worker_name: str, context: dict = Depends(validate_worker)):
-#     soon_tm = datetime.now() + timedelta(minutes=2)
-#     schedule_task = celery.send_task(context[worker_name]['tasks']['create'],
-#             retry=True, eta=soon_tm)
-#     return schedule_task
+@api.post('/api/v1/tasks')
+async def create_task(campaign: CampaignIn):
+    campaign_data = campaign.dict()
+    create_all_tasks = [commit_task(task, campaign_data) for task in campaign_data['tasks']]
+    return create_all_tasks
 
+@api.get('/api/v1/tasks/next', response_model=SchedulesOut)
+async def get_task_next():
+    pipeline = [ {"$unwind": { "path": "$dependencies", "preserveNullAndEmptyArrays": True} },
+        { "$lookup": {  "from": "schedule",  "as":"graph",  "let": { "dep": "$dependencies", "old": "$task", "camp": "$campaign"},
+        "pipeline": [ { "$match": { "$expr": { "$and": [ { "$eq": [ "$task",  "$$dep" ] },{ "$eq": [ "$state", "Processed" ] },
+        { "$eq": [ "$campaign", "$$camp" ] } ] } } } ]  } }, { "$match": { "graph": { "$ne": [] } } } ]
+    result = json.loads(dumps(Tasks.objects(start_date__lte=datetime.now()).aggregate(*pipeline)))
+    return {'tasks': result }
 
 @api.get('/api/v1/tasks/queue')
 async def get_task_queue():

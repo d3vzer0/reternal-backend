@@ -1,6 +1,6 @@
 from mongoengine import (connect, Document, StringField, IntField,
     ReferenceField, EmbeddedDocumentListField, ListField, EmbeddedDocument,
-    DateTimeField, queryset_manager)
+    DateTimeField, queryset_manager, EmbeddedDocumentField)
 from app.environment import config
 from app.utils.random import Random
 import datetime
@@ -43,26 +43,74 @@ class Tasks(EmbeddedDocument):
     agents = ListField(StringField(max_length=100), required=True)
 
 
-class Campaigns(Document):
+class Tasks(Document):
+    task = StringField(max_length=100, required=True, unique_with='campaign')
+    campaign = StringField(max_length=100, required=True)
+    dependencies = ListField(StringField(max_length=100, required=True))
+    start_date = DateTimeField(default=datetime.datetime.now())
+    commands = EmbeddedDocumentListField('TaskCommands', required=True)
+    sleep = IntField(default=0)
+    agents = ListField(StringField(max_length=100))
+    state = StringField(max_length=100, required=False, choices=STATUSOPTIONS, default='Open')
+    
+    def create(schedule_data):
+        new_schedule = Tasks(**schedule_data).save()
+        return {"task": str(new_schedule.id)}
+
+
+class TaskData(EmbeddedDocument):
     name = StringField(max_length=100, required=True)
-    tasks = EmbeddedDocumentListField('Tasks', required=True)
-    dependencies = EmbeddedDocumentListField('Dependencies', required=False)
+    commands = EmbeddedDocumentListField('TaskCommands', required=True)
+    agents = ListField(StringField(max_length=100))
+    sleep = IntField(default=0)
+    agents = ListField(StringField(max_length=100), required=True)
+
+
+class Edges(EmbeddedDocument):
+    source = StringField(max_length=100, required=True, db_field='from')
+    to = StringField(max_length=100, required=True)
+
+
+class Nodes(EmbeddedDocument):
+    id = StringField(max_length=100, required=True)
+    label = StringField(max_length=100, required=True)
+    taskData = EmbeddedDocumentField(TaskData)
+
+
+class Graphs(Document):
+    name = StringField(max_length=100, required=True, unique=True)
+    nodes = EmbeddedDocumentListField(Nodes, required=True)
+    edges = EmbeddedDocumentListField(Edges, required=False)
+
+    def create(graph_data):
+        new_graph = Graphs(**graph_data).save()
+        return {"graph": str(new_graph.id)}
 
     @queryset_manager
-    def get(doc_cls, queryset, campaign_id=None, *args, **kwargs):
-        campaign_object = queryset.filter(id=campaign_id) if campaign_id else \
-            queryset.only('id', 'name', 'tasks.name', 'tasks.start_date', 'tasks.state')
-        result = json.loads(campaign_object.to_json())
-        return result
+    def delete(doc_cls, queryset, graph_id=None, *args, **kwargs):
+        queryset.objects.get(id=graph_id).delete()
+        return {"message": "Successfully deleted graph"}
 
-    @queryset_manager
-    def delete(doc_cls, queryset, campaign_id=None, *args, **kwargs):
-        queryset.objects.get(id=campaign_id).delete()
-        return {"message": "Successfully deleted campaign"}
+# class Campaigns(Document):
+#     name = StringField(max_length=100, required=True, unique=True)
+#     tasks = EmbeddedDocumentListField('Tasks', required=True)
+#     dependencies = EmbeddedDocumentListField('Dependencies', required=False)
 
-    def create(campaign_data):
-        new_campaign = Campaigns(**campaign_data).save()
-        return {"campaign": str(new_campaign.id)}
+#     @queryset_manager
+#     def get(doc_cls, queryset, campaign_id=None, *args, **kwargs):
+#         campaign_object = queryset.filter(id=campaign_id) if campaign_id else \
+#             queryset.only('id', 'name', 'tasks.name', 'tasks.start_date', 'tasks.state')
+#         result = json.loads(campaign_object.to_json())
+#         return result
+
+#     @queryset_manager
+#     def delete(doc_cls, queryset, campaign_id=None, *args, **kwargs):
+#         queryset.objects.get(id=campaign_id).delete()
+#         return {"message": "Successfully deleted campaign"}
+
+#     def create(campaign_data):
+#         new_campaign = Campaigns(**campaign_data).save()
+#         return {"campaign": str(new_campaign.id)}
 
 class RevokedTokens(Document):
     token = StringField(max_length=100, required=True, unique=True)
