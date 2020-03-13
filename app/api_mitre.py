@@ -1,10 +1,16 @@
 from app import api, celery
 from app.utils.depends import validate_worker
+from app.utils.mitre import ImportMitre
 from fastapi import Depends, Body
 from app.database.models import Techniques, Actors
 from bson.json_util import dumps
 import json
 
+
+@api.post('/api/v1/mitre/update')
+async def update_mitre():
+    update_db = ImportMitre().update()
+    return update_db
 
 @api.get('/api/v1/mitre/by_phase')
 async def aggregated_techniques(name: str = '', phase: str = '', platform: str = 'Windows', actor: str = ''):

@@ -1,0 +1,31 @@
+# Reternal remapping of Meta technique: https://github.com/uber-common/metta
+
+name: System Owner-User Discovery
+author: cg / redcanary
+description: System Owner-User Discovery
+reference: http://pwnwiki.io/#!index.md
+mitre_technique:
+  id: T1033
+  platform: Windows
+commands:
+- input: whoami
+  sleep: 1
+  module: exec_shell
+- input: wmic useraccount get /ALL
+  sleep: 1
+  module: exec_shell
+- input: quser /SERVER:localhost
+  sleep: 1
+  module: exec_shell
+- input: qwinsta.exe /server:localhost
+  sleep: 1
+  module: exec_shell
+- input: set
+  sleep: 1
+  module: exec_shell
+- input: tasklist /v
+  sleep: 1
+  module: exec_shell
+- input: net user administrator
+  sleep: 1
+  module: exec_shell

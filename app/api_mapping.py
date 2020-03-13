@@ -1,11 +1,16 @@
 from app.database.models import CommandMapping
 from app import api, celery
 from app.utils.depends import validate_worker
+from app.utils.mapping import Mapping
 from fastapi import Depends, Body
 from app.database.models import Techniques, Actors
 from bson.json_util import dumps
 import json
 
+@api.post('/api/v1/mapping/update')
+async def update_mapping():
+    sync_techniques = Mapping().load()
+    print(sync_techniques)
 
 @api.get('/api/v1/mapping/techniques/distinct')
 async def get_techniques(distinct: str, phase: str = '', platform: str = 'Windows',
@@ -39,7 +44,6 @@ async def get_actor_mapping(actor_name: str):
     actor_objects = CommandMapping.objects(actors__name=actor_name)
     json_object = json.loads(actor_objects.to_json())
     return json_object
-
 
 @api.get('/api/v1/mapping/count')
 async def get_mapping_count(by: str = 'phase'):

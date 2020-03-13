@@ -22,8 +22,8 @@ class TaskCommands(EmbeddedDocument):
     technique_name = StringField(max_length=150, required=False)
     kill_chain_phase = StringField(max_length=100)
     technique_id = StringField(max_length=100, required=False)
-    type = StringField(max_length=50, required=True, choices=('Manual', 'Mitre', 'Actor'))
-    name = StringField(max_length=150, required=True)
+    category = StringField(max_length=50, required=True, choices=('Manual', 'Mitre', 'Actor'))
+    module = StringField(max_length=150, required=True)
     input = StringField(max_length=900, required=False)
     sleep = IntField(default=0)
 
@@ -31,16 +31,6 @@ class TaskCommands(EmbeddedDocument):
 class Dependencies(EmbeddedDocument):
     source = StringField(max_length=100, required=True, db_field='from')
     destination = StringField(max_length=100, required=True)
-
-
-class Tasks(EmbeddedDocument):
-    name = StringField(max_length=100, required=True)
-    commands = EmbeddedDocumentListField('TaskCommands', required=True)
-    agents = ListField(StringField(max_length=100))
-    sleep = IntField(default=0)
-    start_date = DateTimeField(default=datetime.datetime.now())
-    state = StringField(max_length=100, required=False, choices=STATUSOPTIONS, default='Open')
-    agents = ListField(StringField(max_length=100), required=True)
 
 
 class Tasks(Document):
@@ -91,26 +81,6 @@ class Graphs(Document):
         queryset.objects.get(id=graph_id).delete()
         return {"message": "Successfully deleted graph"}
 
-# class Campaigns(Document):
-#     name = StringField(max_length=100, required=True, unique=True)
-#     tasks = EmbeddedDocumentListField('Tasks', required=True)
-#     dependencies = EmbeddedDocumentListField('Dependencies', required=False)
-
-#     @queryset_manager
-#     def get(doc_cls, queryset, campaign_id=None, *args, **kwargs):
-#         campaign_object = queryset.filter(id=campaign_id) if campaign_id else \
-#             queryset.only('id', 'name', 'tasks.name', 'tasks.start_date', 'tasks.state')
-#         result = json.loads(campaign_object.to_json())
-#         return result
-
-#     @queryset_manager
-#     def delete(doc_cls, queryset, campaign_id=None, *args, **kwargs):
-#         queryset.objects.get(id=campaign_id).delete()
-#         return {"message": "Successfully deleted campaign"}
-
-#     def create(campaign_data):
-#         new_campaign = Campaigns(**campaign_data).save()
-#         return {"campaign": str(new_campaign.id)}
 
 class RevokedTokens(Document):
     token = StringField(max_length=100, required=True, unique=True)
@@ -194,6 +164,22 @@ class Techniques(Document):
     data_sources = ListField(StringField(max_length=100))
     detection = StringField(max_length=1000)
     actors = EmbeddedDocumentListField('TechniqueActors')
+    
+    def create(*args, **kwargs):
+        new_technique = Techniques.objects(technique_id=kwargs['technique_id']).upsert_one(**kwargs)
+        return {"technique": str(new_technique.id)}
+
+    @queryset_manager
+    def delete(doc_cls, queryset, technique_id=None, *args, **kwargs):
+        queryset.objects.get(id=technique_id).delete()
+        return {"message": "Successfully deleted technique"}
+
+    def relate(technique_id, actor_id, name, *args, **kwargs):
+        technique_object = Techniques.objects.get(technique_id=technique_id)
+        technique_actors = TechniqueActors(actor_id=actor_id, name=name)
+        append_actors = technique_object.actors.append(technique_actors)
+        technique_object.save()
+        return {'message':'Succesfully added technique relationship'}
 
 
 class ActorReferences(EmbeddedDocument):
@@ -216,13 +202,29 @@ class Actors(Document):
     aliases = ListField(StringField(max_length=100, required=False))
     techniques = EmbeddedDocumentListField('ActorTechniques')
 
+    def create(*args, **kwargs):
+        new_actor = Actors.objects(actor_id=kwargs['actor_id']).upsert_one(**kwargs)
+        return {"actor": str(new_actor.id)}
+
+    @queryset_manager
+    def delete(doc_cls, queryset, actor_id=None, *args, **kwargs):
+        print(actor_id)
+        queryset.objects.get(id=actor_id).delete()
+        return {"message": "Successfully deleted actor"}
+
+    def relate(actor_id, technique_id, name, *args, **kwargs):
+        actor_object = Actors.objects.get(actor_id=actor_id)
+        actor_techniques = ActorTechniques(technique_id=technique_id, name=name )
+        actor_object.techniques.append(actor_techniques)
+        actor_object.save()
+        return {'message':'Succesfully added actor relationship'}
 
 class CommandMapping(Document):
     author = StringField(max_length=100, required=False)
     name = StringField(max_length=100, required=True, unique_with=['technique_id', 'platform', 'kill_chain_phase'])
     description = StringField(max_length=200, required=False)
     reference = StringField(max_length=100, required=False, default=None)
-
+    worker = StringField(max_length=100, required=False, default='any')
     technique_id = StringField(max_length=200, required=True)
     technique_name = StringField(max_length=100, required=True)
     external_id = StringField(max_length=100, required=True)
@@ -230,3 +232,12 @@ class CommandMapping(Document):
     platform = StringField(max_length=30, choices=PLATFORMS, required=True)
     commands = EmbeddedDocumentListField('TaskCommands', required=True)
     actors = EmbeddedDocumentListField('TechniqueActors')
+
+    def create(*args, **kwargs):
+        new_mapping = CommandMapping.objects(name=kwargs['name']).upsert_one(**kwargs)
+        return {"mapping": str(new_mapping.id)}
+
+    @queryset_manager
+    def delete(doc_cls, queryset, mapping_id=None, *args, **kwargs):
+        queryset.objects.get(id=mapping_id).delete()
+        return {"message": "Successfully deleted mapping"}

@@ -1,0 +1,54 @@
+# Reternal remapping of Meta technique: https://github.com/uber-common/metta
+
+name: account discovery commands via net, dsquery, wmic
+author: cg
+description: account discovery commands via net, dsquery, wmic (note dsquery specific
+  to dsquery location on vagrant)
+reference: http://carnal0wnage.attackresearch.com
+mitre_technique:
+  id: T1087
+  platform: Windows
+commands:
+- input: net group \"Domain Admins\" /domain
+  sleep: 1
+  type: exec_shell
+- input: net user
+  sleep: 1
+  type: exec_shell
+- input: net user /domain
+  sleep: 1
+  type: exec_shell
+- input: net localgroup administrators
+  sleep: 1
+  type: exec_shell
+- input: net share
+  sleep: 1
+  type: exec_shell
+- input: net use
+  sleep: 1
+  type: exec_shell
+- input: net accounts
+  sleep: 1
+  type: exec_shell
+- input: net config workstation
+  sleep: 1
+  type: exec_shell
+- input: C:\\tools\win32bins\\activedirectory\\dsquery server
+  sleep: 1
+  type: exec_shell
+- input: C:\\tools\win32bins\\activedirectory\\dsquery user -name smith* | C:\\tools\win32bins\\activedirectory\\dsget
+    user -dn -desc
+  sleep: 1
+  type: exec_shell
+- input: wmic useraccount list /format:list
+  sleep: 1
+  type: exec_shell
+- input: wmic ntdomain
+  sleep: 1
+  type: exec_shell
+- input: wmic group list /format:list
+  sleep: 1
+  type: exec_shell
+- input: wmic sysaccount list /format:list
+  sleep: 1
+  type: exec_shell

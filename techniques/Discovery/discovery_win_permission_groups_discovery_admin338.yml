@@ -1,0 +1,13 @@
+# Reternal remapping of Meta technique: https://github.com/uber-common/metta
+
+name: Permission Groups Discovery commands run by admin@338 APT GROUP
+author: cg
+description: Permission Groups Discovery commands run by admin@338 APT GROUP
+reference: https://attack.mitre.org/wiki/Group/G0018
+mitre_technique:
+  id: T1069
+  platform: Windows
+commands:
+- input: net localgroup administrators >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
+  sleep: 1
+  type: exec_shell

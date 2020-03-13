@@ -7,6 +7,7 @@ from app import api
 @api.exception_handler(errors.ValidationError)
 async def mongo_invalid_format(request, exc):
     response = {'message': 'Invalid document format'}
+    print(exc, request)
     return JSONResponse(status_code=400, content=response )
 
 @api.exception_handler(errors.DoesNotExist)
