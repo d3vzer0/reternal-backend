@@ -57,7 +57,7 @@ ENV CORS_DOMAIN="${CORS_DOMAIN}"
 
 ADD . /home/reternal/
 
-ENTRYPOINT ["python", "run.py"]
+ENTRYPOINT ["uvicorn", "app:api"]
 
 
 
