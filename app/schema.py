@@ -73,6 +73,3 @@ class ScheduleOut(BaseModel):
     @validator('id', pre=True, always=True)
     def _get_id(cls, v):
         return v['$oid']
-
-class SchedulesOut(BaseModel):
-    tasks: List[ScheduleOut] = []
