@@ -8,17 +8,23 @@ class CommandIn(BaseModel):
     technique_name: str = None
     kill_chain_phase: str = None
     technique_id: str = None
-    type: str
-    name: str
+    category: str
+    module: str
     input: str
     sleep: str = 1
+
+
+class Agents(BaseModel):
+    name: str
+    integration: str
+    id: str
 
 class TaskIn(BaseModel):
     name: str
     sleep: int
     start_date: datetime
     commands: List[CommandIn]
-    agents: List[str]
+    agents: List[Agents]
 
 class DependencyIn(BaseModel):
     source: str
@@ -58,7 +64,7 @@ class ScheduleOut(BaseModel):
     start_date: str
     commands: List[CommandIn]
     state: str
-    agents: List[str]
+    agents: List[Agents]
 
     @validator('start_date', pre=True, always=True)
     def _get_start_date(cls, v):

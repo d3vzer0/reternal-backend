@@ -1,8 +1,9 @@
 from mongoengine import (connect, Document, StringField, IntField,
     ReferenceField, EmbeddedDocumentListField, ListField, EmbeddedDocument,
-    DateTimeField, queryset_manager, EmbeddedDocumentField)
+    DateTimeField, queryset_manager, EmbeddedDocumentField, UUIDField)
 from app.environment import config
 from app.utils.random import Random
+import uuid
 import datetime
 import pyotp
 import json
@@ -33,14 +34,21 @@ class Dependencies(EmbeddedDocument):
     destination = StringField(max_length=100, required=True)
 
 
+class Agents(EmbeddedDocument):
+    name = StringField(max_length=100, required=True)
+    id = StringField(max_length=100, required=True)
+    integration = StringField(max_length=100, required=True)
+
 class Tasks(Document):
     task = StringField(max_length=100, required=True, unique_with='campaign')
     campaign = StringField(max_length=100, required=True)
     dependencies = ListField(StringField(max_length=100, required=True))
+    group_id = UUIDField(required=True)
+    scheduled_date = DateTimeField(default=datetime.datetime.now())
     start_date = DateTimeField(default=datetime.datetime.now())
     commands = EmbeddedDocumentListField('TaskCommands', required=True)
     sleep = IntField(default=0)
-    agents = ListField(StringField(max_length=100))
+    agents = EmbeddedDocumentListField('Agents', required=True)
     state = StringField(max_length=100, required=False, choices=STATUSOPTIONS, default='Open')
     
     def create(schedule_data):
@@ -53,7 +61,7 @@ class TaskData(EmbeddedDocument):
     commands = EmbeddedDocumentListField('TaskCommands', required=True)
     agents = ListField(StringField(max_length=100))
     sleep = IntField(default=0)
-    agents = ListField(StringField(max_length=100), required=True)
+    agents = EmbeddedDocumentListField('Agents', required=True)
 
 
 class Edges(EmbeddedDocument):

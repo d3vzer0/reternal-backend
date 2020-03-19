@@ -6,8 +6,8 @@ from app import api
 
 @api.exception_handler(errors.ValidationError)
 async def mongo_invalid_format(request, exc):
-    response = {'message': 'Invalid document format'}
-    print(exc, request)
+    response = {'message': 'Invalid document format, invalid fields supplied'}
+    print(exc)
     return JSONResponse(status_code=400, content=response )
 
 @api.exception_handler(errors.DoesNotExist)
@@ -19,3 +19,14 @@ async def mongo_not_found(request, exc):
 async def mongo_not_unique(request, exc):
     response = {'message': 'Document is not unique'}
     return JSONResponse(status_code=409, content=response )
+
+@api.exception_handler(errors.FieldDoesNotExist)
+async def mongo_field_does_not_exist(request, exc):
+    print(exc)
+    response = {'message': 'Invalid document format, provided field does not exist'}
+    return JSONResponse(status_code=400, content=response )
+
+# @api.exception_handler(errors.FieldDoesNotExist)
+# async def unauthorised(request, exc):
+#     response = {'message': 'Unauthorised'}
+#     return JSONResponse(status_code=401, content=response )

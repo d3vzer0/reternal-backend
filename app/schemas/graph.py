@@ -2,6 +2,10 @@
 from pydantic import BaseModel, validator, Field
 from typing import List, Dict
 
+class Agents(BaseModel):
+    name: str
+    integration: str
+    id: str
 
 class CommandIn(BaseModel):
     reference: str = None
@@ -9,15 +13,15 @@ class CommandIn(BaseModel):
     technique_name: str = None
     kill_chain_phase: str = None
     technique_id: str = None
-    type: str
-    name: str
+    category: str
+    module: str
     input: str
     sleep: str = 1
 
 class TaskData(BaseModel):
     name: str
     commands: List[CommandIn]
-    agents: List[str]
+    agents: List[Agents]
 
 class Nodes(BaseModel):
     id: str
