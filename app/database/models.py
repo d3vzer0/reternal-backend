@@ -1,6 +1,7 @@
 from mongoengine import (connect, Document, StringField, IntField,
     ReferenceField, EmbeddedDocumentListField, ListField, EmbeddedDocument,
-    DateTimeField, queryset_manager, EmbeddedDocumentField, UUIDField)
+    DateTimeField, queryset_manager, EmbeddedDocumentField, UUIDField,
+    BooleanField)
 from app.environment import config
 from app.utils.random import Random
 import uuid
@@ -88,39 +89,6 @@ class Graphs(Document):
     def delete(doc_cls, queryset, graph_id=None, *args, **kwargs):
         queryset.objects.get(id=graph_id).delete()
         return {"message": "Successfully deleted graph"}
-
-
-class RevokedTokens(Document):
-    token = StringField(max_length=100, required=True, unique=True)
-
-
-class Users(Document):
-    username = StringField(max_length=50, required=True, unique=True)
-    password = StringField(max_length=128, required=True)
-    salt = StringField(default=Random.create(20), max_length=20, required=True)
-    role = StringField(max_length=20, required=True, default="User", choices=('User', 'Admin'))
-    otp = StringField(max_length=16, required=False, default=pyotp.random_base32())
-
-    meta = {
-        'ordering': ['-username'],
-    }
-    
-    @queryset_manager
-    def delete(doc_cls, queryset, username, target_user, *args, **kwargs):
-        if username == target_user:
-            return {"result":"failed", "data":"Unable to remove self from database"}
-        queryset.objects.get(username=target_user).delete()
-        result = {'message':'Succesfully deleted user'}
-
-
-    def create(username, password, role):
-        salt = Random.create(20)
-        password_hash = hashlib.sha512()
-        password_string = salt + password
-        password_hash.update(password_string.encode('utf-8'))
-        password_hash = str(password_hash.hexdigest())
-        new_user = Users(username=username, salt=salt, password=password_hash, role = role).save()
-        return {'user': str(new_user.id)}
 
 
 class Macros(Document):
@@ -249,3 +217,32 @@ class CommandMapping(Document):
     def delete(doc_cls, queryset, mapping_id=None, *args, **kwargs):
         queryset.objects.get(id=mapping_id).delete()
         return {"message": "Successfully deleted mapping"}
+
+
+class DataQuality(EmbeddedDocument):
+    device_completeness = IntField(min_value=0, max_value=5, default=0)
+    field_completeness = IntField(min_value=0, max_value=5, default=0)
+    timeliness = IntField(min_value=0, max_value=5, default=0)
+    consistency = IntField(min_value=0, max_value=5, default=0)
+    retention = IntField(min_value=0, max_value=5, default=0)
+
+
+class Coverage(Document):
+    data_source_name = StringField(max_length=100, required=True, unique=True)
+    date_registered = DateTimeField(default=datetime.datetime.now())
+    date_connected = DateTimeField()
+    available_for_data_analytics = BooleanField(default=False)
+    enabled = BooleanField(default=False)
+    products = ListField(StringField(max_length=100))
+    comment = StringField()
+    data_quality = EmbeddedDocumentField('DataQuality')
+
+    def create(*args, **kwargs):
+        print(kwargs)
+        new_mapping = Coverage.objects(data_source_name=kwargs['data_source_name']).upsert_one(**kwargs)
+        return {"coverage_id": str(new_mapping.id)}
+
+    @queryset_manager
+    def delete(doc_cls, queryset, coverage_id=None, *args, **kwargs):
+        queryset.objects.get(id=coverage_id).delete()
+        return {"message": "Successfully deleted coverage_id"}

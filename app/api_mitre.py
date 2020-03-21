@@ -2,8 +2,10 @@ from app import api, celery
 from app.utils.depends import validate_worker
 from app.utils.mitre import ImportMitre
 from fastapi import Depends, Body
-from app.database.models import Techniques, Actors
+from app.database.models import Techniques, Actors, Coverage
+from app.schemas import DatasourcesOut, CoverageOut, CoverageIn
 from bson.json_util import dumps
+from typing import List, Dict
 import json
 
 
@@ -44,13 +46,13 @@ async def get_phases():
     return mitre_phases
     
 
-@api.get('/api/v1/mitre/datasources')
+@api.get('/api/v1/mitre/datasources', response_model=List[str])
 async def get_datasources():
     mitre_datasources = Techniques.objects().distinct('data_sources')
-    return mitre_datasources
+    return [ds for ds in mitre_datasources if ds]
 
 
-@api.get('/api/v1/mitre/actors')
+@api.get('/api/v1/mitre/actors', response_model=List[str])
 async def get_actors():
     mitre_actors = Actors.objects().distinct('name')
     return mitre_actors
@@ -61,3 +63,16 @@ async def get_actor(actor_name: str):
     mitre_actor = Actors.objects.get(name=actor_name)
     json_object = json.loads(mitre_actor.to_json())
     return json_object
+
+
+@api.get('/api/v1/mitre/coverage', response_model=List[CoverageOut])
+async def get_coverage():
+    mitre_coverage = Coverage.objects()
+    json_object = json.loads(mitre_coverage.to_json())
+    return json_object
+
+
+@api.post('/api/v1/mitre/coverage')
+async def set_coverage(coverage_data: CoverageIn):
+    modify_coverage = Coverage.create(**coverage_data.dict())
+    return modify_coverage
