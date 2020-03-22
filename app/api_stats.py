@@ -7,7 +7,9 @@ from typing import List, Dict
 import json
 
 
-# @api.post('/api/v1/mitre/update')
-# async def update_mitre():
-#     update_db = ImportMitre().update()
-#     return update_db
+@api.get('/api/v1/stats/techniques')
+async def stats_techniques():
+    ''' Get the calculated score of the technique coverage '''
+    unique_techniques = Techniques.objects().distinct('data_sources')
+    matching_datasources = 'todo'
+    return matching_datasources

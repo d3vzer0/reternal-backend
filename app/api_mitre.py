@@ -11,11 +11,13 @@ import json
 
 @api.post('/api/v1/mitre/update')
 async def update_mitre():
+    ''' Synchronise the latest MITRE ATTCK techniques with the database '''
     update_db = ImportMitre().update()
     return update_db
 
 @api.get('/api/v1/mitre/by_phase')
 async def aggregated_techniques(name: str = '', phase: str = '', platform: str = 'Windows', actor: str = ''):
+    ''' Get all of the ATTCK techniques grouped by attack phase '''
     pipeline = [{"$unwind":"$kill_chain_phases"},
         {'$group':{ '_id':{'kill_chain_phases':'$kill_chain_phases'},
         'techniques':{'$push': {'name':'$name', 'technique_id':'$technique_id'}}}}]
@@ -28,6 +30,7 @@ async def aggregated_techniques(name: str = '', phase: str = '', platform: str =
 
 @api.get('/api/v1/mitre/techniques')
 async def get_technique(technique_id: str):
+    ''' Get the unique ATTCK techniques '''
     mitre_techniques = Techniques.objects().distinct('name')
     json_object = json.loads(mitre_techniques.to_json())
     return json_object
@@ -35,6 +38,7 @@ async def get_technique(technique_id: str):
 
 @api.get('/api/v1/mitre/technique/{technique_id}')
 async def get_technique(technique_id: str):
+    ''' Get technique details by technique ID '''
     mitre_technique = Techniques.objects.get(technique_id=technique_id)
     json_object = json.loads(mitre_technique.to_json())
     return json_object
@@ -42,24 +46,28 @@ async def get_technique(technique_id: str):
 
 @api.get('/api/v1/mitre/phases')
 async def get_phases():
+    ''' Get the unique ATTCK kill chain phases '''
     mitre_phases = Techniques.objects().distinct('kill_chain_phases')
     return mitre_phases
     
 
 @api.get('/api/v1/mitre/datasources', response_model=List[str])
 async def get_datasources():
+    ''' Get the unique datasources '''
     mitre_datasources = Techniques.objects().distinct('data_sources')
     return [ds for ds in mitre_datasources if ds]
 
 
 @api.get('/api/v1/mitre/actors', response_model=List[str])
 async def get_actors():
+    ''' Get the unique ATTCK actors '''
     mitre_actors = Actors.objects().distinct('name')
     return mitre_actors
 
 
 @api.get('/api/v1/mitre/actor/{actor_name}')
 async def get_actor(actor_name: str):
+    ''' Get the actor details by actor name '''
     mitre_actor = Actors.objects.get(name=actor_name)
     json_object = json.loads(mitre_actor.to_json())
     return json_object
@@ -67,6 +75,7 @@ async def get_actor(actor_name: str):
 
 @api.get('/api/v1/mitre/coverage', response_model=List[CoverageOut])
 async def get_coverage():
+    ''' Get the current datasources coverage documents'''
     mitre_coverage = Coverage.objects()
     json_object = json.loads(mitre_coverage.to_json())
     return json_object
@@ -74,5 +83,6 @@ async def get_coverage():
 
 @api.post('/api/v1/mitre/coverage')
 async def set_coverage(coverage_data: CoverageIn):
+    ''' Update or create a new datasource coverage document '''
     modify_coverage = Coverage.create(**coverage_data.dict())
     return modify_coverage

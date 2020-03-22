@@ -16,6 +16,7 @@ task_schema = ''
 
 
 def commit_task(task, campaign_data, group_id):
+    ''' Commit an individual task in the campaign graph '''
     task_content = { 'group_id':group_id, 'task': task['name'], 'campaign': campaign_data['name'],
         'commands': task['commands'], 'sleep': task['sleep'], 'agents': task['agents'],
         'state': 'Open', 'dependencies': [dep['source'] for dep in \
@@ -25,11 +26,13 @@ def commit_task(task, campaign_data, group_id):
 
 @api.get('/api/v1/tasks', response_model=List[TasksOut])
 async def get_tasks():
+    ''' Get all of the scheduled tasks '''
     all_tasks = json.loads(Tasks.objects().to_json())
     return all_tasks
 
 @api.post('/api/v1/tasks')
 async def create_task(campaign: CampaignIn):
+    ''' Schedule a new campaign, create individial task document per task '''
     campaign_data = campaign.dict()
     group_id = str(uuid.uuid4())
     create_all_tasks = [commit_task(task, campaign_data, group_id) for task in campaign_data['tasks']]
@@ -37,6 +40,7 @@ async def create_task(campaign: CampaignIn):
 
 @api.get('/api/v1/tasks/next', response_model=List[ScheduleOut])
 async def get_task_next():
+    ''' Calculate the next task to be executed, following the graph dependencies '''
     pipeline = [ {"$unwind": { "path": "$dependencies", "preserveNullAndEmptyArrays": True} },
         { "$lookup": {  "from": "tasks",  "as":"graph",  "let": { "dep": "$dependencies", "old": "$task", "camp": "$campaign"},
         "pipeline": [ { "$match": { "$expr": { "$and": [ { "$eq": [ "$task",  "$$dep" ] },{ "$eq": [ "$state", "Processed" ] },
@@ -46,6 +50,7 @@ async def get_task_next():
 
 @api.get('/api/v1/tasks/queue')
 async def get_task_queue():
+    ''' Get the list of tasks that are currently executing '''
     scheduled_tasks = []
     for worker, tasks in task_inspector.scheduled().items():
         scheduled_tasks = [{'name': task['request']['name'], 'eta':task['eta'],
