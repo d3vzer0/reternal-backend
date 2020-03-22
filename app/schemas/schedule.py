@@ -21,6 +21,24 @@ class CommandIn(BaseModel):
     sleep: str = 1
 
 
+class ModuleExecution(BaseModel):
+    module: str = None
+    external_id: str = None
+
+
+class AgentExecution(BaseModel):
+    agent: str
+    integration: str
+    modules: List[ModuleExecution] = None
+
+
+class PlanTaskOut(BaseModel):
+    group_id: str
+    task: str
+    campaign: str
+    executed: List[AgentExecution]
+
+
 class PlanTaskIn(BaseModel):
     id: str = Field(None, alias='_id')
     task: str
@@ -34,15 +52,15 @@ class PlanTaskIn(BaseModel):
 class ScheduleOut(BaseModel):
     id: str = Field(None, alias='_id')
     task: str
-    start_date: str
+    planned_date: str
     commands: List[CommandIn]
     state: str
     agents: List[Agents]
     campaign: str
     group_id: str
 
-    @validator('start_date', pre=True, always=True)
-    def _get_start_date(cls, v):
+    @validator('planned_date', pre=True, always=True)
+    def _get_planned_date(cls, v):
         return str(datetime.fromtimestamp(v['$date']/1000))
 
     @validator('id', pre=True, always=True)

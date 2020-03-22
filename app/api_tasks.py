@@ -11,8 +11,6 @@ import uuid
 import json
 
 task_inspector = inspect()
-task_schema = ''
-
 
 def commit_task(task, campaign_data, group_id):
     ''' Commit an individual task in the campaign graph '''

@@ -4,4 +4,4 @@ from app.schemas.datasources import DatasourcesOut
 from app.schemas.coverage import CoverageOut, CoverageIn
 from app.schemas.campaigns import CampaignsOut, CampaignIn
 from app.schemas.modules import ModuleIn
-from app.schemas.schedule import PlanTaskIn, ScheduleOut
+from app.schemas.schedule import PlanTaskIn, ScheduleOut, PlanTaskOut
