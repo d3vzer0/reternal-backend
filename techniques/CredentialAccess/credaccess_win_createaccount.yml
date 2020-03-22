@@ -8,12 +8,15 @@ mitre_technique:
   id: T1136
   platform: Windows
 commands:
-- input: net user /add {{ add_user_name }} {{ add_user_pass }}
+- input:
+    command: net user /add {{ add_user_name }} {{ add_user_pass }}
   sleep: 1
   module: exec_shell
-- input: net localgroup administrators {{ add_user_name }} /add
+- input:
+    command: net localgroup administrators {{ add_user_name }} /add
   sleep: 1
   module: exec_shell
-- input: net user {{ add_user_name }} /delete
+- input:
+    command: net user {{ add_user_name }} /delete
   sleep: 1
   module: exec_shell

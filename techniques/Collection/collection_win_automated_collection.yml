@@ -8,10 +8,12 @@ mitre_technique:
   id: T1119
   platform: Windows
 commands:
-- input: dir 'c:' /b /s .docx | findstr /e .docx
+- input:
+    command: dir 'c:' /b /s .docx | findstr /e .docx
   sleep: 1
   module: exec_shell
-- input: powershell Get-ChildItem -Recurse -Include *.doc | % {Copy-Item $_.FullName
-    -destination c:\temp}
+- input:
+    command: powershell Get-ChildItem -Recurse -Include *.doc | % {Copy-Item $_.FullName
+      -destination c:\temp}
   sleep: 1
   module: exec_shell

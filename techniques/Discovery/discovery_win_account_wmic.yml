@@ -8,16 +8,20 @@ mitre_technique:
   id: T1087
   platform: Windows
 commands:
-- input: wmic useraccount get /ALL
+- input:
+    command: wmic useraccount get /ALL
   sleep: 1
   module: exec_shell
-- input: wmic process get caption,executablepath,commandline
+- input:
+    command: wmic process get caption,executablepath,commandline
   sleep: 1
   module: exec_shell
-- input: wmic qfe get description,installedOn /format:csv
+- input:
+    command: wmic qfe get description,installedOn /format:csv
   sleep: 1
   module: exec_shell
-- input: powershell.exe get-wmiobject -class \"win32_share\" -namespace \"root\CIMV2\"
-    -computer \"{{ target_name }}\"
+- input:
+    command: powershell.exe get-wmiobject -class \"win32_share\" -namespace \"root\CIMV2\"
+      -computer \"{{ target_name }}\"
   sleep: 1
   module: exec_shell

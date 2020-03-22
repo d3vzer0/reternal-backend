@@ -8,7 +8,8 @@ mitre_technique:
   id: T1136
   platform: Windows
 commands:
-- input: dsadd user CN={{ add_user_name }},CN=Users,DC=it,DC=uk,DC=savilltech,DC=com -samid John
-    -pwd {{ target_user_pass }}
+- input:
+    command: dsadd user CN={{ add_user_name }},CN=Users,DC=it,DC=uk,DC=savilltech,DC=com -samid John
+      -pwd {{ target_user_pass }}
   sleep: 1
   module: exec_shell

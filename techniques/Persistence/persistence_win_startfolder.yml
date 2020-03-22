@@ -8,45 +8,59 @@ mitre_technique:
   id: T1060
   platform: Windows
 commands:
-- input: copy blah.exe C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\blah.exe
+- input:
+    command: copy blah.exe C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\blah.exe
   sleep: 1
   module: exec_shell
-- input: copy evil.exe C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\evil.exe
+- input:
+    command: copy evil.exe C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\evil.exe
   sleep: 1
   module: exec_shell
-- input: copy evil.bat C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\evil.bat
+- input:
+    command: copy evil.bat C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\evil.bat
   sleep: 1
   module: exec_shell
-- input: copy evil.bat C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\evil.bat
+- input:
+    command: copy evil.bat C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\evil.bat
   sleep: 1
   module: exec_shell
-- input: copy shady.lnk C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.lnk
+- input:
+    command: copy shady.lnk C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.lnk
   sleep: 1
   module: exec_shell
-- input: copy shady.lnk C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.lnk
+- input:
+    command: copy shady.lnk C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.lnk
   sleep: 1
   module: exec_shell
-- input: echo [InternetShortcut] > C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
+- input:
+    command: echo [InternetShortcut] > C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
   sleep: 1
   module: exec_shell
-- input: echo URL=file:///C:\\windows\\temp\evil.exe >> C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
+- input:
+    command: echo URL=file:///C:\\windows\\temp\evil.exe >> C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
   sleep: 1
   module: exec_shell
-- input: type C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
+- input:
+    command: type C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
   sleep: 1
   module: exec_shell
-- input: echo [InternetShortcut] > C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
+- input:
+    command: echo [InternetShortcut] > C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
   sleep: 1
   type: exec_shell
-- input: echo URL=file:///C:\\windows\\temp\evil.exe >> C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
+- input:
+    command: echo URL=file:///C:\\windows\\temp\evil.exe >> C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
   sleep: 1
   module: exec_shell
-- input: type C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
+- input:
+    command: type C:\\ProgramData\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.url
   sleep: 1
   module: exec_shell
-- input: echo start /b powershell.exe -nop -w hidden -c Get-Host >> C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.cmd
+- input:
+    command: echo start /b powershell.exe -nop -w hidden -c Get-Host >> C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.cmd
   sleep: 1
   module: exec_shell
-- input: type C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.cmd
+- input:
+    command: type C:\\Users\\automation\\AppData\\Roaming\\Microsoft\\Windows\\Startm~1\\Programs\\Startup\\shady.cmd
   sleep: 1
   module: exec_shell

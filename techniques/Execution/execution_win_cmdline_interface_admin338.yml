@@ -8,18 +8,23 @@ mitre_technique:
   id: T1059
   platform: Windows
 commands:
-- input: echo d76261ba3b624933a6ebb5dd73758db4 > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\time.exe
+- input:
+    command: echo d76261ba3b624933a6ebb5dd73758db4 > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\time.exe
   sleep: 1
   module: exec_shell
-- input: echo d76261ba3b624933a6ebb5dd73758db4 > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\WmiApCom
+- input:
+    command: echo d76261ba3b624933a6ebb5dd73758db4 > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\WmiApCom
   sleep: 1
   module: exec_shell
-- input: echo 79b68cdd0044edd4fbf8067b22878644 > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\WmiApCom.bat
+- input:
+    command: echo 79b68cdd0044edd4fbf8067b22878644 > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\WmiApCom.bat
   sleep: 1
   module: exec_shell
-- input: type C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\WmiApCom.bat
+- input:
+    command: type C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\WmiApCom.bat
   sleep: 1
   module: exec_shell
-- input: echo \"backdoor commands\" > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\computername_upload.bat
+- input:
+    command: echo \"backdoor commands\" > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\computername_upload.bat
   sleep: 1
   module: exec_shell

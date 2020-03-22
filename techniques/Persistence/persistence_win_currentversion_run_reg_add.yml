@@ -8,10 +8,12 @@ mitre_technique:
   id: T1060
   platform: Windows
 commands:
-- input: reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v JUSCHED /d
-    {{ persistence_save_path }} /f
+- input:
+    command: reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v JUSCHED /d
+      {{ persistence_save_path }} /f
   sleep: 1
   module: exec_shell
-- input: reg query HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v JUSCHED
+- input:
+    command: reg query HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v JUSCHED
   sleep: 1
   module: exec_shell

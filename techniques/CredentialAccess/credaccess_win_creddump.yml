@@ -8,9 +8,11 @@ mitre_technique:
   id: T1003
   platform: Windows
 commands:
-- input: setspn.exe -t corp -q */*
+- input:
+    command: setspn.exe -t corp -q */*
   sleep: 1
   module: exec_shell
-- input: vssadmin.exe list shadows
+- input:
+    command: vssadmin.exe list shadows
   sleep: 1
   module: exec_shell

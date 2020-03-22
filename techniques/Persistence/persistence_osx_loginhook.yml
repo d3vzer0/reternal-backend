@@ -8,6 +8,7 @@ mitre_technique:
   id: T1037
   platform: macOS
 commands:
-- input: defaults write com.apple.loginwindow LoginHook /usr/bin/hook.sh
+- input:
+    command: defaults write com.apple.loginwindow LoginHook /usr/bin/hook.sh
   sleep: 1
   module: exec_shell

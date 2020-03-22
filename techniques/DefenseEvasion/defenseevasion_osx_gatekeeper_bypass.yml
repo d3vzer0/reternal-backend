@@ -8,9 +8,11 @@ mitre_technique:
   id: T1144
   platform: macOS
 commands:
-- input: sudo xattr -r -d com.apple.quarantine /path/to/MyApp.app
+- input:
+    command: sudo xattr -r -d com.apple.quarantine /path/to/MyApp.app
   sleep: 1
   module: exec_shell
-- input: sudo spctl --master-disable
+- input:
+    command: sudo spctl --master-disable
   sleep: 1
   module: exec_shell

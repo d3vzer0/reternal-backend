@@ -8,15 +8,19 @@ mitre_technique:
   id: T1082
   platform: Windows
 commands:
-- input: gpresult -r
+- input:
+    command: gpresult -r
   sleep: 1
   module: exec_shell
-- input: gpresult -z
+- input:
+    command: gpresult -z
   sleep: 1
   module: exec_shell
-- input: reg query HKLM\\SYSTEM\\CurrentControlSet\\Services\\Disk\\Enum
+- input:
+    command: reg query HKLM\\SYSTEM\\CurrentControlSet\\Services\\Disk\\Enum
   sleep: 1
   module: exec_shell
-- input: systeminfo
+- input:
+    command: systeminfo
   sleep: 1
   module: exec_shell

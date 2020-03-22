@@ -8,9 +8,11 @@ mitre_technique:
   id: T1012
   platform: Windows
 commands:
-- input: REG QUERY HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RecentDocs
+- input:
+    command: REG QUERY HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RecentDocs
   sleep: 1
   module: exec_shell
-- input: REG QUERY HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce
+- input:
+    command: REG QUERY HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce
   sleep: 1
   module: exec_shell

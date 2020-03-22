@@ -8,6 +8,7 @@ mitre_technique:
   id: T1070
   platform: Windows
 commands:
-- input: wevtutil cl System
+- input:
+    command: wevtutil cl System
   sleep: 1
   module: exec_shell

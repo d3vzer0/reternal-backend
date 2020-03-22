@@ -8,6 +8,7 @@ mitre_technique:
   id: T1060
   platform: Windows
 commands:
-- input: reg add HKLM\SYSTEM\CurrentControlSet\Services\Null /v Instance
+- input:
+    command: reg add HKLM\SYSTEM\CurrentControlSet\Services\Null /v Instance
   sleep: 1
   module: exec_shell

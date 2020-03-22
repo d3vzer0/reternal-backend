@@ -8,9 +8,11 @@ mitre_technique:
   id: T1036
   platform: Windows
 commands:
-- input: echo \"BUBBLEWRAP (also known as Backdoor.APT.FakeWinHTTPHelper)\"  > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\upload
+- input:
+    command: echo \"BUBBLEWRAP (also known as Backdoor.APT.FakeWinHTTPHelper)\"  > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\upload
   sleep: 1
   module: exec_shell
-- input: ren C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\upload audiodg.exe
+- input:
+    command: ren C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\upload audiodg.exe
   sleep: 1
   module: exec_shell

@@ -8,9 +8,11 @@ mitre_technique:
   id: T1044
   platform: Linux
 commands:
-- input: find / -perm -o+w
+- input:
+    command: find / -perm -o+w
   sleep: 1
   module: exec_shell
-- input: find / ! -type l -perm -002  2>/dev/null
+- input:
+    command: find / ! -type l -perm -002  2>/dev/null
   sleep: 1
   module: exec_shell

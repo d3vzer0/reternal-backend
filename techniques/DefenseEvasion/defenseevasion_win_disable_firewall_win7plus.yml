@@ -8,18 +8,23 @@ mitre_technique:
   id: T1089
   platform: Windows
 commands:
-- input: netsh advfirewall set  currentprofile state off
+- input:
+    command: netsh advfirewall set  currentprofile state off
   sleep: 1
   module: exec_shell
-- input: netsh advfirewall set domainprofile state off
+- input:
+    command: netsh advfirewall set domainprofile state off
   sleep: 1
   module: exec_shell
-- input: netsh advfirewall set privateprofile state off
+- input:
+    command: netsh advfirewall set privateprofile state off
   sleep: 1
   module: exec_shell
-- input: netsh advfirewall set publicprofile state off
+- input:
+    command: netsh advfirewall set publicprofile state off
   sleep: 1
   module: exec_shell
-- input: netsh advfirewall set  allprofiles state off
+- input:
+    command: netsh advfirewall set  allprofiles state off
   sleep: 1
   module: exec_shell

@@ -8,18 +8,24 @@ mitre_technique:
   id: T1089
   platform: Windows
 commands:
-- input: net stop MpsSvc
+- input:
+    command: net stop MpsSvc
   sleep: 1
   module: exec_shell
-- input: net stop wscsvc
+- input:
+    command: net stop wscsvc
   sleep: 1
   module: exec_shell
-- input: net stop WinDefend
+- input:
+    command: net stop WinDefend
   sleep: 1
   module: exec_shell
-- input: net stop wuauserv
+- input:
+    command:
+    command: net stop wuauserv
   sleep: 1
   module: exec_shell
-- input: net stop carbonblack
+- input:
+    command: net stop carbonblack
   sleep: 1
   module: exec_shell

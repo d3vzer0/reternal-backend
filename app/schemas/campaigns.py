@@ -31,3 +31,40 @@ class CampaignsOut(BaseModel):
     @validator('start_date', pre=True, always=True)
     def _get_start_date(cls, v):
         return str(v.strftime("%Y-%m-%d %H:%M:%S"))
+
+
+class CommandIn(BaseModel):
+    reference: str = None
+    reference_name: str = None
+    technique_name: str = None
+    kill_chain_phase: str = None
+    technique_id: str = None
+    category: str
+    integration: str
+    module: str
+    input: Dict
+    sleep: str = 1
+
+
+class Agents(BaseModel):
+    name: str
+    integration: str
+    id: str
+
+
+class TaskIn(BaseModel):
+    name: str
+    sleep: int
+    start_date: datetime
+    commands: List[CommandIn]
+    agents: List[Agents]
+
+class DependencyIn(BaseModel):
+    source: str
+    destination: str
+
+
+class CampaignIn(BaseModel):
+    name: str
+    tasks: List[TaskIn]
+    dependencies: List[DependencyIn]

@@ -8,24 +8,31 @@ mitre_technique:
   id: T1033
   platform: Windows
 commands:
-- input: whoami
+- input:
+    command: whoami
   sleep: 1
   module: exec_shell
-- input: wmic useraccount get /ALL
+- input:
+    command: wmic useraccount get /ALL
   sleep: 1
   module: exec_shell
-- input: quser /SERVER:localhost
+- input:
+    command: quser /SERVER:localhost
   sleep: 1
   module: exec_shell
-- input: qwinsta.exe /server:localhost
+- input:
+    command: qwinsta.exe /server:localhost
   sleep: 1
   module: exec_shell
-- input: set
+- input:
+    command: set
   sleep: 1
   module: exec_shell
-- input: tasklist /v
+- input:
+    command: tasklist /v
   sleep: 1
   module: exec_shell
-- input: net user administrator
+- input:
+    command: net user administrator
   sleep: 1
   module: exec_shell

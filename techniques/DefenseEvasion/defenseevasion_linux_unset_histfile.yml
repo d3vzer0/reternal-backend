@@ -8,18 +8,23 @@ mitre_technique:
   id: T1146
   platform: Linux
 commands:
-- input: unset HISTFILE
+- input:
+    command: unset HISTFILE
   sleep: 1
   module: exec_shell
-- input: export HISTFILESIZE=0
+- input:
+    command: export HISTFILESIZE=0
   sleep: 1
   module: exec_shell
-- input: history -c
+- input:
+    command: history -c
   sleep: 1
   module: exec_shell
-- input: rm ~/.bash_history
+- input:
+    command: rm ~/.bash_history
   sleep: 1
   module: exec_shell
-- input: cat /dev/null > ~/.bash_history
+- input:
+    command: cat /dev/null > ~/.bash_history
   sleep: 1
   module: exec_shell

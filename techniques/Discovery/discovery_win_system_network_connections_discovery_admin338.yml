@@ -8,6 +8,7 @@ mitre_technique:
   id: T1049
   platform: Windows
 commands:
-- input: netstat -ano >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
+- input:
+    command: netstat -ano >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell

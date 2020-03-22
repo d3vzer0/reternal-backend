@@ -8,9 +8,11 @@ mitre_technique:
   id: T1057
   platform: Windows
 commands:
-- input: wmic process list /format:list
+- input:
+    command: wmic process list /format:list
   sleep: 1
   module: exec_shell
-- input: tasklist /v
+- input:
+    command: tasklist /v
   sleep: 1
   module: exec_shell

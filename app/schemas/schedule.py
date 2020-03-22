@@ -1,11 +1,13 @@
 
 from pydantic import BaseModel, validator, Field
 from typing import List, Dict
+from datetime import datetime
 
 class Agents(BaseModel):
     name: str
     integration: str
     id: str
+
 
 class CommandIn(BaseModel):
     reference: str = None
@@ -18,29 +20,32 @@ class CommandIn(BaseModel):
     input: Dict
     sleep: str = 1
 
-class TaskData(BaseModel):
-    name: str
-    commands: List[CommandIn]
-    agents: List[Agents]
 
-class Nodes(BaseModel):
-    id: str
-    label: str
-    taskData: TaskData
-
-class Edges(BaseModel):
-    source: str
-    to: str
-
-class Graph(BaseModel):
-    nodes: List[Nodes]
-    edges: List[Edges]
-    name: str
-
-class GraphsOut(BaseModel):
+class PlanTaskIn(BaseModel):
     id: str = Field(None, alias='_id')
-    name: str = None
+    task: str
+    start_date: str
+    commands: List[CommandIn]
+    state: str
+    agents: List[Agents]
+    group_id: str
+    campaign: str
+
+class ScheduleOut(BaseModel):
+    id: str = Field(None, alias='_id')
+    task: str
+    start_date: str
+    commands: List[CommandIn]
+    state: str
+    agents: List[Agents]
+    campaign: str
+    group_id: str
+
+    @validator('start_date', pre=True, always=True)
+    def _get_start_date(cls, v):
+        return str(datetime.fromtimestamp(v['$date']/1000))
 
     @validator('id', pre=True, always=True)
     def _get_id(cls, v):
         return v['$oid']
+

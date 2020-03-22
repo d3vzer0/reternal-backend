@@ -1,7 +1,7 @@
 from mongoengine import (connect, Document, StringField, IntField,
     ReferenceField, EmbeddedDocumentListField, ListField, EmbeddedDocument,
     DateTimeField, queryset_manager, EmbeddedDocumentField, UUIDField,
-    BooleanField)
+    BooleanField, DictField)
 from app.environment import config
 from app.utils.random import Random
 import uuid
@@ -17,6 +17,37 @@ STATUSOPTIONS = ('Processed', 'Open', 'Processing')
 # Init DB
 connect(db='reternal', host=config['MONGO_HOST'])
 
+class Agents(EmbeddedDocument):
+    name = StringField(max_length=100, required=True)
+    id = StringField(max_length=100, required=True)
+    integration = StringField(max_length=100, required=True)
+
+
+class ExecutedModules(Document):
+    reference = ReferenceField('CommandMapping', required=False)
+    reference_name = StringField(max_length=150, required=False)
+    technique_name = StringField(max_length=150, required=False)
+    kill_chain_phase = StringField(max_length=100)
+    technique_id = StringField(max_length=100, required=False)
+    category = StringField(max_length=50, required=True, choices=('Manual', 'Mitre', 'Actor'))
+    module = StringField(max_length=150, required=True)
+    integration = StringField(max_length=150, required=True)
+    external_id = StringField(max_length=150)
+    sleep = IntField(default=0)
+    start_date = DateTimeField(default=datetime.datetime.now())
+    end_date = DateTimeField()
+    agent = StringField(max_length=100)
+    task = StringField(max_length=100)
+    group_id = StringField(max_length=100, unique_with=['task', 'module', 'agent', 'input'])
+    campaign = StringField(max_length=100)
+    input = DictField()
+    agent = StringField(max_length=100)
+
+    def create(module_data):
+        new_execution = ExecutedModules(**module_data).save()
+        return {"executed_task": str(new_execution.id)}
+
+
  # Database models
 class TaskCommands(EmbeddedDocument):
     reference = ReferenceField('CommandMapping', required=False)
@@ -26,19 +57,14 @@ class TaskCommands(EmbeddedDocument):
     technique_id = StringField(max_length=100, required=False)
     category = StringField(max_length=50, required=True, choices=('Manual', 'Mitre', 'Actor'))
     module = StringField(max_length=150, required=True)
-    input = StringField(max_length=900, required=False)
+    integration = StringField(max_length=150, default='empire2')
+    input = DictField()
     sleep = IntField(default=0)
-
 
 class Dependencies(EmbeddedDocument):
     source = StringField(max_length=100, required=True, db_field='from')
     destination = StringField(max_length=100, required=True)
 
-
-class Agents(EmbeddedDocument):
-    name = StringField(max_length=100, required=True)
-    id = StringField(max_length=100, required=True)
-    integration = StringField(max_length=100, required=True)
 
 class Tasks(Document):
     task = StringField(max_length=100, required=True, unique_with='group_id')
@@ -47,6 +73,7 @@ class Tasks(Document):
     group_id = StringField(required=True)
     scheduled_date = DateTimeField(default=datetime.datetime.now())
     start_date = DateTimeField(default=datetime.datetime.now())
+    end_date = DateTimeField()
     commands = EmbeddedDocumentListField('TaskCommands', required=True)
     sleep = IntField(default=0)
     agents = EmbeddedDocumentListField('Agents', required=True)
@@ -184,7 +211,6 @@ class Actors(Document):
 
     @queryset_manager
     def delete(doc_cls, queryset, actor_id=None, *args, **kwargs):
-        print(actor_id)
         queryset.objects.get(id=actor_id).delete()
         return {"message": "Successfully deleted actor"}
 

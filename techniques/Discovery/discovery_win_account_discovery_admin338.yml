@@ -8,9 +8,11 @@ mitre_technique:
   id: T1087
   platform: Windows
 commands:
-- input: net user >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
+- input:
+    command: net user >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell
-- input: net user /domain >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
+- input:
+    command: net user /domain >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell

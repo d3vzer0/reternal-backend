@@ -8,12 +8,15 @@ mitre_technique:
   id: T1018
   platform: Windows
 commands:
-- input: net view
+- input:
+    command: net view
   sleep: 1
   module: exec_shell
-- input: net view /domain
+- input:
+    command: net view /domain
   sleep: 1
   module: exec_shell
-- input: arp -a
+- input:
+    command: arp -a
   sleep: 1
   module: exec_shell

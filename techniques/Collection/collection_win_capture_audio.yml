@@ -8,6 +8,7 @@ mitre_technique:
   id: T1123
   platform: Windows
 commands:
-- input: SoundRecorder /FILE test.wma /DURATION 0000:00:30
+- input:
+    command: SoundRecorder /FILE test.wma /DURATION 0000:00:30
   sleep: 1
   module: exec_shell

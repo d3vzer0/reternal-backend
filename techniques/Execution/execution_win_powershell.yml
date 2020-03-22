@@ -8,15 +8,19 @@ mitre_technique:
   id: T1086
   platform: Windows
 commands:
-- input: powershell Get-NetIPConfiguration
+- input:
+    command: powershell Get-NetIPConfiguration
   sleep: 1
   module: exec_shell
-- input: powershell -window hidden Get-NetIPConfiguration
+- input:
+    command: powershell -window hidden Get-NetIPConfiguration
   sleep: 1
   module: exec_shell
-- input: powershell -window hidden -encodedcommand {{ ps_encoded_command }}
+- input:
+    command: powershell -window hidden -encodedcommand {{ ps_encoded_command }}
   sleep: 1
   module: exec_shell
-- input: powershell Write-Host \"{{ ps_custom_message }}\"
+- input:
+    command: powershell Write-Host \"{{ ps_custom_message }}\"
   sleep: 1
   module: exec_shell

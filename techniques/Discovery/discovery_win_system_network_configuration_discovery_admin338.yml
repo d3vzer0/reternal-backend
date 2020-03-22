@@ -9,6 +9,7 @@ mitre_technique:
   id: T1016
   platform: Windows
 commands:
-- input: ipconfig /all >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
+- input:
+    command: ipconfig /all >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell

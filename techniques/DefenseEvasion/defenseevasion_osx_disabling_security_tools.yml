@@ -8,12 +8,15 @@ mitre_technique:
   id: T1089
   platform: macOS
 commands:
-- input: sudo launchctl unload /Library/LaunchDaemons/com.carbonblack.daemon.plist
+- input:
+    command: sudo launchctl unload /Library/LaunchDaemons/com.carbonblack.daemon.plist
   sleep: 1
   module: exec_shell
-- input: sudo launchctl unload /Library/LaunchDaemons/at.obdev.littlesnitchd.plist
+- input:
+    command: sudo launchctl unload /Library/LaunchDaemons/at.obdev.littlesnitchd.plist
   sleep: 1
   module: exec_shell
-- input: sudo launchctl unload /Library/LaunchDaemons/com.opendns.osx.RoamingClientConfigUpdater.plist
+- input:
+    command: sudo launchctl unload /Library/LaunchDaemons/com.opendns.osx.RoamingClientConfigUpdater.plist
   sleep: 1
   module: exec_shell

@@ -8,6 +8,7 @@ mitre_technique:
   id: T1089
   platform: Windows
 commands:
-- input: netsh firewall set opmode mode=DISABLE
+- input:
+    command: netsh firewall set opmode mode=DISABLE
   sleep: 1
   module: exec_shell

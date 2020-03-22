@@ -8,12 +8,15 @@ mitre_technique:
   id: T1166
   platform: macOS
 commands:
-- input: find / -perm -2000 -o -perm -4000 -ls 2>/dev/null
+- input:
+    command: find / -perm -2000 -o -perm -4000 -ls 2>/dev/null
   sleep: 1
   module: exec_shell
-- input: find / -perm -2000 2>/dev/null
+- input:
+    command: find / -perm -2000 2>/dev/null
   sleep: 1
   type: exec_shell
-- input: find / -perm -4000 2>/dev/null
+- input:
+    command: find / -perm -4000 2>/dev/null
   sleep: 1
   module: exec_shell

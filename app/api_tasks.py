@@ -1,7 +1,6 @@
 from app import api, celery
 from app.utils.depends import validate_worker
-from app.schema import CampaignIn, CampaignsOut, CampaignOut, ScheduleOut
-from app.schemas import TasksOut
+from app.schemas import TasksOut, CampaignIn
 from app.database.models import Tasks
 from fastapi import Depends, Body
 from datetime import datetime, timedelta
@@ -37,22 +36,3 @@ async def create_task(campaign: CampaignIn):
     group_id = str(uuid.uuid4())
     create_all_tasks = [commit_task(task, campaign_data, group_id) for task in campaign_data['tasks']]
     return create_all_tasks
-
-@api.get('/api/v1/tasks/next', response_model=List[ScheduleOut])
-async def get_task_next():
-    ''' Calculate the next task to be executed, following the graph dependencies '''
-    pipeline = [ {"$unwind": { "path": "$dependencies", "preserveNullAndEmptyArrays": True} },
-        { "$lookup": {  "from": "tasks",  "as":"graph",  "let": { "dep": "$dependencies", "old": "$task", "camp": "$campaign"},
-        "pipeline": [ { "$match": { "$expr": { "$and": [ { "$eq": [ "$task",  "$$dep" ] },{ "$eq": [ "$state", "Processed" ] },
-        { "$eq": [ "$campaign", "$$camp" ] } ] } } } ]  } }, { "$match": { "$or":[{"graph": { "$ne": [] }}, {"dependencies": { "$exists": False }}] } } ]
-    result = json.loads(dumps(Tasks.objects(start_date__lte=datetime.now()).aggregate(*pipeline)))
-    return result
-
-@api.get('/api/v1/tasks/queue')
-async def get_task_queue():
-    ''' Get the list of tasks that are currently executing '''
-    scheduled_tasks = []
-    for worker, tasks in task_inspector.scheduled().items():
-        scheduled_tasks = [{'name': task['request']['name'], 'eta':task['eta'],
-            'options':task['request']['args'], 'id': task['request']['id']}  for task in tasks]
-    return scheduled_tasks

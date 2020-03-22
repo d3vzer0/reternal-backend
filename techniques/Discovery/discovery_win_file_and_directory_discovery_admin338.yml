@@ -8,18 +8,23 @@ mitre_technique:
   id: T1083
   platform: Windows
 commands:
-- input: dir c:\\ >> C:\\Users\\AUTOMA~1\AppData\\Local\\Temp\\download
+- input:
+    command: dir c:\\ >> C:\\Users\\AUTOMA~1\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell
-- input: dir \"c:\\Documents and Settings\" >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
+- input:
+    command: dir \"c:\\Documents and Settings\" >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell
-- input: dir \"c:\\Program Files\\\" >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
+- input:
+    command: dir \"c:\\Program Files\\\" >> C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell
-- input: dir d:\\ >> C:\\Users\\AUTOMA~1\AppData\\Local\\Temp\\download
+- input:
+    command: dir d:\\ >> C:\\Users\\AUTOMA~1\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell
-- input: type C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
+- input:
+    command: type C:\\Users\\AUTOMA~1\\AppData\\Local\\Temp\\download
   sleep: 1
   module: exec_shell

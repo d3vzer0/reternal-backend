@@ -23,10 +23,10 @@ async def get_techniques(distinct: str, phase: str = '', platform: str = 'Window
     return result
 
 @api.get('/api/v1/mapping/techniques')
-async def get_technique(phase: str = '', platform: str = 'Windows', actor: str = ''):
+async def get_technique(phase: str = '', platform: str = 'Windows', actor: str = '', integration: str = ''):
     ''' Get all techniques that are mapped to ATTCK and match the provided filter options '''
-    techniques_objects = CommandMapping.objects(platform=platform,
-            kill_chain_phase=phase, actors__name__contains=actor)
+    techniques_objects = CommandMapping.objects(platform=platform, commands__integration__contains=integration,
+            kill_chain_phase__contains=phase, actors__name__contains=actor)
     result = json.loads(techniques_objects.to_json())
     return result
 

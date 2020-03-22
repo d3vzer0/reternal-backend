@@ -8,9 +8,11 @@ mitre_technique:
   id: T1115
   platform: Windows
 commands:
-- input: whoami | clip
+- input:
+    command: whoami | clip
   sleep: 1
   module: exec_shell
-- input: powershell.exe echo Get-Process | clip
+- input:
+    command: powershell.exe echo Get-Process | clip
   sleep: 1
   module: exec_shell
