@@ -31,7 +31,7 @@ async def get_tasks():
 @api.post('/api/v1/tasks')
 async def create_task(campaign: CampaignIn):
     campaign_data = campaign.dict()
-    group_id = uuid.uuid4()
+    group_id = str(uuid.uuid4())
     create_all_tasks = [commit_task(task, campaign_data, group_id) for task in campaign_data['tasks']]
     return create_all_tasks
 

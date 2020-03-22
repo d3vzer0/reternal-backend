@@ -4,7 +4,7 @@ from typing import List, Dict
 from datetime import datetime
 
 
-class TasksOut(BaseModel):
+class Tasks(BaseModel):
     id: str = Field(None, alias='_id')
     task: str
     campaign: str
@@ -15,8 +15,19 @@ class TasksOut(BaseModel):
 
     @validator('id', pre=True, always=True)
     def _get_id(cls, v):
-        return v['$oid']
+        return str(v)
 
     @validator('start_date', pre=True, always=True)
     def _get_start_date(cls, v):
-        return str(datetime.fromtimestamp(v['$date']/1000))
+        return str(v.strftime("%Y-%m-%d %H:%M:%S"))
+
+
+class CampaignsOut(BaseModel):
+    id: str = Field(None, alias='_id')
+    campaign: str
+    start_date: str
+    tasks: List[Tasks]
+
+    @validator('start_date', pre=True, always=True)
+    def _get_start_date(cls, v):
+        return str(v.strftime("%Y-%m-%d %H:%M:%S"))

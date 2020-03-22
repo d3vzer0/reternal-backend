@@ -41,10 +41,10 @@ class Agents(EmbeddedDocument):
     integration = StringField(max_length=100, required=True)
 
 class Tasks(Document):
-    task = StringField(max_length=100, required=True, unique_with='campaign')
+    task = StringField(max_length=100, required=True, unique_with='group_id')
     campaign = StringField(max_length=100, required=True)
     dependencies = ListField(StringField(max_length=100, required=True))
-    group_id = UUIDField(required=True)
+    group_id = StringField(required=True)
     scheduled_date = DateTimeField(default=datetime.datetime.now())
     start_date = DateTimeField(default=datetime.datetime.now())
     commands = EmbeddedDocumentListField('TaskCommands', required=True)
