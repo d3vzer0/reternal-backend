@@ -9,7 +9,7 @@ from flask_jwt_extended import (
 import json
 
 class APINavigatorTasks(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def __init__(self, layer_file='app/mitre/reternal-layer.json'):
         self.layer_file = layer_file

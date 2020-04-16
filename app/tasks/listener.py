@@ -2,7 +2,7 @@ from app import app, celery
 from app.sockets.so_connect import rsession
 from app.processors import Pulse, Response
 from flask_socketio import SocketIO
-from app.tasks import FlaskCelery
+from app.utils.initcelery import FlaskCelery
 
 
 @celery.task(name='api.result')
