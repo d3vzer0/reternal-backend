@@ -40,7 +40,7 @@ class ImportMitre:
     def actor(self, technique_details):
         import_actor = Actors.create(actor_id=technique_details['id'], name=technique_details['name'],
             references=technique_details['external_references'],
-            aliases= technique_details.get('aliases', None))
+            aliases= technique_details.get('aliases', None), description=technique_details.get('description', None))
         return import_actor
 
     def relation(self, technique_details):

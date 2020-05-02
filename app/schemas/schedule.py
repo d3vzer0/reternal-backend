@@ -42,7 +42,8 @@ class PlanTaskOut(BaseModel):
 class PlanTaskIn(BaseModel):
     id: str = Field(None, alias='_id')
     task: str
-    start_date: str
+    # start_date: str
+    planned_date: str
     commands: List[CommandIn]
     state: str
     agents: List[Agents]

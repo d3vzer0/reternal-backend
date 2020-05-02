@@ -33,3 +33,4 @@ from app.api_tasks import *
 from app.api_graph import *
 from app.api_campaigns import *
 from app.api_scheduler import *
+from app.api_results import *

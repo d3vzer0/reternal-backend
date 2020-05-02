@@ -15,18 +15,6 @@ async def update_mitre():
     update_db = ImportMitre().update()
     return update_db
 
-@api.get('/api/v1/mitre/by_phase')
-async def aggregated_techniques(name: str = '', phase: str = '', platform: str = 'Windows', actor: str = ''):
-    ''' Get all of the ATTCK techniques grouped by attack phase '''
-    pipeline = [{"$unwind":"$kill_chain_phases"},
-        {'$group':{ '_id':{'kill_chain_phases':'$kill_chain_phases'},
-        'techniques':{'$push': {'name':'$name', 'technique_id':'$technique_id'}}}}]
-    mitre_objects = Techniques.objects(platforms__contains=platform,
-        name__contains=name, actors__name__contains=actor, kill_chain_phases__contains=phase).only('name',
-        'kill_chain_phases', 'platforms', 'actors').aggregate(*pipeline)
-    json_object = json.loads(dumps(mitre_objects))
-    return json_object
-
 
 @api.get('/api/v1/mitre/techniques')
 async def get_technique(technique_id: str):
@@ -86,3 +74,16 @@ async def set_coverage(coverage_data: CoverageIn):
     ''' Update or create a new datasource coverage document '''
     modify_coverage = Coverage.create(**coverage_data.dict())
     return modify_coverage
+
+
+@api.get('/api/v1/mitre/aggregate/by_phase')
+async def aggregated_techniques(name: str = '', phase: str = '', platform: str = 'Windows', actor: str = ''):
+    ''' Get all of the ATTCK techniques grouped by attack phase '''
+    pipeline = [{"$unwind":"$kill_chain_phases"},
+        {'$group':{ '_id':{'kill_chain_phases':'$kill_chain_phases'},
+        'techniques':{'$push': {'name':'$name', 'technique_id':'$technique_id'}}}}]
+    mitre_objects = Techniques.objects(platforms__contains=platform,
+        name__contains=name, actors__name__contains=actor, kill_chain_phases__contains=phase).only('name',
+        'kill_chain_phases', 'platforms', 'actors').aggregate(*pipeline)
+    json_object = json.loads(dumps(mitre_objects))
+    return json_object

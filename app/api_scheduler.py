@@ -51,7 +51,7 @@ async def get_task_queue():
             'options':task['request']['args'], 'id': task['request']['id']} for task in tasks]
     return scheduled_tasks
 
-@api.get('/api/v1/scheduler/plan', response_model=List[PlanTaskOut])
+@api.post('/api/v1/scheduler/plan', response_model=List[PlanTaskOut])
 async def plan_task_next(next_task: List[PlanTaskIn]):
     ''' Get the next scheduled task and run execution '''
     executed_modules = []
