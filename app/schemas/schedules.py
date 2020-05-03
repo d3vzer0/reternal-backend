@@ -43,7 +43,7 @@ class PlanTaskIn(BaseModel):
     id: str = Field(None, alias='_id')
     task: str
     # start_date: str
-    planned_date: str
+    scheduled_date: str
     commands: List[CommandIn]
     state: str
     agents: List[Agents]
@@ -53,14 +53,14 @@ class PlanTaskIn(BaseModel):
 class ScheduleOut(BaseModel):
     id: str = Field(None, alias='_id')
     task: str
-    planned_date: str
+    scheduled_date: str
     commands: List[CommandIn]
     state: str
     agents: List[Agents]
     campaign: str
     group_id: str
 
-    @validator('planned_date', pre=True, always=True)
+    @validator('scheduled_date', pre=True, always=True)
     def _get_planned_date(cls, v):
         return str(datetime.fromtimestamp(v['$date']/1000))
 

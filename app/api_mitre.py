@@ -3,7 +3,8 @@ from app.utils.depends import validate_worker
 from app.utils.mitre import ImportMitre
 from fastapi import Depends, Body
 from app.database.models import Techniques, Actors, Coverage
-from app.schemas import DatasourcesOut, CoverageOut, CoverageIn
+from app.schemas.datasources import DatasourcesOut
+from app.schemas.coverage import CoverageOut, CoverageIn
 from bson.json_util import dumps
 from typing import List, Dict
 import json

@@ -4,6 +4,7 @@ from mongoengine import (connect, Document, StringField, IntField,
     BooleanField, DictField)
 from app.environment import config
 from app.utils.random import Random
+from app.schemas.campaigns import CampaignDenomIn
 import uuid
 import datetime
 import pyotp
@@ -78,7 +79,6 @@ class Tasks(Document):
     dependencies = ListField(StringField(max_length=100, required=True))
     group_id = StringField(required=True)
     scheduled_date = DateTimeField(default=datetime.datetime.now())
-    planned_date = DateTimeField(default=datetime.datetime.now())
     start_date = DateTimeField()
     end_date = DateTimeField()
     commands = EmbeddedDocumentListField('TaskCommands', required=True)
@@ -98,6 +98,39 @@ class TaskData(EmbeddedDocument):
     sleep = IntField(default=0)
     agents = EmbeddedDocumentListField('Agents', required=True)
 
+
+class CampaignTasks(EmbeddedDocument):
+    name = StringField(max_length=100, required=True)
+    scheduled_date = DateTimeField(default=datetime.datetime.now())
+    start_date = DateTimeField()
+    end_date = DateTimeField()
+    agents = EmbeddedDocumentListField('Agents', required=True)
+    dependencies = ListField(StringField(max_length=100, required=True))
+    state = StringField(max_length=100, required=False, choices=STATUSOPTIONS, default='Open')
+    meta = {'strict': False}
+
+class Campaigns(Document):
+    name = StringField(max_length=100, required=True)
+    group_id = StringField(required=True, unique=True)
+    saved_date = DateTimeField(default=datetime.datetime.now())
+    tasks = EmbeddedDocumentListField('CampaignTasks', required=True)
+    dependencies = ListField(StringField(max_length=100, required=True))
+
+    def denormalize_tasks(task, campaign_data, group_id):
+        ''' Commit an individual task in the campaign graph '''
+        task_content = { 'group_id':group_id, 'task': task['name'], 'campaign': campaign_data['name'],
+            'commands': task['commands'], 'sleep': task['sleep'], 'agents': task['agents'],
+            'state': 'Open', 'dependencies': [dep['source'] for dep in \
+                campaign_data['dependencies'] if dep['destination'] == task['name']] }
+        save_task = Tasks.create(task_content)
+        return save_task
+
+    def create(campaign_data):
+        group_id = str(uuid.uuid4())
+        campaign_tasks = [Campaigns.denormalize_tasks(task, campaign_data, group_id) for task in campaign_data['tasks']]
+        denormalized_campaign = CampaignDenomIn(**campaign_data, group_id=group_id)
+        new_campaign = Campaigns(**denormalized_campaign.dict()).save()
+        return {"campaign": str(new_campaign.id), 'tasks': campaign_tasks}
 
 class Edges(EmbeddedDocument):
     source = StringField(max_length=100, required=True, db_field='from')

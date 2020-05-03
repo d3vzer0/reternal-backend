@@ -1,7 +1,7 @@
 from app import api, celery
 from app.utils.depends import validate_worker
 from fastapi import Depends, Body
-from app.schemas import ModuleIn
+from app.schemas.modules import ModuleIn
 
 
 @api.get('/api/v1/modules/{worker_name}')

@@ -1,12 +1,17 @@
 from app import api, celery
 from app.utils.depends import validate_worker
-from app.schemas import CampaignsOut, TasksOut
-from app.database.models import Tasks
+from app.schemas.campaigns import CampaignsOut, CampaignIn, CampaignDenomIn
+from app.schemas.tasks import TasksOut
+from app.database.models import Tasks, Campaigns
 from bson.json_util import dumps
 from typing import List
-import uuid
 import json
 
+@api.post('/api/v1/campaigns')
+async def create_campaign(campaign: CampaignIn):
+    ''' Schedule a new campaign, create individial task document per task '''
+    create_campaign = Campaigns.create(campaign.dict())
+    return create_campaign
 
 @api.get('/api/v1/campaign/{campaign_guid}', response_model=List[TasksOut])
 async def get_campaign(campaign_guid):
@@ -17,14 +22,5 @@ async def get_campaign(campaign_guid):
 @api.get('/api/v1/campaigns', response_model=List[CampaignsOut])
 async def get_campaigns():
     ''' Get running tasks grouped by campaigns '''
-    pipeline = [
-        { "$group": { 
-            "_id": "$group_id", 
-            "campaign": {  "$first": "$campaign" },
-            "scheduled_date": { "$first": "$scheduled_date" },
-            "tasks": { '$push': "$$ROOT" } 
-            } 
-        } 
-    ]
-    campaigns = list(Tasks.objects().aggregate(*pipeline))
-    return campaigns
+    all_campaigns = json.loads(Campaigns.objects().to_json())
+    return all_campaigns

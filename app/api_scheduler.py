@@ -1,6 +1,6 @@
 from app import api, celery
 from app.utils.depends import validate_worker
-from app.schemas import PlanTaskIn, ScheduleOut, PlanTaskOut
+from app.schemas.schedules import PlanTaskIn, ScheduleOut, PlanTaskOut
 from app.database.models import Tasks, ExecutedModules
 from fastapi import Depends, Body
 from datetime import datetime, timedelta
@@ -39,7 +39,7 @@ async def get_task_next() -> list:
         { "$lookup": {  "from": "tasks",  "as":"graph",  "let": { "dep": "$dependencies", "old": "$task", "camp": "$campaign"},
         "pipeline": [ { "$match": { "$expr": { "$and": [ { "$eq": [ "$task",  "$$dep" ] },{ "$eq": [ "$state", "Processed" ] },
         { "$eq": [ "$campaign", "$$camp" ] } ] } } } ]  } }, { "$match": { "$or":[{"graph": { "$ne": [] }}, {"dependencies": { "$exists": False }}] } } ]
-    result = json.loads(dumps(Tasks.objects(planned_date__lte=datetime.now()).aggregate(*pipeline)))
+    result = json.loads(dumps(Tasks.objects(scheduled_date__lte=datetime.now()).aggregate(*pipeline)))
     return result
 
 @api.get('/api/v1/scheduler/queue')
