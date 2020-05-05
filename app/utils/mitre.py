@@ -34,7 +34,8 @@ class ImportMitre:
             description=technique_details['description'], platforms=technique_details['x_mitre_platforms'],
             permissions_required=technique_details.get('x_mitre_permissions_required', None),
             data_sources=technique_details.get('x_mitre_data_sources', None),
-            references=technique_details['external_references'], kill_chain_phases=killchain)
+            references=technique_details['external_references'], kill_chain_phases=killchain,
+            data_sources_available=[])
         return import_technique
 
     def actor(self, technique_details):

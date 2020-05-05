@@ -30,3 +30,4 @@ async def get_listner_options(worker_name: str, context: dict = Depends(validate
     ''' Get all available listeners to run by specific c2 framework '''
     get_listeners = celery.send_task(context[worker_name]['listeners']['options']).get()['response']
     return get_listeners
+

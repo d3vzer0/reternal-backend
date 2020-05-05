@@ -99,3 +99,13 @@ class CampaignDenomIn(BaseModel):
     group_id: str
     tasks: List[CampaignTaskDenomIn]
     dependencies: List[DependencyIn]
+
+
+
+class CreateCampaignTasksOut(BaseModel):
+    task: str
+
+class CreateCampaignOut(BaseModel):
+    campaign: str
+    group_id: str
+    tasks: List[CreateCampaignTasksOut]

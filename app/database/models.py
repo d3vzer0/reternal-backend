@@ -125,12 +125,18 @@ class Campaigns(Document):
         save_task = Tasks.create(task_content)
         return save_task
 
+    def delete(group_id):
+        get_campaign = Campaigns.objects(group_id=group_id).get()
+        Campaigns.objects(group_id=group_id).delete()
+        Tasks.objects(group_id=group_id).delete()
+        return {'message': 'Succesfully deleted campaign'}
+
     def create(campaign_data):
         group_id = str(uuid.uuid4())
         campaign_tasks = [Campaigns.denormalize_tasks(task, campaign_data, group_id) for task in campaign_data['tasks']]
         denormalized_campaign = CampaignDenomIn(**campaign_data, group_id=group_id)
         new_campaign = Campaigns(**denormalized_campaign.dict()).save()
-        return {"campaign": str(new_campaign.id), 'tasks': campaign_tasks}
+        return {'campaign': str(new_campaign.id), 'group_id': group_id, 'tasks': campaign_tasks}
 
 class Edges(EmbeddedDocument):
     source = StringField(max_length=100, required=True, db_field='from')
@@ -205,6 +211,7 @@ class Techniques(Document):
     name = StringField(max_length=100, required=True)
     description = StringField(max_length=9000)
     data_sources = ListField(StringField(max_length=100))
+    data_sources_available = ListField(StringField(max_length=100), default=[])
     detection = StringField(max_length=1000)
     actors = EmbeddedDocumentListField('TechniqueActors')
     
@@ -310,8 +317,14 @@ class Coverage(Document):
     comment = StringField()
     data_quality = EmbeddedDocumentField('DataQuality')
 
+    def denormalize_technique(datasource):
+        get_techniques = Techniques.objects(data_sources__contains=datasource)
+        get_techniques.update(add_to_set__data_sources_available=datasource)
+        return get_techniques
+
     def create(*args, **kwargs):
         new_mapping = Coverage.objects(data_source_name=kwargs['data_source_name']).upsert_one(**kwargs)
+        Coverage.denormalize_technique(kwargs['data_source_name'])
         return {"coverage_id": str(new_mapping.id)}
 
     @queryset_manager

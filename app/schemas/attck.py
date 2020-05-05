@@ -1,0 +1,68 @@
+
+from pydantic import BaseModel, validator, Field
+from typing import List, Dict
+from datetime import datetime
+
+class AttckSubActorsOut(BaseModel):
+    actor_id: str
+    name: str
+
+
+class AttckSubReferencesOut(BaseModel):
+    external_id: str = None
+    url: str = None
+    source_name: str = None
+    description: str = None
+
+
+class AttckTechniquesOut(BaseModel):
+    id: str = Field(None, alias='_id')
+    references: List[AttckSubReferencesOut] = []
+    platforms: List[str]
+    permissions_required:  List[str]
+    technique_id: str
+    name: str
+    description: str
+    data_sources: List[str]
+    data_sources_available: List[str] = []
+    actors: List[AttckSubActorsOut]
+
+    @validator('id', pre=True, always=True)
+    def _get_id(cls, v):
+        return v['$oid']
+
+
+class AttckSubTechniquesOut(BaseModel):
+    name: str
+    technique_id: str
+    data_sources: List[str]
+    data_sources_available: List[str] = []
+
+
+class AttckAggPhasesOut(BaseModel):
+    id: str = Field(None, alias='_id')
+    techniques: List[AttckSubTechniquesOut]
+
+    @validator('id', pre=True, always=True)
+    def _get_id(cls, v):
+        return v['kill_chain_phases']
+
+
+class AttckSubActorTechniques(BaseModel):
+    technique_id: str
+    name: str
+
+
+class AttckActorOut(BaseModel):
+    id: str = Field(None, alias='_id')
+    actor_id: str
+    name: str
+    description: str
+    references: List[AttckSubReferencesOut]
+    aliases: List[str]
+    techniques: List[AttckSubActorTechniques]
+
+    @validator('id', pre=True, always=True)
+    def _get_id(cls, v):
+        return v['$oid']
+

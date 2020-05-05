@@ -4,7 +4,9 @@ from app.utils.depends import validate_worker
 from app.utils.mapping import Mapping
 from fastapi import Depends, Body
 from app.database.models import Techniques, Actors
+from app.schemas.mapping import MappingCountOut, MappingTechniquesOut
 from bson.json_util import dumps
+from typing import List, Dict
 import json
 
 @api.post('/api/v1/mapping/update')
@@ -12,7 +14,7 @@ async def update_mapping():
     ''' Sync the mapping objects that relate commands to MITRE ATTCK '''
     sync_techniques = Mapping().load()
 
-@api.get('/api/v1/mapping/techniques/distinct')
+@api.get('/api/v1/mapping/techniques/distinct', response_model=List[str])
 async def get_techniques(distinct: str, phase: str = '', platform: str = 'Windows',
     technique: str = '', actor: str = ''):
     ''' Get all unique techniques that have been maped to ATTCK '''
@@ -22,12 +24,13 @@ async def get_techniques(distinct: str, phase: str = '', platform: str = 'Window
     result = techniques_objects.distinct(field=distinct)
     return result
 
-@api.get('/api/v1/mapping/techniques')
+@api.get('/api/v1/mapping/techniques', response_model=List[MappingTechniquesOut])
 async def get_technique(phase: str = '', platform: str = 'Windows', actor: str = '', integration: str = ''):
     ''' Get all techniques that are mapped to ATTCK and match the provided filter options '''
     techniques_objects = CommandMapping.objects(platform=platform, commands__integration__contains=integration,
             kill_chain_phase__contains=phase, actors__name__contains=actor)
     result = json.loads(techniques_objects.to_json())
+    print(result)
     return result
 
 @api.get('/api/v1/mitre/mapping/{mapping_id}')
@@ -37,24 +40,26 @@ async def get_mapping(mapping_id: str):
     json_object = json.loads(mitre_technique.to_json())
     return json_object
 
-@api.get('/api/v1/mapping/actors')
+@api.get('/api/v1/mapping/actors', response_model=List[str])
 async def get_actors_mapping():
     ''' Get all unique actors '''
     mitre_actors = CommandMapping.objects().distinct('actors.name')
     return mitre_actors
 
-@api.get('/api/v1/mapping/actor/{actor_name}')
-async def get_actor_mapping(actor_name: str):
-    ''' Get actor details by actor name '''
-    actor_objects = CommandMapping.objects(actors__name=actor_name)
-    json_object = json.loads(actor_objects.to_json())
-    return json_object
+# @api.get('/api/v1/mapping/actor/{actor_name}')
+# async def get_actor_mapping(actor_name: str):
+#     ''' Get actor details by actor name '''
+#     actor_objects = CommandMapping.objects(actors__name=actor_name)
+#     json_object = json.loads(actor_objects.to_json())
+#     return json_object
 
-@api.get('/api/v1/mapping/count')
+@api.get('/api/v1/mapping/count', response_model=List[MappingCountOut])
 async def get_mapping_count(by: str = 'phase'):
     ''' Get count of currently mapped techniques '''
     mapping = {'phase': '$kill_chain_phase', 'platform':'$platform'}
-    pipeline = [{"$group" : {"_id": mapping.get(by, '$kill_chain_phase'), "count":{"$sum":1}}}]
+    pipeline = [{"$group": 
+        { "_id": mapping.get(by, '$kill_chain_phase'), "count":{ "$sum": 1 } }
+    }]
     get_techniques_by_phase = CommandMapping.objects().aggregate(pipeline)
     result = json.loads(dumps(get_techniques_by_phase))
     return result
