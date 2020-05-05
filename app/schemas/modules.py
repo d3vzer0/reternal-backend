@@ -7,3 +7,8 @@ class ModuleIn(BaseModel):
     agent: str
     module: str
     input: Dict
+
+class ModulesOut(BaseModel):
+    description: str
+    operating_system: List[str]
+    options: Dict

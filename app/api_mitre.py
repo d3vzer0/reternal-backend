@@ -65,7 +65,7 @@ async def get_actor(actor_name: str):
 
 
 @api.get('/api/v1/mitre/coverage', response_model=List[CoverageOut])
-async def get_coverage():
+async def get_coverages():
     ''' Get the current datasources coverage documents'''
     mitre_coverage = Coverage.objects()
     json_object = json.loads(mitre_coverage.to_json())
@@ -77,6 +77,21 @@ async def set_coverage(coverage_data: CoverageIn):
     ''' Update or create a new datasource coverage document '''
     modify_coverage = Coverage.create(**coverage_data.dict())
     return modify_coverage
+
+
+@api.delete('/api/v1/mitre/coverage/{coverage_id}', response_model=Dict[str, str])
+async def delete_coverage(coverage_id: str):
+    ''' Delete the current datasources coverage document'''
+    delete_coverage = Coverage.delete(coverage_id)
+    return delete_coverage
+
+
+@api.get('/api/v1/mitre/coverage/{coverage_id}', response_model=CoverageOut)
+async def get_coverage(coverage_id: str):
+    ''' Get the current datasources coverage document'''
+    mitre_coverage = Coverage.objects.get(id=coverage_id)
+    json_object = json.loads(mitre_coverage.to_json())
+    return json_object
 
 
 @api.get('/api/v1/mitre/aggregate/by_phase', response_model=List[AttckAggPhasesOut])

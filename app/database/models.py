@@ -317,17 +317,23 @@ class Coverage(Document):
     comment = StringField()
     data_quality = EmbeddedDocumentField('DataQuality')
 
-    def denormalize_technique(datasource):
+    def add_to_techniques(datasource):
         get_techniques = Techniques.objects(data_sources__contains=datasource)
         get_techniques.update(add_to_set__data_sources_available=datasource)
         return get_techniques
 
+    def pull_from_techniques(coverage_name):
+        get_techniques = Techniques.objects(data_sources_available__contains=coverage_name)
+        get_techniques.update(pull__data_sources_available=coverage_name)
+        return get_techniques
+
     def create(*args, **kwargs):
         new_mapping = Coverage.objects(data_source_name=kwargs['data_source_name']).upsert_one(**kwargs)
-        Coverage.denormalize_technique(kwargs['data_source_name'])
+        Coverage.add_to_techniques(kwargs['data_source_name'])
         return {"coverage_id": str(new_mapping.id)}
 
-    @queryset_manager
-    def delete(doc_cls, queryset, coverage_id=None, *args, **kwargs):
-        queryset.objects.get(id=coverage_id).delete()
+    def delete(coverage_id):
+        cov_document = Coverage.objects.get(id=coverage_id)
+        Coverage.pull_from_techniques(cov_document.data_source_name)
+        Coverage.objects(id=coverage_id).delete()
         return {"message": "Successfully deleted coverage_id"}

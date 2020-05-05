@@ -1,10 +1,11 @@
 from app import api, celery
 from app.utils.depends import validate_worker
 from fastapi import Depends, Body
-from app.schemas.modules import ModuleIn
+from app.schemas.modules import ModuleIn, ModulesOut
+from typing import List, Dict
 
 
-@api.get('/api/v1/modules/{worker_name}')
+@api.get('/api/v1/modules/{worker_name}', response_model=Dict[str, ModulesOut])
 async def get_modules(worker_name: str, context: dict = Depends(validate_worker)):
     ''' Get the available modules/commands by C2 framework / worker '''
     get_modules = celery.send_task(context[worker_name]['modules']['get']).get()['response']

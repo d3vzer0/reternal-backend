@@ -1,9 +1,10 @@
 from app import api, celery
 from app.utils.depends import validate_worker
 from fastapi import Depends, Body
+from app.schemas.listeners import ListenersOut
+from typing import List, Dict
 
-
-@api.get('/api/v1/listeners/{worker_name}')
+@api.get('/api/v1/listeners/{worker_name}', response_model=List[ListenersOut])
 async def get_listeners(worker_name: str, context: dict = Depends(validate_worker)):
     ''' Get configuration options for all potential listeners by worker name / c2 framework '''
     get_listeners = celery.send_task(context[worker_name]['listeners']['get'],
@@ -25,7 +26,7 @@ async def delete_listener(worker_name: str, listener_name: str, context: dict = 
         args=(listener_name,)).get()['response']
     return delete_listener   
 
-@api.get('/api/v1/listeners/options/{worker_name}')
+@api.get('/api/v1/listeners/options/{worker_name}', response_model=Dict[str, Dict])
 async def get_listner_options(worker_name: str, context: dict = Depends(validate_worker)):
     ''' Get all available listeners to run by specific c2 framework '''
     get_listeners = celery.send_task(context[worker_name]['listeners']['options']).get()['response']
