@@ -105,7 +105,12 @@ class CampaignDenomIn(BaseModel):
 class CreateCampaignTasksOut(BaseModel):
     task: str
 
+
+class ScheduledTasksOut(BaseModel):
+    agent: str
+    queue: List[str]
+
 class CreateCampaignOut(BaseModel):
     campaign: str
     group_id: str
-    tasks: List[CreateCampaignTasksOut]
+    scheduled_tasks: List[ScheduledTasksOut]

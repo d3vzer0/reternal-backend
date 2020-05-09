@@ -114,7 +114,7 @@ class Campaigns(Document):
     group_id = StringField(required=True, unique=True)
     saved_date = DateTimeField(default=datetime.datetime.now())
     tasks = EmbeddedDocumentListField('CampaignTasks', required=True)
-    dependencies = ListField(StringField(max_length=100, required=True))
+    dependencies = EmbeddedDocumentListField('Dependencies')
 
     def denormalize_tasks(task, campaign_data, group_id):
         ''' Commit an individual task in the campaign graph '''
