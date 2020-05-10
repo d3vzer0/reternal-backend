@@ -216,8 +216,8 @@ class Techniques(Document):
     actors = EmbeddedDocumentListField('TechniqueActors')
     
     def create(*args, **kwargs):
-        new_technique = Techniques.objects(technique_id=kwargs['technique_id']).upsert_one(**kwargs)
-        return {"technique": str(new_technique.id)}
+        new_technique = json.loads(Techniques.objects(technique_id=kwargs['technique_id']).upsert_one(**kwargs).to_json())
+        return new_technique
 
     @queryset_manager
     def delete(doc_cls, queryset, technique_id=None, *args, **kwargs):
@@ -231,6 +231,32 @@ class Techniques(Document):
         technique_object.save()
         return {'message':'Succesfully added technique relationship'}
 
+
+
+class Validations(Document):
+    author = StringField(max_length=100, required=False)
+    name = StringField(max_length=100, required=True, unique_with=['technique_id', 'kill_chain_phase'])
+    description = StringField(max_length=200, required=False)
+    reference = StringField(max_length=100, required=False, default=None)
+    integration = StringField(max_length=100)
+    technique_id = StringField(max_length=200, required=True)
+    technique_name = StringField(max_length=100, required=True)
+    external_id = StringField(max_length=100, required=True)
+    kill_chain_phase = StringField(max_length=100, required=True)
+    queries = ListField(StringField(max_length=2000))
+    data_sources = ListField(StringField(max_length=100))
+    actors = EmbeddedDocumentListField('TechniqueActors')
+
+    def create(*args, **kwargs):
+        technique = Techniques.objects.get(references__external_id=kwargs['external_id'])
+        created_validations = []
+        for phase in technique['kill_chain_phases']:
+            leRes = {**kwargs, 'technique_id': technique['technique_id'],
+                'technique_name': technique['name'], 'actors': technique['actors'],
+                'kill_chain_phase': phase }
+            new_mapping = Validations.objects(name=kwargs['name']).upsert_one(**leRes)
+            created_validations.append(json.loads(new_mapping.to_json()))
+        return created_validations
 
 class ActorReferences(EmbeddedDocument):
     url = StringField(max_length=300, required=False)
@@ -253,8 +279,8 @@ class Actors(Document):
     techniques = EmbeddedDocumentListField('ActorTechniques')
 
     def create(*args, **kwargs):
-        new_actor = Actors.objects(actor_id=kwargs['actor_id']).upsert_one(**kwargs)
-        return {"actor": str(new_actor.id)}
+        new_actor = json.loads(Actors.objects(actor_id=kwargs['actor_id']).upsert_one(**kwargs).to_json())
+        return new_actor
 
     @queryset_manager
     def delete(doc_cls, queryset, actor_id=None, *args, **kwargs):
@@ -273,7 +299,7 @@ class CommandMapping(Document):
     name = StringField(max_length=100, required=True, unique_with=['technique_id', 'platform', 'kill_chain_phase'])
     description = StringField(max_length=200, required=False)
     reference = StringField(max_length=100, required=False, default=None)
-    worker = StringField(max_length=100, required=False, default='any')
+    integrations = ListField(StringField(max_length=100))
     technique_id = StringField(max_length=200, required=True)
     technique_name = StringField(max_length=100, required=True)
     external_id = StringField(max_length=100, required=True)
@@ -282,9 +308,17 @@ class CommandMapping(Document):
     commands = EmbeddedDocumentListField('TaskCommands', required=True)
     actors = EmbeddedDocumentListField('TechniqueActors')
 
+
     def create(*args, **kwargs):
-        new_mapping = CommandMapping.objects(name=kwargs['name']).upsert_one(**kwargs)
-        return {"mapping": str(new_mapping.id)}
+        technique = Techniques.objects.get(references__external_id=kwargs['external_id'])
+        created_mappings = []
+        for phase in technique['kill_chain_phases']:
+            leRes = {**kwargs, 'technique_id': technique['technique_id'],
+                'technique_name': technique['name'], 'actors': technique['actors'],
+                'kill_chain_phase': phase }
+            new_mapping = CommandMapping.objects(name=kwargs['name']).upsert_one(**leRes)
+            created_mappings.append(json.loads(new_mapping.to_json()))
+        return created_mappings
 
     @queryset_manager
     def delete(doc_cls, queryset, mapping_id=None, *args, **kwargs):

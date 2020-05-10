@@ -1,26 +1,25 @@
 from app import api, celery
 from app.utils.depends import validate_worker
-from app.utils.mitre import ImportMitre
 from fastapi import Depends, Body, BackgroundTasks
 from app.database.models import Techniques, Actors, Coverage
 from app.schemas.datasources import DatasourcesOut
 from app.schemas.coverage import CoverageOut, CoverageIn
 from app.schemas.attck import AttckTechniquesOut, AttckAggPhasesOut, AttckActorOut
+from app.schemas.techniques import CreateTechniquesIn, CreateTechniquesOut
+from app.schemas.actors import CreateActorIn, CreateActorOut
 from bson.json_util import dumps
 from typing import List, Dict
 import json
 
 
-@api.post('/api/v1/mitre/update')
-async def update_mitre():
-    ''' Synchronise the latest MITRE ATTCK techniques with the database '''
-    # background_tasks.add_task(write_notification, email, message="some notification")
-    update_db = ImportMitre().update()
-    return update_db
-
+@api.post('/api/v1/mitre/techniques', response_model=CreateTechniquesOut)
+async def create_technique(techniques: CreateTechniquesIn):
+    ''' Create new MITRE ATTCK technique '''
+    create_technique = Techniques.create(**techniques.dict())
+    return create_technique
 
 @api.get('/api/v1/mitre/techniques', response_model=List[str])
-async def get_technique(technique_id: str):
+async def get_techniques(technique_id: str):
     ''' Get the unique ATTCK techniques '''
     mitre_techniques = Techniques.objects().distinct('name')
     json_object = json.loads(mitre_techniques.to_json())
@@ -47,6 +46,13 @@ async def get_datasources():
     ''' Get the unique datasources '''
     mitre_datasources = Techniques.objects().distinct('data_sources')
     return [ds for ds in mitre_datasources if ds]
+
+
+@api.post('/api/v1/mitre/actors', response_model=CreateActorOut)
+async def create_actor(actor: CreateActorIn):
+    ''' Create new MITRE ATTCK actor '''
+    create_actor = Actors.create(**actor.dict())
+    return create_actor
 
 
 @api.get('/api/v1/mitre/actors', response_model=List[str])

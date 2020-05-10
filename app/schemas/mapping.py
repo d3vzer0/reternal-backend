@@ -10,10 +10,8 @@ class TechniqueActorsOut(BaseModel):
 class TechniqueCommandsOut(BaseModel):
     category: str
     module: str
-    integration: str
     input: Dict
     sleep: int
-
 
 
 class MappingCountOut(BaseModel):
@@ -27,6 +25,7 @@ class MappingTechniquesOut(BaseModel):
     author: str
     actors: List[TechniqueActorsOut]
     commands: List[TechniqueCommandsOut]
+    integrations: List[str]
     description: str
     external_id: str
     kill_chain_phase: str
@@ -38,3 +37,14 @@ class MappingTechniquesOut(BaseModel):
     @validator('id', pre=True, always=True)
     def _get_id(cls, v):
         return v['$oid']
+
+
+class MappingTechniquesIn(BaseModel):
+    name: str
+    reference: str
+    external_id: str
+    platform: str
+    description: str = None
+    author: str = None
+    integrations: List[str] = ['generic']
+    commands: List[TechniqueCommandsOut]

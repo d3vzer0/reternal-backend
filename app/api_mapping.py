@@ -1,18 +1,18 @@
 from app.database.models import CommandMapping
 from app import api, celery
 from app.utils.depends import validate_worker
-from app.utils.mapping import Mapping
 from fastapi import Depends, Body
 from app.database.models import Techniques, Actors
-from app.schemas.mapping import MappingCountOut, MappingTechniquesOut
+from app.schemas.mapping import MappingCountOut, MappingTechniquesOut, MappingTechniquesIn
 from bson.json_util import dumps
 from typing import List, Dict
 import json
 
-@api.post('/api/v1/mapping/update')
-async def update_mapping():
-    ''' Sync the mapping objects that relate commands to MITRE ATTCK '''
-    sync_techniques = Mapping().load()
+
+@api.post('/api/v1/mapping', response_model=List[MappingTechniquesOut])
+async def create_mapping(mapping: MappingTechniquesIn):
+    create_mapping = CommandMapping.create(**mapping.dict())
+    return create_mapping
 
 @api.get('/api/v1/mapping/techniques/distinct', response_model=List[str])
 async def get_techniques(distinct: str, phase: str = '', platform: str = 'Windows',
@@ -46,12 +46,6 @@ async def get_actors_mapping():
     mitre_actors = CommandMapping.objects().distinct('actors.name')
     return mitre_actors
 
-# @api.get('/api/v1/mapping/actor/{actor_name}')
-# async def get_actor_mapping(actor_name: str):
-#     ''' Get actor details by actor name '''
-#     actor_objects = CommandMapping.objects(actors__name=actor_name)
-#     json_object = json.loads(actor_objects.to_json())
-#     return json_object
 
 @api.get('/api/v1/mapping/count', response_model=List[MappingCountOut])
 async def get_mapping_count(by: str = 'phase'):
