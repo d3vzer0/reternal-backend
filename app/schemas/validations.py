@@ -21,6 +21,7 @@ class ValidationsOut(BaseModel):
     reference: str = None
     technique_id: str
     technique_name: str
+    reference: str = None
 
     @validator('id', pre=True, always=True)
     def _get_id(cls, v):
@@ -30,6 +31,7 @@ class ValidationsOut(BaseModel):
 class ValidationsIn(BaseModel):
     name: str
     external_id: str
+    reference: str = None
     description: str = None
     author: str = None
     integration: str

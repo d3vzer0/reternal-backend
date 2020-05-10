@@ -45,6 +45,7 @@ class MappingTechniquesIn(BaseModel):
     external_id: str
     platform: str
     description: str = None
+    reference: str = None
     author: str = None
     integrations: List[str] = ['generic']
     commands: List[TechniqueCommandsOut]
