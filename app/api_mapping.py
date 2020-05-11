@@ -30,7 +30,6 @@ async def get_technique(phase: str = '', platform: str = 'Windows', actor: str =
     techniques_objects = CommandMapping.objects(platform=platform, commands__integration__contains=integration,
             kill_chain_phase__contains=phase, actors__name__contains=actor)
     result = json.loads(techniques_objects.to_json())
-    print(result)
     return result
 
 @api.get('/api/v1/mitre/mapping/{mapping_id}')

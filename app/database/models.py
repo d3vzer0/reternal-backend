@@ -202,6 +202,12 @@ class TechniqueReferences(EmbeddedDocument):
     description = StringField(max_length=1000)
 
 
+class Magma(EmbeddedDocument):
+    l1_usecase_name = StringField(max_length=120, required=True, default="Unclassified")
+    l1_usecase_id = StringField(max_length=3, required=True, default="N/A")
+    l2_usecase_name = StringField(max_length=120, required=True, default="Unclassified")
+    l2_usecase_id = StringField(max_length=8, required=True, default="N/A")
+
 class Techniques(Document):
     references = EmbeddedDocumentListField('TechniqueReferences')
     platforms = ListField(StringField(max_length=50, default="all"))
@@ -209,6 +215,7 @@ class Techniques(Document):
     permissions_required = ListField(StringField(max_length=100))
     technique_id = StringField(max_length=100, required=True, unique=True)
     name = StringField(max_length=100, required=True)
+    magma = EmbeddedDocumentField('Magma', required=False)
     description = StringField(max_length=9000)
     data_sources = ListField(StringField(max_length=100))
     data_sources_available = ListField(StringField(max_length=100), default=[])
@@ -235,27 +242,29 @@ class Techniques(Document):
 
 class Validations(Document):
     author = StringField(max_length=100, required=False)
-    name = StringField(max_length=100, required=True, unique_with=['technique_id', 'kill_chain_phase'])
+    name = StringField(max_length=100, required=True, unique_with=['technique_id'])
     description = StringField(max_length=200, required=False)
     reference = StringField(max_length=100, required=False, default=None)
     integration = StringField(max_length=100)
+    magma = EmbeddedDocumentField('Magma', required=False)
     technique_id = StringField(max_length=200, required=True)
     technique_name = StringField(max_length=100, required=True)
     external_id = StringField(max_length=100, required=True)
-    kill_chain_phase = StringField(max_length=100, required=True)
-    queries = ListField(StringField(max_length=2000))
+    kill_chain_phases = ListField(StringField(max_length=100, required=True))
+    search = StringField(max_length=2000)
+    coverage = DictField()
     data_sources = ListField(StringField(max_length=100))
+    data_sources_available = ListField(StringField(max_length=100), default=[])
     actors = EmbeddedDocumentListField('TechniqueActors')
 
     def create(*args, **kwargs):
         technique = Techniques.objects.get(references__external_id=kwargs['external_id'])
-        created_validations = []
-        for phase in technique['kill_chain_phases']:
-            leRes = {**kwargs, 'technique_id': technique['technique_id'],
-                'technique_name': technique['name'], 'actors': technique['actors'],
-                'kill_chain_phase': phase }
-            new_mapping = Validations.objects(name=kwargs['name']).upsert_one(**leRes)
-            created_validations.append(json.loads(new_mapping.to_json()))
+        denomalized_technique = {**kwargs, 'technique_id': technique['technique_id'],
+            'technique_name': technique['name'], 'actors': technique['actors'],
+            'kill_chain_phases': technique['kill_chain_phases'], 'magma': technique['magma'],
+            'data_sources_available': technique['data_sources_available']}
+
+        created_validations = json.loads(Validations.objects(name=kwargs['name']).upsert_one(**denomalized_technique).to_json())
         return created_validations
 
 class ActorReferences(EmbeddedDocument):
@@ -299,7 +308,7 @@ class CommandMapping(Document):
     name = StringField(max_length=100, required=True, unique_with=['technique_id', 'platform', 'kill_chain_phase'])
     description = StringField(max_length=200, required=False)
     reference = StringField(max_length=100, required=False, default=None)
-    integrations = ListField(StringField(max_length=100))
+    integration = StringField(max_length=100)
     technique_id = StringField(max_length=200, required=True)
     technique_name = StringField(max_length=100, required=True)
     external_id = StringField(max_length=100, required=True)
@@ -361,13 +370,25 @@ class Coverage(Document):
         get_techniques.update(pull__data_sources_available=coverage_name)
         return get_techniques
 
+    def add_to_validations(datasource):
+        get_validations = Validations.objects(data_sources__contains=datasource)
+        get_validations.update(add_to_set__data_sources_available=datasource)
+        return get_validations
+
+    def pull_from_validations(coverage_name):
+        get_validations = Validations.objects(data_sources_available__contains=coverage_name)
+        get_validations.update(pull__data_sources_available=coverage_name)
+        return get_validations
+
     def create(*args, **kwargs):
         new_mapping = Coverage.objects(data_source_name=kwargs['data_source_name']).upsert_one(**kwargs)
         Coverage.add_to_techniques(kwargs['data_source_name'])
+        Coverage.add_to_validations(kwargs['data_source_name'])
         return {"coverage_id": str(new_mapping.id)}
 
     def delete(coverage_id):
         cov_document = Coverage.objects.get(id=coverage_id)
         Coverage.pull_from_techniques(cov_document.data_source_name)
+        Coverage.pull_from_validations(cov_document.data_source_name)
         Coverage.objects(id=coverage_id).delete()
         return {"message": "Successfully deleted coverage_id"}

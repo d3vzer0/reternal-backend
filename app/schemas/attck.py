@@ -15,6 +15,13 @@ class AttckSubReferencesOut(BaseModel):
     description: str = None
 
 
+class AttcktechniquesMagmaOut(BaseModel):
+    l1_usecase_name: str
+    l1_usecase_id: str
+    l2_usecase_name: str
+    l2_usecase_id: str
+
+
 class AttckTechniquesOut(BaseModel):
     id: str = Field(None, alias='_id')
     references: List[AttckSubReferencesOut] = []
@@ -22,6 +29,7 @@ class AttckTechniquesOut(BaseModel):
     permissions_required:  List[str]
     technique_id: str
     name: str
+    magma: AttcktechniquesMagmaOut = None
     description: str
     data_sources: List[str]
     data_sources_available: List[str] = []

@@ -15,6 +15,12 @@ class CreateTechniquesActorsIn(BaseModel):
     actor_id: str
     name: str
 
+class CreateTechniquesMagmaIn(BaseModel):
+    l1_usecase_name: str
+    l1_usecase_id: str
+    l2_usecase_name: str
+    l2_usecase_id: str
+
 
 class CreateTechniquesIn(BaseModel):
     references: List[CreateTechniquesReferencesIn]
@@ -22,6 +28,7 @@ class CreateTechniquesIn(BaseModel):
     kill_chain_phases: List[str]
     permissions_required: List[str]
     technique_id: str
+    magma: CreateTechniquesMagmaIn = None
     name: str
     description: str = None
     data_sources: List[str]
@@ -36,6 +43,7 @@ class CreateTechniquesOut(BaseModel):
     kill_chain_phases: List[str]
     permissions_required: List[str] = None
     technique_id: str
+    magma: CreateTechniquesMagmaIn = None
     name: str
     description: str = None
     data_sources: List[str]

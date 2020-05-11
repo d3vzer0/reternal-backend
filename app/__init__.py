@@ -18,7 +18,7 @@ celery.conf.broker_transport_options = {'fanout_prefix': True}
 celery.conf.broker_transport_options = {'fanout_patterns': True}
 celery.conf.task_routes = {
     'c2.*': { 'queue': 'c2' },
-    'api.*': { 'queue': 'api' }    
+    'api.*': { 'queue': 'api' }
 }
 
 from app.database.models import *

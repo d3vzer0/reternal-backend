@@ -7,17 +7,26 @@ class ValidationActorsOut(BaseModel):
     actor_id: str
     name: str
 
+class ValidationsMagmaOut(BaseModel):
+    l1_usecase_name: str
+    l1_usecase_id: str
+    l2_usecase_name: str
+    l2_usecase_id: str
 
 class ValidationsOut(BaseModel):
     id: str = Field(None, alias='_id')
     name: str
     author: str
     actors: List[ValidationActorsOut]
-    queries: List[str]
+    search: str
+    magma: ValidationsMagmaOut = None
     integration: str
     description: str
+    coverage: Dict
     external_id: str
-    kill_chain_phase: str
+    kill_chain_phases: List[str]
+    data_sources: List[str]
+    data_sources_available: List[str]
     reference: str = None
     technique_id: str
     technique_name: str
@@ -31,8 +40,10 @@ class ValidationsOut(BaseModel):
 class ValidationsIn(BaseModel):
     name: str
     external_id: str
+    data_sources: List[str]
+    coverage: Dict
     reference: str = None
     description: str = None
     author: str = None
     integration: str
-    queries: List[str]
+    search: str

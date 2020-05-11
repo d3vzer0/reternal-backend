@@ -10,6 +10,7 @@ class TechniqueActorsOut(BaseModel):
 class TechniqueCommandsOut(BaseModel):
     category: str
     module: str
+    integration: str
     input: Dict
     sleep: int
 
@@ -25,7 +26,7 @@ class MappingTechniquesOut(BaseModel):
     author: str
     actors: List[TechniqueActorsOut]
     commands: List[TechniqueCommandsOut]
-    integrations: List[str]
+    integration: str
     description: str
     external_id: str
     kill_chain_phase: str
@@ -47,5 +48,5 @@ class MappingTechniquesIn(BaseModel):
     description: str = None
     reference: str = None
     author: str = None
-    integrations: List[str] = ['generic']
+    integration: str
     commands: List[TechniqueCommandsOut]
