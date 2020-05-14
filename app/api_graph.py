@@ -2,7 +2,7 @@ from app import api
 from typing import List, Dict
 from app.utils.depends import validate_worker
 from app.schemas.graphs import Graph, GraphsOut
-from app.database.models import Graphs
+from database.models import Graphs
 from fastapi import Depends, Body
 from datetime import datetime, timedelta
 import json

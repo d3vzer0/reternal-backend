@@ -1,8 +1,7 @@
-from app.database.models import CommandMapping
 from app import api, celery
 from app.utils.depends import validate_worker
 from fastapi import Depends, Body
-from app.database.models import Techniques, Actors
+from database.models import Techniques, Actors, CommandMapping
 from app.schemas.mapping import MappingCountOut, MappingTechniquesOut, MappingTechniquesIn
 from bson.json_util import dumps
 from typing import List, Dict

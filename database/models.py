@@ -2,21 +2,19 @@ from mongoengine import (connect, Document, StringField, IntField,
     ReferenceField, EmbeddedDocumentListField, ListField, EmbeddedDocument,
     DateTimeField, queryset_manager, EmbeddedDocumentField, UUIDField,
     BooleanField, DictField)
-from app.environment import config
-from app.utils.random import Random
-from app.schemas.campaigns import CampaignDenomIn
-import uuid
-import datetime
-import pyotp
-import json
-import hashlib
+from environment import config
+from database.schemas import CampaignDenomIn
+from datetime import datetime
+import uuid, string, random, json, hashlib
+
+
+# Init DB
+connect(db='reternal', host=config['MONGO_HOST'])
 
 # Fixed options/choices for fields
 PLATFORMS = ('Windows', 'Linux', 'All', 'macOS')
 STATUSOPTIONS = ('Processed', 'Open', 'Processing')
 
-# Init DB
-connect(db='reternal', host=config['MONGO_HOST'])
 
 class Agents(EmbeddedDocument):
     name = StringField(max_length=100, required=True)
@@ -35,7 +33,7 @@ class ExecutedModules(Document):
     integration = StringField(max_length=150, required=True)
     external_id = StringField(max_length=150, required=True)
     sleep = IntField(default=0)
-    start_date = DateTimeField(default=datetime.datetime.now())
+    start_date = DateTimeField(default=datetime.now())
     end_date = DateTimeField()
     message = StringField(max_length=200)
     agent = StringField(max_length=100, required=True)
@@ -78,7 +76,7 @@ class Tasks(Document):
     campaign = StringField(max_length=100, required=True)
     dependencies = ListField(StringField(max_length=100, required=True))
     group_id = StringField(required=True)
-    scheduled_date = DateTimeField(default=datetime.datetime.now())
+    scheduled_date = DateTimeField(default=datetime.now())
     start_date = DateTimeField()
     end_date = DateTimeField()
     commands = EmbeddedDocumentListField('TaskCommands', required=True)
@@ -101,7 +99,7 @@ class TaskData(EmbeddedDocument):
 
 class CampaignTasks(EmbeddedDocument):
     name = StringField(max_length=100, required=True)
-    scheduled_date = DateTimeField(default=datetime.datetime.now())
+    scheduled_date = DateTimeField(default=datetime.now())
     start_date = DateTimeField()
     end_date = DateTimeField()
     agents = EmbeddedDocumentListField('Agents', required=True)
@@ -112,7 +110,7 @@ class CampaignTasks(EmbeddedDocument):
 class Campaigns(Document):
     name = StringField(max_length=100, required=True)
     group_id = StringField(required=True, unique=True)
-    saved_date = DateTimeField(default=datetime.datetime.now())
+    saved_date = DateTimeField(default=datetime.now())
     tasks = EmbeddedDocumentListField('CampaignTasks', required=True)
     dependencies = EmbeddedDocumentListField('Dependencies')
 
@@ -352,7 +350,7 @@ class ProductConfiguration(EmbeddedDocument):
 
 class Coverage(Document):
     data_source_name = StringField(max_length=100, required=True, unique=True)
-    date_registered = DateTimeField(default=datetime.datetime.now())
+    date_registered = DateTimeField(default=datetime.now())
     date_connected = DateTimeField()
     available_for_data_analytics = BooleanField(default=False)
     enabled = BooleanField(default=False)
@@ -392,3 +390,16 @@ class Coverage(Document):
         Coverage.pull_from_validations(cov_document.data_source_name)
         Coverage.objects(id=coverage_id).delete()
         return {"message": "Successfully deleted coverage_id"}
+
+
+class SourceTypes(Document):
+    integration = StringField(max_length=100)
+    execution_date = DateTimeField()
+    first_seen = DateTimeField()
+    last_seen = DateTimeField()
+    sourcetype = StringField(max_length=100, unique_with=['integration'])
+    event_count = StringField(max_length=100)
+
+    def create(*args, **kwargs):
+        new_sourcetype = json.loads(SourceTypes.objects(sourcetype=kwargs['sourcetype']).upsert_one(**kwargs).to_json())
+        return new_sourcetype

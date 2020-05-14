@@ -1,5 +1,5 @@
 from app import api, celery
-from app.database.models import Tasks
+from database.models import Tasks
 from datetime import datetime, timedelta
 from bson.json_util import dumps
 from typing import List, Dict
@@ -15,5 +15,3 @@ async def get_task_next():
         { "$eq": [ "$campaign", "$$camp" ] } ] } } } ]  } }, { "$match": { "$or":[{"graph": { "$ne": [] }}, {"dependencies": { "$exists": False }}] } } ]
     result = json.loads(dumps(Tasks.objects(start_date__lte=datetime.now()).aggregate(*pipeline)))
     return result
-
-print(get_task_next())

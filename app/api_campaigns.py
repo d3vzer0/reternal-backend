@@ -2,7 +2,7 @@ from app import api, celery
 from app.utils.depends import validate_worker
 from app.schemas.campaigns import CampaignsOut, CampaignIn, CampaignDenomIn, CreateCampaignOut
 from app.schemas.tasks import TasksOut
-from app.database.models import Tasks, Campaigns, ExecutedModules
+from database.models import Tasks, Campaigns, ExecutedModules
 from workers.scheduler import update_task
 from bson.json_util import dumps
 from typing import List, Dict

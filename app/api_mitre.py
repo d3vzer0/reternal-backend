@@ -1,7 +1,7 @@
 from app import api, celery
 from app.utils.depends import validate_worker
 from fastapi import Depends, Body, BackgroundTasks
-from app.database.models import Techniques, Actors, Coverage
+from database.models import Techniques, Actors, Coverage
 from app.schemas.datasources import DatasourcesOut
 from app.schemas.coverage import CoverageOut, CoverageIn
 from app.schemas.attck import AttckTechniquesOut, AttckAggPhasesOut, AttckActorOut

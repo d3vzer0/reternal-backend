@@ -2,7 +2,7 @@ from app import api, celery
 from app.utils.depends import validate_worker
 from fastapi import Depends, Body
 from app.schemas.results import ResultsIn, ResultsOut
-from app.database.models import ExecutedModules
+from database.models import ExecutedModules
 from typing import List
 
 @api.post('/api/v1/results/module', response_model=List[ResultsOut])

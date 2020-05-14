@@ -1,7 +1,7 @@
 from app import api, celery
 from app.utils.depends import validate_worker
 from app.schemas.schedules import PlanTaskIn, ScheduleOut, PlanTaskOut
-from app.database.models import Tasks, ExecutedModules
+from database.models import Tasks, ExecutedModules
 from fastapi import Depends, Body
 from datetime import datetime, timedelta
 from celery.task.control import inspect

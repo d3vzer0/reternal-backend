@@ -1,7 +1,7 @@
 from app import api, celery
 from app.utils.depends import validate_worker
 from fastapi import Depends, Body
-from app.database.models import Techniques, Coverage
+from database.models import Techniques, Coverage
 from bson.json_util import dumps
 from typing import List, Dict
 import json
