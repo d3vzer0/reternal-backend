@@ -1,5 +1,4 @@
-                     # Setting variables
-import datetime
+# Setting shared configuration variables for celery agents and API
 import os
 
 config = {
