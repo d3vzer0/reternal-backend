@@ -2,17 +2,19 @@ from mongoengine import (connect, Document, StringField, IntField,
     ReferenceField, EmbeddedDocumentListField, ListField, EmbeddedDocument,
     DateTimeField, queryset_manager, EmbeddedDocumentField, UUIDField,
     BooleanField, DictField)
-from environment import config
+from mongoengine.errors import ValidationError, DoesNotExist, NotUniqueError, FieldDoesNotExist
 from database.schemas import CampaignDenomIn
+from environment import config
 from datetime import datetime
-import uuid, string, random, json, hashlib
+import uuid, string, random, json, hashlib, re
 
 
 # Init DB
 connect(db='reternal', host=config['MONGO_HOST'])
 
 # Fixed options/choices for fields
-PLATFORMS = ('Windows', 'Linux', 'All', 'macOS')
+PLATFORMS = ('Windows', 'Linux', 'All', 'macOS', 'AWS', 'Azure',
+    'GCP', 'Office365', 'SaaS', 'Azure AD')
 STATUSOPTIONS = ('Processed', 'Open', 'Processing')
 
 
@@ -260,7 +262,7 @@ class Validations(Document):
         denomalized_technique = {**kwargs, 'technique_id': technique['technique_id'],
             'technique_name': technique['name'], 'actors': technique['actors'],
             'kill_chain_phases': technique['kill_chain_phases'], 'magma': technique['magma'],
-            'data_sources_available': technique['data_sources_available']}
+            'data_sources_available': technique['data_sources_available'] }
 
         created_validations = json.loads(Validations.objects(name=kwargs['name']).upsert_one(**denomalized_technique).to_json())
         return created_validations
@@ -344,16 +346,17 @@ class DataQuality(EmbeddedDocument):
 class ProductConfiguration(EmbeddedDocument):
     name = StringField(max_length=120)
     vendor = StringField(max_length=100)
-    sourcetype = StringField(max_length=30)
-    source = StringField(max_length=30)
-    index = StringField(max_length=30)
+    sourcetype = StringField(max_length=200)
+    source = StringField(max_length=800)
+    index = StringField(max_length=100)
+    platforms = ListField(StringField(choices=PLATFORMS))
 
 class Coverage(Document):
     data_source_name = StringField(max_length=100, required=True, unique=True)
     date_registered = DateTimeField(default=datetime.now())
     date_connected = DateTimeField()
     available_for_data_analytics = BooleanField(default=False)
-    enabled = BooleanField(default=False)
+    enabled = BooleanField(default=True)
     products = EmbeddedDocumentListField('ProductConfiguration')
     comment = StringField()
     data_quality = EmbeddedDocumentField('DataQuality')
@@ -397,9 +400,56 @@ class SourceTypes(Document):
     execution_date = DateTimeField()
     first_seen = DateTimeField()
     last_seen = DateTimeField()
-    sourcetype = StringField(max_length=100, unique_with=['integration'])
+    sourcetype = StringField(max_length=200, unique_with=['integration'])
     event_count = StringField(max_length=100)
 
     def create(*args, **kwargs):
         new_sourcetype = json.loads(SourceTypes.objects(sourcetype=kwargs['sourcetype']).upsert_one(**kwargs).to_json())
         return new_sourcetype
+
+
+class Indices(Document):
+    integration = StringField(max_length=100)
+    execution_date = DateTimeField()
+    index = StringField(max_length=100, unique_with=['integration', 'source', 'sourcetype'])
+    source = StringField(max_length=800)
+    sourcetype = StringField(max_length=200)
+    event_count = StringField(max_length=100)
+
+    def denormalize_coverage(indice, product):
+        for datasource in product['datasources']:
+            product_data = { 'name': product['name'],
+                'platforms': product['platforms'],
+                'sourcetype': indice['sourcetype'],
+                'source': indice['source'],
+                'vendor': product['vendor'],
+                'index': indice['index']
+            }
+            get_coverage = Coverage.objects(data_source_name=datasource).first()
+            if not get_coverage:
+                Coverage.create(**{ 'enabled': True, 'data_source_name': datasource,
+                    'products': [product_data]})
+            else:
+                get_coverage.update(add_to_set__products=product_data)
+
+    def denormalize_products(indice):
+        [Indices.denormalize_coverage(indice, product) for product in Products.objects() \
+            if re.match(product['sourcetype'], indice['sourcetype'], re.IGNORECASE)]
+
+    def create(*args, **kwargs):
+        new_index = json.loads(Indices.objects(sourcetype=kwargs['sourcetype'], index=kwargs['index'],
+            source=kwargs['source']).upsert_one(**kwargs).to_json())
+        Indices.denormalize_products(kwargs)
+        return new_index
+
+
+class Products(Document):
+    datasources = ListField(StringField(max_length=100))
+    vendor = StringField(max_length=100)
+    name = StringField(max_length=120)
+    platforms = ListField(StringField(choices=PLATFORMS))
+    sourcetype = StringField(max_length=100, unique=True)
+
+    def create(*args, **kwargs):
+        new_product = json.loads(Products.objects(sourcetype=kwargs['sourcetype']).upsert_one(**kwargs).to_json())
+        return new_product
