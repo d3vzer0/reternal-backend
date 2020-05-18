@@ -20,8 +20,8 @@ class DataQuality(BaseModel):
 
 class CoverageOut(BaseModel):
     id: str = Field(None, alias='_id')
-    data_quality: DataQuality
-    products: List[ProductConfiguration]
+    data_quality: DataQuality = {}
+    products: List[ProductConfiguration] = []
     data_source_name: str = None
     date_registered: str = None
     date_connected: str = None
@@ -37,7 +37,7 @@ class CoverageOut(BaseModel):
     @validator('data_quality', pre=True, always=True)
     def _data_quality(cls, v):
         defaults = {'device_completeness': 0, 'field_completeness': 0,
-            'timeliness': 4, 'consistency': 0, 'retention': 0}
+            'timeliness': 0, 'consistency': 0, 'retention': 0}
         return v if v else defaults
 
     @validator('date_registered', pre=True, always=True)

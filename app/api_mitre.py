@@ -70,6 +70,13 @@ async def get_actor(actor_name: str):
     return json_object
 
 
+@api.get('/api/v1/products/coverage', response_model=CoverageOut)
+async def get_products(datasource: str):
+    ''' Get configured products from coverage mapping '''
+    coverage_products = Coverage.objects.get(data_source_name__iexact=datasource)
+    json_object = json.loads(coverage_products.to_json())
+    return json_object
+
 @api.get('/api/v1/mitre/coverage', response_model=List[CoverageOut])
 async def get_coverages():
     ''' Get the current datasources coverage documents'''

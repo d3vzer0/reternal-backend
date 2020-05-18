@@ -9,12 +9,13 @@ import json
 
 
 async def dynamic_search(phase: str = None, integration: str = 'Splunk', technique: str = None,
-    l1usecase: str = None, l2usecase: str = None):
+    l1usecase: str = None, l2usecase: str = None, datasource: str = None):
     query = { 'integration': integration,
         'technique_name': technique, 
         'kill_chain_phases': phase, 
         'magma__l1_usecase_name': l1usecase, 
-        'magma__l2_usecase_name': l2usecase 
+        'magma__l2_usecase_name': l2usecase,
+        'data_sources__contains': datasource
     }
     return {arg: value for arg, value in query.items() if value is not None}
 
@@ -34,6 +35,12 @@ async def get_validation_phases(query: dict = Depends(dynamic_search)):
     ''' Get all unique phases for available queries '''
     unique_phases = Validations.objects(**query).distinct('kill_chain_phases')
     return unique_phases
+
+@api.get('/api/v1/validations/datasources')
+async def get_validation_datasources(query: dict = Depends(dynamic_search)):
+    ''' Get all unique datasources for available queries '''
+    unique_datasources = Validations.objects(**query).distinct('data_sources')
+    return unique_datasources
 
 @api.get('/api/v1/validations/techniques', response_model=List[str])
 async def get_validation_techniques(query: dict = Depends(dynamic_search)):

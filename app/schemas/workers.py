@@ -22,3 +22,13 @@ class WorkersOut(BaseModel):
     listeners: WorkersSubFunction
     stagers: WorkersSubFunction
     tasks: WorkersSubFunction
+
+
+class WorkersSearchOut(BaseModel):
+    name: str
+    description: str
+    thumbnail: str = None
+    enabled: bool
+    query: WorkersSubFunction
+    sourcetypes: WorkersSubFunction
+    indices: WorkersSubFunction
