@@ -60,5 +60,4 @@ async def plan_task_next(next_task: List[PlanTaskIn]):
         'modules': await execute_task(task.task, task.group_id, task.campaign, task.commands, agent) } for agent in task.agents ]
         executed_modules.append({'group_id': task.group_id, 'task':task.task,
             'campaign':task.campaign, 'executed': execute_modules})
-    print(execute_modules)
     return executed_modules

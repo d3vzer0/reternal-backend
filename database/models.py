@@ -48,11 +48,15 @@ class ExecutedModules(Document):
         new_execution = ExecutedModules(**module_data).save()
         return {"executed_task": str(new_execution.id)}
 
+    def denormalize_task(result):
+        print('a')
+
     def result(result):
         get_module = ExecutedModules.objects(external_id=result['external_id'], 
-            agent=result['agent'], integration=result['integration'], end_date=None).update(
+            agent=result['agent'], end_date=None).update(
                 set__end_date=result['end_date'], set__message=result['message']
             )
+        ExecutedModules.denormalize_task(result)
         return {**result, 'response': get_module}
 
  # Database models

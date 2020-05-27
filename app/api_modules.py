@@ -17,4 +17,3 @@ async def run_module(worker_name: str, run_data: ModuleIn, context: dict = Depen
     ''' Run a module on an agent specified by the C2 framework name '''
     run_module = celery.send_task(context[worker_name]['modules']['run'], args=(run_data.dict(),)).get()['response']
     return run_data
-

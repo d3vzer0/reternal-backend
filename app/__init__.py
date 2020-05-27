@@ -1,10 +1,12 @@
 from fastapi import FastAPI
+from fastapi.security import OAuth2PasswordBearer
 from celery import Celery
 from environment import config, routes
 from starlette.middleware.cors import CORSMiddleware
 
 
 api = FastAPI()
+
 api.add_middleware(
     CORSMiddleware,
     allow_origins=[config['CORS_ALLOW_ORIGIN']],

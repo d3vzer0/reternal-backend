@@ -7,8 +7,7 @@ from typing import List, Dict
 @api.get('/api/v1/listeners/{worker_name}', response_model=List[ListenersOut])
 async def get_listeners(worker_name: str, context: dict = Depends(validate_worker)):
     ''' Get configuration options for all potential listeners by worker name / c2 framework '''
-    get_listeners = celery.send_task(context[worker_name]['listeners']['get'],
-            retry=True).get()['response']
+    get_listeners = celery.send_task(context[worker_name]['listeners']['get']).get()['response']
     return get_listeners
 
 @api.post('/api/v1/listeners/{worker_name}/{listener_type}')

@@ -33,3 +33,36 @@ class ResultsOut(BaseModel):
         mapping = { 0: 'Result not saved. Task does not exist or already updated',
             1: 'Result succesfully updated' }
         return mapping[values['response']]
+
+class ResultOut(BaseModel):
+    id: str = Field(None, alias='_id')
+    reference_name: str
+    technique_name: str
+    kill_chain_phase: str
+    technique_id: str
+    category: str
+    end_date: str = None
+    module: str
+    integration: str
+    external_id: str
+    start_date: str
+    agent: str
+    task: str
+    group_id: str
+    external_id: str
+    campaign: str
+    input: Dict
+    message: str = None
+
+    @validator('end_date', pre=True, always=True)
+    def _get_end_date(cls, v):
+        return str(datetime.fromtimestamp(v['$date']/1000)) if v else None
+
+    @validator('start_date', pre=True, always=True)
+    def _get_start_date(cls, v):
+        return str(datetime.fromtimestamp(v['$date']/1000))
+
+    @validator('id', pre=True, always=True)
+    def _get_id(cls, v):
+        return v['$oid']
+

@@ -16,8 +16,8 @@ async def create_campaign(campaign: CampaignIn):
     dependent_tasks = [dep.destination for dep in campaign.dependencies]
     create_campaign = Campaigns.create(campaign.dict())
     scheduled_tasks = [ {'campaign': campaign.name, 'group_id': create_campaign['group_id'],
-        'scheduled_tasks': await Scheduler(task)._organise_tasks() } \
-            for task in campaign.tasks  if not task.name in dependent_tasks
+        'scheduled_tasks': await Scheduler(task, {'campaign':campaign.name, 'group_id': create_campaign['group_id']})._organise_tasks() } \
+            for task in campaign.tasks if not task.name in dependent_tasks
     ]
     return scheduled_tasks
 

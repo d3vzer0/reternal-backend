@@ -3,16 +3,22 @@ from app.utils.depends import validate_worker
 from workers.scheduler import update_task
 import pytz
 
+
 class Scheduler:
-    def __init__(self, task):
+    def __init__(self, task, campaign):
         self.task = task
+        self.campaign = campaign
 
     async def _queue_task(self, agent):
         available_workers = await validate_worker(agent.integration)
         execution_process = available_workers[agent.integration]['modules']['run']
-        planned_tasks = [
-            str(celery.send_task(execution_process, args=({'module':module.module, 'input': module.input, 'agent':agent.id},),
-                eta=self.task.scheduled_date.astimezone(pytz.utc), link=update_task.s())) for module in self.task.commands ]
+        print(self.campaign, self.task)
+        planned_tasks = [ str(celery.send_task(execution_process, args=({'module':module.module, 'input': module.input, 'agent':agent.id},),
+            eta=self.task.scheduled_date.astimezone(pytz.utc),
+            link=update_task.s({
+                **module.dict(), 'task': self.task.name, **self.campaign, 'agent': agent.id
+            }))) for module in self.task.commands
+        ]
         return planned_tasks
 
     async def _organise_tasks(self):
