@@ -10,5 +10,5 @@ class ResponseSocket:
         else:
             result = {'task_id':self.task_id, 'command':command, 'magic':magic_type}
 
-        send_result = celery.send_task('api.result', retry=True, args=(result,))
+        send_result = celery.send_task('api.result', args=(result,))
         return {'result':'success', 'data':str(send_result)}
