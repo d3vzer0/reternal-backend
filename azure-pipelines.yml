@@ -27,3 +27,28 @@ stages:
         dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
           $(tag)
+  - job: Publish
+    displayName: Publish
+    dependsOn: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo $sourceVersion
+          commitHash=${sourceVersion:0:7}
+          echo $commitHash
+          echo "##vso[task.setvariable variable=commitHash]$commitHash"
+      env: { sourceVersion: $(Build.SourceVersion) }
+      displayName: Git Hash 7-digit
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'DockerHubReternal'
+        repository: 'reternal/backend'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          $(commitHash)-dev
+          dev
