@@ -27,12 +27,6 @@ stages:
         dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
           $(tag)
-  - job: Publish
-    displayName: Publish
-    dependsOn: Build
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
     - task: Bash@3
       inputs:
         targetType: 'inline'
