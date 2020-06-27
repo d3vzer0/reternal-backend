@@ -16,7 +16,7 @@ connect(db='reternal', host=config['MONGO_HOST'])
 PLATFORMS = ('Windows', 'Linux', 'All', 'macOS', 'AWS', 'Azure',
     'GCP', 'Office365', 'SaaS', 'Azure AD')
 STATUSOPTIONS = ('Processed', 'Open', 'Processing')
-
+SIGMASTATUSOPTIONS = ('stable', 'testing', 'experimental')
 
 class Agents(EmbeddedDocument):
     name = StringField(max_length=100, required=True)
@@ -457,3 +457,29 @@ class Products(Document):
     def create(*args, **kwargs):
         new_product = json.loads(Products.objects(sourcetype=kwargs['sourcetype']).upsert_one(**kwargs).to_json())
         return new_product
+
+class SigmaLogsource(EmbeddedDocument):
+    category = StringField(required=False, max_length=255)
+    product = StringField(required=False, max_length=255)
+    service = StringField(required=False, max_length=255)
+    definition = StringField(required=False, max_length=255)
+
+class SigmaRelated(EmbeddedDocument):
+    id = StringField(required=False, max_length=200)
+    type = StringField(required=False, choices=('derived', 'obsoletes', 'merged', 'renamed'))
+
+class Sigma(Document):
+    title = StringField(required=True, max_length=256)
+    date = DateTimeField(required=False)
+    description = StringField(required=False, max_length=255)
+    author = StringField(required=False, max_length=255)
+    references = ListField(StringField(max_length=255))
+    status = StringField(required=False, choices=SIGMASTATUSOPTIONS)
+    logsource = EmbeddedDocumentField(SigmaLogsource)
+    detection = DictField()
+    related = EmbeddedDocumentListField(SigmaRelated)
+    license =  StringField(required=False, max_length=256)
+    level = StringField(required=False, choices=('low', 'medium', 'high', 'critical'))
+    tags = ListField(StringField(max_length=50, required=False))
+    falsepositives = ListField(StringField(max_length=100, required=False))
+    fields = ListField(StringField(max_length=100, required=True))
