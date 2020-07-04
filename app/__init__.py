@@ -37,5 +37,5 @@ from app.api_results import *
 from app.api_validations import *
 from app.api_search import *
 from app.api_coverage import *
-# from app.api_stats import *
+from app.api_stats import *
 from app.api_states import *

@@ -8,9 +8,11 @@ from typing import List, Dict
 import json
 
 
-async def dynamic_search(phase: str = None, technique: str = None,
-    l1usecase: str = None, l2usecase: str = None, datasource: str = None):
-    query = { 
+async def dynamic_search(level: str = None, phase: str = None, technique: str = None,
+    l1usecase: str = None, l2usecase: str = None, datasource: str = None, status: str = None):
+    query = {
+        'status': status,
+        'level': level,
         'techniques__name': technique, 
         'techniques__kill_chain_phases': phase, 
         'techniques__magma__l1_usecase_name': l1usecase, 
@@ -24,7 +26,7 @@ async def create_sigma(sigma: SigmaIn):
     create_rule = Sigma.create(**sigma.dict(exclude_none=True))
     return create_rule
 
-@api.post('/api/v1/sigma/phases')
+@api.get('/api/v1/sigma/phases')
 async def get_sigma_phases(query: dict = Depends(dynamic_search)):
     ''' Get all unique phases for available sigma rules '''
     unique_phases = Sigma.objects(**query).distinct('techniques.kill_chain_phases')
@@ -55,9 +57,10 @@ async def get_l2_usecases(query: dict = Depends(dynamic_search)):
     return unique_usecases
 
 @api.get('/api/v1/sigma', response_model=List[SigmaOut])
-async def get_validations(query: dict = Depends(dynamic_search)):
+async def get_sigma_rules(query: dict = Depends(dynamic_search)):
     ''' Get all sigma rules that are mapped to ATTCK and have a query available '''
-    sigma_objects = Sigma.objects(**query)
+    sigma_objects = Sigma.objects.filter(**query)
+    print(query['techniques__kill_chain_phases'])
     result = json.loads(sigma_objects.to_json())
     return result
 

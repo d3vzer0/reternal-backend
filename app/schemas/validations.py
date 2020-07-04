@@ -117,6 +117,7 @@ class SigmaRelatedOut(BaseModel):
 class SigmaOut(BaseModel):
     title: str 
     sigma_id: str
+    hash: str
     id: str = Field(None, alias='_id')
     date: Optional[datetime]
     description: Optional[str]
