@@ -27,7 +27,6 @@ async def create_sigma(sigma: SigmaIn):
 @api.post('/api/v1/sigma/phases')
 async def get_sigma_phases(query: dict = Depends(dynamic_search)):
     ''' Get all unique phases for available sigma rules '''
-    print(query)
     unique_phases = Sigma.objects(**query).distinct('techniques.kill_chain_phases')
     return unique_phases
 
@@ -55,7 +54,7 @@ async def get_l2_usecases(query: dict = Depends(dynamic_search)):
     unique_usecases = Sigma.objects(**query).distinct('techniques.magma.l2_usecase_name')
     return unique_usecases
 
-@api.get('/api/v1/validations', response_model=List[SigmaOut])
+@api.get('/api/v1/sigma', response_model=List[SigmaOut])
 async def get_validations(query: dict = Depends(dynamic_search)):
     ''' Get all sigma rules that are mapped to ATTCK and have a query available '''
     sigma_objects = Sigma.objects(**query)
