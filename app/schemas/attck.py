@@ -34,10 +34,25 @@ class AttckTechniquesOut(BaseModel):
     data_sources: List[str]
     data_sources_available: List[str] = []
     actors: List[AttckSubActorsOut]
+    is_subtechnique: bool = False
 
     @validator('id', pre=True, always=True)
     def _get_id(cls, v):
-        return v['$oid']
+        return v['$oid'] if v else None
+
+# class AttckTechniquesOut(BaseModel):
+#     id: str = Field(None, alias='_id')
+#     references: List[AttckSubReferencesOut] = []
+#     platforms: List[str]
+#     permissions_required:  List[str]
+#     technique_id: str
+#     name: str
+#     magma: AttcktechniquesMagmaOut = None
+#     description: str
+#     data_sources: List[str]
+#     data_sources_available: List[str] = []
+#     actors: List[AttckSubActorsOut]
+#     is_subtechnique: bool = False
 
 
 class AttckSubTechniquesOut(BaseModel):

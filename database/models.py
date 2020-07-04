@@ -18,6 +18,7 @@ PLATFORMS = ('Windows', 'Linux', 'All', 'macOS', 'AWS', 'Azure',
 STATUSOPTIONS = ('Processed', 'Open', 'Processing')
 SIGMASTATUSOPTIONS = ('stable', 'testing', 'experimental')
 
+
 class Agents(EmbeddedDocument):
     name = StringField(max_length=100, required=True)
     id = StringField(max_length=100, required=True)
@@ -58,6 +59,7 @@ class ExecutedModules(Document):
             )
         ExecutedModules.denormalize_task(result)
         return {**result, 'response': get_module}
+
 
  # Database models
 class TaskCommands(EmbeddedDocument):
@@ -112,6 +114,7 @@ class CampaignTasks(EmbeddedDocument):
     dependencies = ListField(StringField(max_length=100, required=True))
     state = StringField(max_length=100, required=False, choices=STATUSOPTIONS, default='Open')
     meta = {'strict': False}
+
 
 class Campaigns(Document):
     name = StringField(max_length=100, required=True)
@@ -212,6 +215,7 @@ class Magma(EmbeddedDocument):
     l2_usecase_name = StringField(max_length=120, required=True, default="Unclassified")
     l2_usecase_id = StringField(max_length=8, required=True, default="N/A")
 
+
 class Techniques(Document):
     references = EmbeddedDocumentListField('TechniqueReferences')
     platforms = ListField(StringField(max_length=50, default="all"))
@@ -225,6 +229,7 @@ class Techniques(Document):
     data_sources_available = ListField(StringField(max_length=100), default=[])
     detection = StringField(max_length=1000)
     actors = EmbeddedDocumentListField('TechniqueActors')
+    is_subtechnique =  BooleanField(default=False)
     
     def create(*args, **kwargs):
         new_technique = json.loads(Techniques.objects(technique_id=kwargs['technique_id']).upsert_one(**kwargs).to_json())
@@ -241,7 +246,6 @@ class Techniques(Document):
         append_actors = technique_object.actors.append(technique_actors)
         technique_object.save()
         return {'message':'Succesfully added technique relationship'}
-
 
 
 class Validations(Document):
@@ -307,6 +311,7 @@ class Actors(Document):
         actor_object.save()
         return {'message':'Succesfully added actor relationship'}
 
+
 class CommandMapping(Document):
     author = StringField(max_length=100, required=False)
     name = StringField(max_length=100, required=True, unique_with=['technique_id', 'platform', 'kill_chain_phase'])
@@ -354,6 +359,7 @@ class ProductConfiguration(EmbeddedDocument):
     source = StringField(max_length=800)
     index = StringField(max_length=100)
     platforms = ListField(StringField(choices=PLATFORMS))
+
 
 class Coverage(Document):
     data_source_name = StringField(max_length=100, required=True, unique=True)
@@ -458,28 +464,66 @@ class Products(Document):
         new_product = json.loads(Products.objects(sourcetype=kwargs['sourcetype']).upsert_one(**kwargs).to_json())
         return new_product
 
+
+class SigmaTechniques(EmbeddedDocument):
+    references = EmbeddedDocumentListField('TechniqueReferences')
+    platforms = ListField(StringField(max_length=50, default="all"))
+    kill_chain_phases = ListField(StringField(max_length=100))
+    permissions_required = ListField(StringField(max_length=100))
+    technique_id = StringField(max_length=100, required=True, unique=True)
+    name = StringField(max_length=100, required=True)
+    magma = EmbeddedDocumentField('Magma', required=False)
+    description = StringField(max_length=9000)
+    data_sources = ListField(StringField(max_length=100))
+    data_sources_available = ListField(StringField(max_length=100), default=[])
+    detection = StringField(max_length=1000)
+    actors = EmbeddedDocumentListField('TechniqueActors')
+    is_subtechnique =  BooleanField(default=False)
+    meta = {'strict': False}
+
 class SigmaLogsource(EmbeddedDocument):
-    category = StringField(required=False, max_length=255)
-    product = StringField(required=False, max_length=255)
-    service = StringField(required=False, max_length=255)
-    definition = StringField(required=False, max_length=255)
+    category = StringField(required=False, max_length=400)
+    product = StringField(required=False, max_length=400)
+    service = StringField(required=False, max_length=400)
+    definition = StringField(required=False, max_length=400)
+
 
 class SigmaRelated(EmbeddedDocument):
-    id = StringField(required=False, max_length=200)
-    type = StringField(required=False, choices=('derived', 'obsoletes', 'merged', 'renamed'))
+    sigma_id = StringField(required=False, max_length=200)
+    relation_type = StringField(required=False, choices=('derived', 'obsoletes', 'merged', 'renamed'))
+
 
 class Sigma(Document):
     title = StringField(required=True, max_length=256)
+    hash = StringField(required=True, max_length=256, unique=True)
     date = DateTimeField(required=False)
-    description = StringField(required=False, max_length=255)
+    description = StringField(required=False, max_length=900)
     author = StringField(required=False, max_length=255)
-    references = ListField(StringField(max_length=255))
+    references = ListField(StringField(max_length=500))
     status = StringField(required=False, choices=SIGMASTATUSOPTIONS)
     logsource = EmbeddedDocumentField(SigmaLogsource)
     detection = DictField()
+    sigma_id = StringField(required=True, max_length=100)
     related = EmbeddedDocumentListField(SigmaRelated)
     license =  StringField(required=False, max_length=256)
     level = StringField(required=False, choices=('low', 'medium', 'high', 'critical'))
     tags = ListField(StringField(max_length=50, required=False))
-    falsepositives = ListField(StringField(max_length=100, required=False))
+    falsepositives = ListField(StringField(max_length=400, required=False))
     fields = ListField(StringField(max_length=100, required=True))
+    techniques = EmbeddedDocumentListField(SigmaTechniques)
+
+    def denormalize_attck(tags):
+        related_techniques = [Techniques.objects(references__external_id=tag[-5:].upper()).first() for tag in tags 
+            if re.match(r'attack\.t[0-9]{4}', tag)]
+        return related_techniques
+
+    def create(*args, **kwargs):
+        kwargs['fields'] = kwargs.pop('sigma_fields', None)
+        if 'tags' in kwargs:
+            related_techniques =  Sigma.denormalize_attck(kwargs['tags'])
+            kwargs['techniques'] = [json.loads(technique.to_json()) for technique in related_techniques if technique]
+    
+        sigma_hash = hashlib.sha256(str({'sigma_id': kwargs['sigma_id'], **kwargs['logsource'],
+            **kwargs['detection']}).encode()).hexdigest()    
+        new_rule = json.loads(Sigma.objects(hash=sigma_hash).upsert_one(**kwargs).to_json())
+        return new_rule

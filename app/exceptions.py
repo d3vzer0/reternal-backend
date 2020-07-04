@@ -7,6 +7,7 @@ from app import api
 
 @api.exception_handler(ValidationError)
 async def mongo_invalid_format(request, exc):
+    print(exc)
     response = {'message': 'Invalid document format, invalid fields supplied'}
     return JSONResponse(status_code=400, content=response )
 
@@ -17,6 +18,7 @@ async def mongo_not_found(request, exc):
 
 @api.exception_handler(NotUniqueError)
 async def mongo_not_unique(request, exc):
+    print(exc)
     response = {'message': 'Document is not unique'}
     return JSONResponse(status_code=409, content=response )
 

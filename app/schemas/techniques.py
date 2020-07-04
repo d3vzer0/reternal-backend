@@ -35,6 +35,7 @@ class CreateTechniquesIn(BaseModel):
     data_sources_available: List[str] = []
     detection: str = None
     actors: List[CreateTechniquesActorsIn] = []
+    is_subtechnique: bool = False
 
 class CreateTechniquesOut(BaseModel):
     id: str = Field(None, alias='_id')
