@@ -2,7 +2,7 @@ from database.models import Sigma
 from app import api, celery
 from app.utils.depends import validate_worker
 from fastapi import Depends, Body
-from app.schemas.validations import SigmaIn, SigmaOut
+from app.schemas.sigma import SigmaIn, SigmaOut
 from bson.json_util import dumps
 from typing import List, Dict
 import json
@@ -32,6 +32,18 @@ async def get_sigma_phases(query: dict = Depends(dynamic_search)):
     unique_phases = Sigma.objects(**query).distinct('techniques.kill_chain_phases')
     return unique_phases
 
+@api.get('/api/v1/sigma/status')
+async def get_sigma_status(query: dict = Depends(dynamic_search)):
+    ''' Get all unique status for available sigma rules '''
+    unique_status = Sigma.objects(**query).distinct('status')
+    return unique_status
+
+@api.get('/api/v1/sigma/level')
+async def get_sigma_level(query: dict = Depends(dynamic_search)):
+    ''' Get all unique level for available sigma rules '''
+    unique_level = Sigma.objects(**query).distinct('level')
+    return unique_level
+
 @api.get('/api/v1/sigma/datasources')
 async def get_sigma_datasources(query: dict = Depends(dynamic_search)):
     ''' Get all unique datasources for available sigma rules '''
@@ -60,7 +72,6 @@ async def get_l2_usecases(query: dict = Depends(dynamic_search)):
 async def get_sigma_rules(query: dict = Depends(dynamic_search)):
     ''' Get all sigma rules that are mapped to ATTCK and have a query available '''
     sigma_objects = Sigma.objects.filter(**query)
-    print(query['techniques__kill_chain_phases'])
     result = json.loads(sigma_objects.to_json())
     return result
 

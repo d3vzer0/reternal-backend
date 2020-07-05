@@ -5,50 +5,17 @@ from database.models import Techniques
 from typing import List, Dict, Optional
 from datetime import datetime
 import json
-class ValidationActorsOut(BaseModel):
+
+class SigmeActorsOut(BaseModel):
     actor_id: str
     name: str
 
-class ValidationsMagmaOut(BaseModel):
+
+class SigmaMagmaOut(BaseModel):
     l1_usecase_name: str
     l1_usecase_id: str
     l2_usecase_name: str
     l2_usecase_id: str
-
-class ValidationsOut(BaseModel):
-    id: str = Field(None, alias='_id')
-    name: str
-    author: str
-    actors: List[ValidationActorsOut]
-    search: str
-    magma: ValidationsMagmaOut = None
-    integration: str
-    description: str
-    coverage: Dict
-    external_id: str
-    kill_chain_phases: List[str]
-    data_sources: List[str]
-    data_sources_available: List[str]
-    reference: str = None
-    technique_id: str
-    technique_name: str
-    reference: str = None
-
-    @validator('id', pre=True, always=True)
-    def _get_id(cls, v):
-        return v['$oid']
-
-
-class ValidationsIn(BaseModel):
-    name: str
-    external_id: str
-    data_sources: List[str]
-    coverage: Dict
-    reference: str = None
-    description: str = None
-    author: str = None
-    integration: str
-    search: str
 
 
 class SigmaLogsource(BaseModel):
@@ -61,12 +28,13 @@ class SigmaLogsource(BaseModel):
 class SigmaRelated(BaseModel):
     sigma_id: Optional[str] = Field(..., alias='id')
     relation_type: Optional[str] = Field(..., alias='type')
-
+    
     @validator('relation_type')
     def _validate_relation_type(cls, v):
         if v not in ('derived', 'obsoletes', 'merged', 'renamed'):
             raise ValueError('Invalid sigma type')
         return v
+
 
 class SigmaIn(BaseModel):
     title: str 
@@ -113,6 +81,7 @@ class SigmaRelatedOut(BaseModel):
         if v not in ('derived', 'obsoletes', 'merged', 'renamed'):
             raise ValueError('Invalid sigma type')
         return v
+
 
 class SigmaOut(BaseModel):
     title: str 

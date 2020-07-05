@@ -34,7 +34,7 @@ from app.api_graph import *
 from app.api_campaigns import *
 from app.api_scheduler import *
 from app.api_results import *
-from app.api_validations import *
+from app.api_sigma import *
 from app.api_search import *
 from app.api_coverage import *
 from app.api_stats import *
