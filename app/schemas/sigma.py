@@ -6,7 +6,8 @@ from typing import List, Dict, Optional
 from datetime import datetime
 import json
 
-class SigmeActorsOut(BaseModel):
+
+class SigmaActorsOut(BaseModel):
     actor_id: str
     name: str
 
@@ -34,6 +35,42 @@ class SigmaRelated(BaseModel):
         if v not in ('derived', 'obsoletes', 'merged', 'renamed'):
             raise ValueError('Invalid sigma type')
         return v
+
+
+
+class SigmaRule(BaseModel):
+    class Config:
+        allow_population_by_field_name = True
+        ignore_extra = True
+
+    title: str 
+    sigma_id: str = Field(..., alias='id')
+    date: Optional[datetime]
+    description: Optional[str]
+    author: Optional[str]
+    references: Optional[List[str]]
+    status: Optional[str]
+    logsource: SigmaLogsource
+    detection: Dict
+    related: SigmaRelated = None
+    license: Optional[str]
+    level: Optional[str]
+    tags: Optional[List[str]]
+    falsepositives: Optional[List[str]]
+    sigma_fields: Optional[List[str]] = Field(None, alias='fields')
+
+    @validator('date', pre=True, always=True)
+    def _get_date(cls, v):
+        return str(datetime.fromtimestamp(v['$date']/1000))
+
+
+class SigmaRules(BaseModel):
+    each_rule: List[SigmaRule]
+    
+
+# class SigmaRulesAlias(MyModel):
+#     class Config:
+#         fields = {'fields': {'alias': 'sigma_fields'}}
 
 
 class SigmaIn(BaseModel):

@@ -1,10 +1,12 @@
 from database.models import Sigma
+from pydantic import parse_obj_as
 from app import api, celery
 from app.utils.depends import validate_worker
 from fastapi import Depends, Body
-from app.schemas.sigma import SigmaIn, SigmaOut
+from app.schemas.sigma import SigmaIn, SigmaOut, SigmaRules
 from bson.json_util import dumps
 from typing import List, Dict
+from app.utils.sigmaloader import SigmaLoader
 import json
 
 
@@ -31,6 +33,14 @@ async def get_sigma_phases(query: dict = Depends(dynamic_search)):
     ''' Get all unique phases for available sigma rules '''
     unique_phases = Sigma.objects(**query).distinct('techniques.kill_chain_phases')
     return unique_phases
+
+@api.get('/api/v1/sigma/convert/{target}')
+async def convert_sigma_rules(query: dict = Depends(dynamic_search), target: str = 'splunk') :
+    ''' Convert selection of sigma rules to specified target platform '''
+    sigma_rules = json.loads(Sigma.objects(**query).to_json())
+    format_rules = SigmaRules(**{'each_rule': sigma_rules}).dict(by_alias=True, exclude_none=True)
+    target_rules = SigmaLoader().convert_rules(format_rules['each_rule'])
+    return target_rules
 
 @api.get('/api/v1/sigma/status')
 async def get_sigma_status(query: dict = Depends(dynamic_search)):
