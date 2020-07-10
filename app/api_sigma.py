@@ -11,11 +11,13 @@ import json
 
 
 async def dynamic_search(level: str = None, phase: str = None, technique: str = None,
-    l1usecase: str = None, l2usecase: str = None, datasource: str = None, status: str = None):
+    l1usecase: str = None, l2usecase: str = None, datasource: str = None, status: str = None,
+    technique_id: str = None ):
     query = {
         'status': status,
         'level': level,
-        'techniques__name': technique, 
+        'techniques__name': technique,
+        'techniques__references__external_id': technique_id,
         'techniques__kill_chain_phases': phase, 
         'techniques__magma__l1_usecase_name': l1usecase, 
         'techniques__magma__l2_usecase_name': l2usecase,
@@ -27,6 +29,12 @@ async def dynamic_search(level: str = None, phase: str = None, technique: str = 
 async def create_sigma(sigma: SigmaIn):
     create_rule = Sigma.create(**sigma.dict(exclude_none=True))
     return create_rule
+
+@api.get('/api/v1/sigma/techniqueids')
+async def get_sigma_techniques_by_id(query: dict = Depends(dynamic_search)):
+    ''' Get all unique techniques by ID for available sigma rules '''
+    unique_techniques = Sigma.objects(**query).distinct('techniques.references.0.external_id')
+    return unique_techniques
 
 @api.get('/api/v1/sigma/phases')
 async def get_sigma_phases(query: dict = Depends(dynamic_search)):

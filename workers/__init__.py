@@ -6,7 +6,7 @@ import os
 import logging
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
-app = Celery('api', backend=config['CELERY_BACKEND'], broker=config['CELERY_BACKEND'])
+app = Celery('api', backend=config['CELERY_BACKEND'], broker=config['CELERY_BROKER'])
 app.conf.task_routes = routes
 
 app.conf.beat_schedule = {
