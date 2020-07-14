@@ -10,7 +10,8 @@ import uuid, string, random, json, hashlib, re
 
 
 # Init DB
-connect(db='reternal', host=config['MONGO_HOST'])
+connect(db='reternal', host=config['MONGO_HOST'],
+    username=config['MONGO_USERNAME'], password=config['MONGO_PASSWORD'])
 
 # Fixed options/choices for fields
 PLATFORMS = ('Windows', 'Linux', 'All', 'macOS', 'AWS', 'Azure',
@@ -511,7 +512,7 @@ class SigmaTechniques(EmbeddedDocument):
     platforms = ListField(StringField(max_length=50, default="all"))
     kill_chain_phases = ListField(StringField(max_length=100))
     permissions_required = ListField(StringField(max_length=100))
-    technique_id = StringField(max_length=100, required=True, unique=True)
+    technique_id = StringField(max_length=100, required=True)
     name = StringField(max_length=100, required=True)
     magma = EmbeddedDocumentField('Magma', required=False)
     description = StringField(max_length=9000)
