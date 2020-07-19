@@ -1,5 +1,5 @@
 from app import api, celery
-from app.utils.depends import validate_worker
+from app.utils.depends import validate_worker, validate_token
 from app.schemas.user import User
 from fastapi import Depends, Body
 from database.models import Techniques, Coverage, Sigma
@@ -9,7 +9,7 @@ import json
 
 
 @api.get('/api/v1/stats/count')
-async def stats_count():
+async def stats_count(current_user: dict = Depends(validate_token)):
     ''' Get total count of mapped datasources '''
     stats_count = {
         'coverage': len(Coverage.objects(enabled=True)),

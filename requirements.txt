@@ -20,3 +20,5 @@ websockets==8.1
 zipp==1.0.0
 redis
 sigmatools==0.17.0
+pyjwt
+cryptography

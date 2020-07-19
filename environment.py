@@ -10,10 +10,11 @@ config = {
     'MONGO_PASSWORD': os.getenv('RT_MONGO_PASSWORD'),
     'MONGO_DB': os.getenv('RT_MONGO_DB', 'reternal'),
     'SERVICE_TOKEN': os.getenv('RT_SERVICE_TOKEN'),
-    'OAUTH2_URL_TOKEN': os.getenv('RT_OAUTH2_URL_TOKEN'),
-    'OAUTH2_CLIENT_ID': os.getenv('RT_OAUTH2_CLIENT_ID'),
-    'OAUTH2_KEYS_URL': os.getenv('RT_OAUTH2_KEYS_URL', 'https://login.microsoftonline.com/common/discovery/keys')
+    'OAUTH2_ISSUER': os.getenv('RT_OAUTH2_ISSUER'),
+    'OAUTH2_AUDIENCE': os.getenv('RT_OAUTH2_AUDIENCE'),
+    'OAUTH2_OPENID_CONFIG': os.getenv('RT_OAUTH2_OPENID_CONFIG', 'https://login.microsoftonline.com/common/discovery/keys')
 }
+
 
 routes = {
     'api.*': {
