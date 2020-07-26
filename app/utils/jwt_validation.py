@@ -67,13 +67,6 @@ class JWT:
         else:
             public_key = openid_state[self.openid_configuration]
 
-        # print(self.audiences)
-        # print(access_token)
-
-        jwt_decoded2 = jwt.decode(access_token, public_key,
-            algorithms=[decoded_token_header['alg']], audience=self.audiences,
-            issuer=self.issuer, verify=False
-        )
         # Exceptions handled in the custom exception handling class
         jwt_decoded = jwt.decode(access_token, public_key, verify=True,
             algorithms=[decoded_token_header['alg']], audience=self.audiences,
