@@ -83,10 +83,3 @@ class SigmaLoader:
 
         return loaded_rules
 
-# Example how to load sigma rules and convert to Splunk
-# if __name__ == "__main__":
-#     with open('test.yml', 'r') as example_yaml:
-#         example_content = example_yaml.read()
-#     sigma_rules = [rule for rule in SigmaLoader().convert_rules([example_content])]
-#     print(sigma_rules)
-    

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, validator, Field
 from typing import List, Dict
-from database.models import Techniques
+from app.database.models import Techniques
 from datetime import datetime
 
 

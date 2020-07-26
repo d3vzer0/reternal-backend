@@ -1,7 +1,7 @@
 
 from pydantic import BaseModel, validator, Field
 from app.schemas.attck import AttckTechniquesOut
-from database.models import Techniques
+from app.database.models import Techniques
 from typing import List, Dict, Optional
 from datetime import datetime
 import json

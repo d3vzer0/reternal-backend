@@ -8,6 +8,7 @@ import jwt
 import json
 
 # Thanks to https://robertoprevato.github.io/Validating-JWT-Bearer-tokens-from-Azure-AD-in-Python/
+openid_state = { }
 
 def ensure_bytes(key):
     if isinstance(key, str):
@@ -41,15 +42,12 @@ class JWT:
     def decode_token_header(self, access_token):
         split_token = f'{access_token.split(".")[0]}=='
         decoded_token = base64.b64decode(split_token)
-
-        print(base64.b64decode(f'{access_token.split(".")[1]}=='))
         return json.loads(decoded_token)
 
-    def validate(self, access_token):
+    def get_public_key(self, decoded_token_header):
         jwks_uri = self.get(self.openid_configuration)['jwks_uri']
         jwk_keys = self.get(jwks_uri)
-        decoded_token_header = self.decode_token_header(access_token)
-
+        
         x5c = None
         for key in jwk_keys['keys']:
             if key['kid'] == decoded_token_header['kid']:
@@ -59,10 +57,29 @@ class JWT:
             raise jwt.exceptions.InvalidIssuerError()
         
         public_key = rsa_pem_from_jwk(x5c)
+        openid_state[self.openid_configuration] = public_key
+        return public_key
+   
+    def validate(self, access_token):
+        decoded_token_header = self.decode_token_header(access_token)
+        if not self.openid_configuration in openid_state:
+            public_key = self.get_public_key(decoded_token_header)
+        else:
+            public_key = openid_state[self.openid_configuration]
 
+        # print(self.audiences)
+        # print(access_token)
+
+        jwt_decoded2 = jwt.decode(access_token, public_key,
+            algorithms=[decoded_token_header['alg']], audience=self.audiences,
+            issuer=self.issuer, verify=False
+        )
         # Exceptions handled in the custom exception handling class
         jwt_decoded = jwt.decode(access_token, public_key, verify=True,
             algorithms=[decoded_token_header['alg']], audience=self.audiences,
             issuer=self.issuer
         )
         return jwt_decoded
+
+
+    

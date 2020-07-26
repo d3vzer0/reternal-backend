@@ -1,5 +1,4 @@
-from app import api, celery
-from database.models import Tasks
+from app.database.models import Tasks
 from datetime import datetime, timedelta
 from bson.json_util import dumps
 from typing import List, Dict

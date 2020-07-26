@@ -1,5 +1,5 @@
-from environment import config
 from app import celery
+from app.environment import config
 from app.utils.jwt_validation import JWT
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer

@@ -1,6 +1,6 @@
-from app import api, celery
+from app import celery
 from app.utils.depends import validate_worker
-from workers.scheduler import update_task
+from app.workers.scheduler import update_task
 import pytz
 
 
