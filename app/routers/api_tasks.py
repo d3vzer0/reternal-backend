@@ -1,8 +1,7 @@
-from app.utils.depends import validate_worker
 from app.schemas.tasks import TasksOut
 from app.database.models import Tasks
-from fastapi import Depends, Body, APIRouter
-from typing import List, Dict
+from fastapi import APIRouter
+from typing import List
 import json
 
 router = APIRouter()

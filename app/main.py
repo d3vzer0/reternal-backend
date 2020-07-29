@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from .environment import config
+from .environment import config, routes
+from celery import Celery
 from starlette.middleware.cors import CORSMiddleware
 from .routers import (api_agents, api_campaigns, api_coverage,
     api_graph, api_listeners, api_mapping, api_mitre, api_modules,

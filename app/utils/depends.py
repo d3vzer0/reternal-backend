@@ -1,8 +1,9 @@
-from app import celery
+from app.utils import celery
 from app.environment import config
 from app.utils.jwt_validation import JWT
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException, Depends, Request
 from fastapi.security import OAuth2PasswordBearer
+import hashlib
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -24,3 +25,7 @@ async def validate_token(token: str = Depends(oauth2_scheme)):
     decode_token = JWT(config['OAUTH2_OPENID_CONFIG'], config['OAUTH2_ISSUER'],
         config['OAUTH2_AUDIENCE']).validate(token)
     return decode_token
+
+async def job_uuid(request: Request):
+    job_uuid = hashlib.sha224(request.url.path.encode('utf-8')).hexdigest()
+    return job_uuid

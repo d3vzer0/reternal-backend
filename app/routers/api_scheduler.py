@@ -1,4 +1,4 @@
-from app import celery
+from app.utils import celery
 from app.utils.depends import validate_worker
 from app.schemas.schedules import PlanTaskIn, ScheduleOut, PlanTaskOut
 from app.database.models import Tasks, ExecutedModules
