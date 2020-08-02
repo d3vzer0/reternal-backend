@@ -10,17 +10,19 @@ router = APIRouter()
 async def dynamic_search(level: str = None, phase: str = None, technique: str = None,
     l1usecase: str = None, l2usecase: str = None, datasource: str = None, status: str = None,
     technique_id: str = None ):
+
     query = {
         'status': status,
         'level': level,
         'techniques__name': technique,
         'techniques__references__external_id': technique_id,
         'techniques__kill_chain_phases': phase, 
-        'techniques__magma__l1_usecase_name': l1usecase, 
-        'techniques__magma__l2_usecase_name': l2usecase,
+        'techniques__magma__l1_usecase_name__contains': l1usecase, 
+        'techniques__magma__l2_usecase_name__contains': l2usecase,
         'techniques__data_sources__contains': datasource
     }
-    return {arg: value for arg, value in query.items() if value is not None}
+
+    return {arg: value for arg, value in query.items() if value is not None and value is not ''}
 
 @router.post('/sigma', response_model=SigmaOut)
 async def create_sigma(sigma: SigmaIn):
@@ -42,21 +44,14 @@ async def get_sigma_phases(query: dict = Depends(dynamic_search)):
 @router.get('/sigma/tags')
 async def get_sigma_tags(query: dict = Depends(dynamic_search)):
     ''' Get all unique tags for available sigma rules '''
+    # print(query)
     unique_phases = Sigma.objects(**query).distinct('tags')
     return unique_phases
-
-
-@router.get('/sigma/convert/{target}')
-async def convert_sigma_rules(query: dict = Depends(dynamic_search), target: str = 'splunk') :
-    ''' Convert selection of sigma rules to specified target platform '''
-    sigma_rules = json.loads(Sigma.objects(**query).to_json())
-    format_rules = SigmaRules(**{'each_rule': sigma_rules}).dict(by_alias=True, exclude_none=True)
-    target_rules = SigmaLoader().convert_rules(format_rules['each_rule'])
-    return target_rules
 
 @router.get('/sigma/status')
 async def get_sigma_status(query: dict = Depends(dynamic_search)):
     ''' Get all unique status for available sigma rules '''
+    print(query)
     unique_status = Sigma.objects(**query).distinct('status')
     return unique_status
 
@@ -96,6 +91,14 @@ async def get_sigma_rules(query: dict = Depends(dynamic_search)):
     sigma_objects = Sigma.objects.filter(**query)
     result = json.loads(sigma_objects.to_json())
     return result
+
+@router.get('/sigma/convert/{target}')
+async def convert_sigma_rules(query: dict = Depends(dynamic_search), target: str = 'splunk') :
+    ''' Convert selection of sigma rules to specified target platform '''
+    sigma_rules = json.loads(Sigma.objects(**query).to_json())
+    format_rules = SigmaRules(**{'each_rule': sigma_rules}).dict(by_alias=True, exclude_none=True)
+    target_rules = SigmaLoader().convert_rules(format_rules['each_rule'])
+    return target_rules
 
 
 # @api.post('/api/v1/validations', response_model=ValidationsOut)

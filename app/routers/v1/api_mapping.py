@@ -16,7 +16,7 @@ async def dynamic_search(phase: str = None, platform: str = 'Windows',
         'actors__name': actor,
         'integration': integration
     }
-    return {arg: value for arg, value in query.items() if value is not None}
+    return {arg: value for arg, value in query.items() if value is not None and value is not ''}
 
 @router.post('/mapping', response_model=List[MappingTechniquesOut])
 async def create_mapping(mapping: MappingTechniquesIn):
