@@ -28,7 +28,6 @@ def rsa_pem_from_jwk(jwk):
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-
 class JWT:
     def __init__(self, openid_configuration, issuer, audiences):
         self.openid_configuration = openid_configuration
@@ -60,19 +59,18 @@ class JWT:
         openid_state[self.openid_configuration] = public_key
         return public_key
    
-    def validate(self, access_token):
+    def decode(self, access_token, verify=True):
         decoded_token_header = self.decode_token_header(access_token)
-        if not self.openid_configuration in openid_state:
-            public_key = self.get_public_key(decoded_token_header)
+        if verify:
+            public_key = openid_state.get(self.openid_configuration, self.get_public_key(decoded_token_header))
+            jwt_decoded = jwt.decode(access_token, public_key, verify=True,
+                algorithms=[decoded_token_header['alg']], audience=self.audiences,
+                issuer=self.issuer
+            )
         else:
-            public_key = openid_state[self.openid_configuration]
-
-        # Exceptions handled in the custom exception handling class
-        jwt_decoded = jwt.decode(access_token, public_key, verify=True,
-            algorithms=[decoded_token_header['alg']], audience=self.audiences,
-            issuer=self.issuer
-        )
+            jwt_decoded = jwt.decode(access_token, verify=False,
+                algorithms=[decoded_token_header['alg']]
+            ) 
         return jwt_decoded
 
 
-    

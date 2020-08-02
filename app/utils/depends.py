@@ -1,6 +1,6 @@
 from app.utils import celery
 from app.environment import config
-from app.utils.jwt_validation import JWT
+from app.utils.jwtdecode import JWT
 from fastapi import HTTPException, Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 import hashlib
@@ -21,9 +21,14 @@ async def validate_search(worker_name: str):
     else:
         raise HTTPException(status_code=400, detail='Worker not configured')
 
+async def decode_token(token: str = Depends(oauth2_scheme)):
+    decode_token = JWT(config['OAUTH2_OPENID_CONFIG'], config['OAUTH2_ISSUER'],
+        config['OAUTH2_AUDIENCE']).decode(token, verify=False)
+    return decode_token
+
 async def validate_token(token: str = Depends(oauth2_scheme)):
     decode_token = JWT(config['OAUTH2_OPENID_CONFIG'], config['OAUTH2_ISSUER'],
-        config['OAUTH2_AUDIENCE']).validate(token)
+        config['OAUTH2_AUDIENCE']).decode(token, verify=True)
     return decode_token
 
 async def job_uuid(request: Request):

@@ -3,7 +3,7 @@ from app.database.models import SourceTypes
 from app.utils.depends import validate_search
 from fastapi import Depends, APIRouter
 from app.schemas.searchcoverage import TaskOut, SourcetypesOut
-from app.workers.search.tasks import update_logsources, update_indices
+# from app.workers.search.tasks import update_logsources, update_indices
 from typing import List
 import datetime
 import json

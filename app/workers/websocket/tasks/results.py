@@ -8,7 +8,8 @@ rediscache = redis.Redis.from_url(config['REDIS_PATH_CACHE'])
 esio = socketio.RedisManager(config['REDIS_PATH_SOCKETIO'], write_only=True)
 
 # emit an event
-@celery.task(name='api.websocket.result.transmit')
-def transmit_result(task_response, task_id, user=None):
+@celery.task(name='api.websocket.result.transmit', bind=True)
+def transmit_result(self, task_response, task_type=None, user=None):
     user_session = rediscache.get(user).decode('utf-8')
-    esio.emit('result', {'task': task_id}, room=user_session)
+    esio.emit(task_type, {'task': self.request.id.__str__()}, room=user_session)
+    return task_response
