@@ -88,7 +88,7 @@ api_v1.include_router(api_tasks.router,
 )
 
 api_v1.include_router(api_workers.router,
-    # dependencies=[Depends(validate_token)],
+    dependencies=[Depends(validate_token)],
     tags=['workers']
 )
 
