@@ -7,4 +7,4 @@ FASTAPI_DEBUG =  (os.getenv('FASTAPI_DEBUG', "True") == "True")
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host=FASTAPI_HOST, port=FASTAPI_PORT,
-        log_level="info", reload=FASTAPI_DEBUG)
+        log_level="info", reload=FASTAPI_DEBUG, workers=4)

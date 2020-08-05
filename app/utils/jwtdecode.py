@@ -62,7 +62,11 @@ class JWT:
     def decode(self, access_token, verify=True):
         decoded_token_header = self.decode_token_header(access_token)
         if verify:
-            public_key = openid_state.get(self.openid_configuration, self.get_public_key(decoded_token_header))
+            if self.openid_configuration in openid_state:
+                public_key = openid_state[self.openid_configuration]
+            else: 
+                public_key = self.get_public_key(decoded_token_header)
+
             jwt_decoded = jwt.decode(access_token, public_key, verify=True,
                 algorithms=[decoded_token_header['alg']], audience=self.audiences,
                 issuer=self.issuer

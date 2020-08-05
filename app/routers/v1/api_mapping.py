@@ -7,9 +7,10 @@ import json
 
 router = APIRouter() 
 
-async def dynamic_search(phase: str = None, platform: str = 'Windows',
+async def dynamic_search(search: str = None, phase: str = None, platform: str = 'Windows',
     technique: str = None, actor: str = None, integration: str = None):
     query = {
+        'name__contains': search,
         'kill_chain_phase': phase,
         'platform': platform,
         'technique_name': technique, 

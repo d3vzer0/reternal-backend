@@ -8,9 +8,7 @@ import hashlib
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 async def validate_worker(worker_name: str):
-    print("Getting")
     get_workers = celery.send_task('c2.system.workers', task_id='get_active_workers').get()
-    print("Done")
     if worker_name in get_workers and get_workers[worker_name]['enabled']:
         return get_workers
     else:

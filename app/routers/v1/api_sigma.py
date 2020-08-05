@@ -7,11 +7,12 @@ import json
 
 router = APIRouter()
 
-async def dynamic_search(level: str = None, phase: str = None, technique: str = None,
+async def dynamic_search(search: str = None, level: str = None, phase: str = None, technique: str = None,
     l1usecase: str = None, l2usecase: str = None, datasource: str = None, status: str = None,
     technique_id: str = None ):
 
     query = {
+        'title__contains': search,
         'status': status,
         'level': level,
         'techniques__name': technique,
@@ -21,7 +22,6 @@ async def dynamic_search(level: str = None, phase: str = None, technique: str = 
         'techniques__magma__l2_usecase_name__contains': l2usecase,
         'techniques__data_sources__contains': datasource
     }
-
     return {arg: value for arg, value in query.items() if value is not None and value is not ''}
 
 @router.post('/sigma', response_model=SigmaOut)
