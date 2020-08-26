@@ -22,6 +22,7 @@ from sigma.config.collection import SigmaConfigurationManager
 from sigma.config.exceptions import SigmaConfigParseError, SigmaRuleFilterParseException
 from sigma.backends.base import BackendOptions
 from sigma.backends.exceptions import BackendError, NotSupportedError, PartialMatchError, FullMatchError
+from app.schemas.sigma import SigmaIn, SigmaOut, SigmaRules
 import sigma.backends.discovery as backends
 import yaml
 import io
@@ -55,14 +56,30 @@ class SigmaLoader:
         config_object = self.load_config()
         backend_class = backends.getBackend(self.target)
         backend = backend_class(config_object, BackendOptions(None, None))
-
         loaded_rules = { 'success': [], 'failed': []}
-        for rule in rule_list:
+        format_rules = SigmaRules(**{'each_rule': rule_list}).dict(by_alias=True, exclude_none=True)
+
+        for num, rule in enumerate(format_rules['each_rule']):
             sigmaio = io.StringIO(yaml.dump(rule))
             try:
                 parser = SigmaCollectionParser(sigmaio, config_object, self.rule_filter)
                 results = parser.generate(backend)
                 for result in results:
+                    rule_object = rule_list[num]
+                    if 'techniques' in rule_object:
+                        techniques = rule_object['techniques']
+                        # phases = ','.join([','.join(technique['kill_chain_phases']) for technique in techniques])
+                        technique_ids = ','.join([technique['references'][0]['external_id'] for technique in techniques])
+                        # technique_names = ','.join([technique['name'] for technique in techniques])
+                        # platforms = ','.join([','.join(technique['platforms']) for technique in techniques])
+                        # actors = ','.join([actor['name'] for technique in techniques for actor in technique['actors'] ])
+                        # permissions_required = ','.join([','.join(technique['permissions_required']) for technique in techniques])
+
+                        if self.target == 'splunk':
+                            # metadata = f'| eval phases = "{phases}" |eval refs = "{technique_ids}"| eval techniques = "{technique_names}" |eval actors = "{actors}" |eval permissions_required = "{permissions_required}"| eval platforms = "{platforms}"'
+                            metadata = f'| eval techniques="{technique_ids}"'
+                            result += metadata
+
                     loaded_rules['success'].append(result)
 
             except (SigmaParseError, SigmaCollectionParseError) as err:

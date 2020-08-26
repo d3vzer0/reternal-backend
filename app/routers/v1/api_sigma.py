@@ -3,6 +3,7 @@ from fastapi import Depends, APIRouter
 from app.schemas.sigma import SigmaIn, SigmaOut, SigmaRules
 from typing import List
 from app.utils.sigmaloader import SigmaLoader
+from app.utils.exporters import CSVExport
 import json
 
 router = APIRouter()
@@ -95,7 +96,17 @@ async def get_sigma_rules(query: dict = Depends(dynamic_search)):
 @router.get('/sigma/convert/{target}')
 async def convert_sigma_rules(query: dict = Depends(dynamic_search), target: str = 'splunk') :
     ''' Convert selection of sigma rules to specified target platform '''
+    # sigma_rules = json.loads(Sigma.objects(**query).to_json())
+    # target_rules = SigmaLoader(target=target).convert_rules(sigma_rules)
+   
+    return  CSVExport().permissions()
+
+@router.get('/sigma/package/splunk')
+async def package_sigma_rules_splunk(query: dict = Depends(dynamic_search)) :
+    ''' Convert selection of sigma rules to specified target platform '''
     sigma_rules = json.loads(Sigma.objects(**query).to_json())
     format_rules = SigmaRules(**{'each_rule': sigma_rules}).dict(by_alias=True, exclude_none=True)
-    target_rules = SigmaLoader().convert_rules(format_rules['each_rule'])
-    return target_rules
+    # target_rules = SigmaLoader().convert_rules(format_rules['each_rule'])
+    # target_rules = SigmaLoader().convert_rules(sigma_rules)
+
+    # return target_rules

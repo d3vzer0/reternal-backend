@@ -377,7 +377,7 @@ class CommandMapping(Document):
 class DataQuality(EmbeddedDocument):
     device_completeness = IntField(min_value=0, max_value=5, default=0)
     field_completeness = IntField(min_value=0, max_value=5, default=0)
-    timeliness = IntField(min_value=0, max_value=5, default=0)
+    delay = IntField(min_value=0, max_value=5, default=0)
     consistency = IntField(min_value=0, max_value=5, default=0)
     retention = IntField(min_value=0, max_value=5, default=0)
 
@@ -389,6 +389,7 @@ class ProductConfiguration(EmbeddedDocument):
     source = StringField(max_length=800)
     index = StringField(max_length=100)
     platforms = ListField(StringField(choices=PLATFORMS))
+    fields = ListField(StringField(max_length=100))
 
 
 class Coverage(Document):
@@ -402,7 +403,7 @@ class Coverage(Document):
     data_quality = EmbeddedDocumentField('DataQuality')
 
     def add_to_sigma(datasource):
-        get_sigma_rules = Sigma.objects(techniques__data_sources__contains=datasource)
+        get_sigma_rules = Sigma.objects(data_sources__contains=datasource)
         get_sigma_rules.update_one(add_to_set__data_sources_available__S=datasource)
         return get_sigma_rules
 
@@ -434,14 +435,13 @@ class Coverage(Document):
     def create(*args, **kwargs):
         new_mapping = Coverage.objects(data_source_name=kwargs['data_source_name']).upsert_one(**kwargs)
         Coverage.add_to_techniques(kwargs['data_source_name'])
-        Coverage.add_to_validations(kwargs['data_source_name'])
         Coverage.add_to_sigma(kwargs['data_source_name'])
         return {"coverage_id": str(new_mapping.id)}
 
     def delete(coverage_id):
         cov_document = Coverage.objects.get(id=coverage_id)
         Coverage.pull_from_techniques(cov_document.data_source_name)
-        Coverage.pull_from_validations(cov_document.data_source_name)
+        # Coverage.pull_from_validations(cov_document.data_source_name)
         Coverage.pull_from_sigma(cov_document.data_source_name)
         Coverage.objects(id=coverage_id).delete()
         return {"message": "Successfully deleted coverage_id"}
@@ -553,6 +553,8 @@ class Sigma(Document):
     falsepositives = ListField(StringField(max_length=400, required=False))
     fields = ListField(StringField(max_length=100, required=True))
     techniques = EmbeddedDocumentListField(SigmaTechniques)
+    data_sources = ListField(StringField(max_length=100))
+    data_sources_available = ListField(StringField(max_length=100), default=[])
 
     def denormalize_attck(tags):
         related_techniques = [Techniques.objects(references__external_id=tag[-5:].upper()).first() for tag in tags 
