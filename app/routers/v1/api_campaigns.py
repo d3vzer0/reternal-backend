@@ -2,28 +2,35 @@ from app.utils.scheduler import Scheduler
 from app.schemas.campaigns import CampaignsOut, CampaignIn, CreateCampaignOut
 from app.schemas.tasks import TasksOut
 from app.database.models import Tasks, Campaigns
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from typing import List, Dict
+from datetime import datetime
 import json
+
 
 router = APIRouter()
 
-@router.post('/campaigns', response_model=List[CreateCampaignOut])
+
+async def dynamic_search(campaign: str = None, agent: str = None, scheduled_date: datetime = None):
+    query = {
+        'campaign__contains': campaign,
+        'nodes__agent__name': agent,
+        'nodes__scheduled_date__gte': scheduled_date
+    }
+    return {arg: value for arg, value in query.items() if value != None and value != ''}
+
+
+@router.post('/campaigns', response_model=CampaignsOut)
 async def create_campaign(campaign: CampaignIn):
     ''' Schedule a new campaign, create individial task document per task '''
-    dependent_tasks = [dep.destination for dep in campaign.dependencies]
-    create_campaign = Campaigns.create(campaign.dict())
-    scheduled_tasks = [ {'campaign': campaign.name, 'group_id': create_campaign['group_id'],
-        'scheduled_tasks': await Scheduler(task, {'campaign':campaign.name, 'group_id': create_campaign['group_id']})._organise_tasks() } \
-            for task in campaign.tasks if not task.name in dependent_tasks
-    ]
-    return scheduled_tasks
+    save_campaign = Campaigns.create(campaign.dict(exclude={'graph'}))
+    return save_campaign
 
-@router.get('/campaign/{campaign_guid}', response_model=List[TasksOut])
+@router.get('/campaign/{campaign_guid}', response_model=CampaignsOut)
 async def get_campaign(campaign_guid):
     ''' Get task status by campaign execution id (guid) '''
-    all_tasks = json.loads(Tasks.objects(group_id=campaign_guid).to_json())
-    return all_tasks
+    campaign = json.loads(Campaigns.objects(id=campaign_guid).first().to_json())
+    return campaign
 
 @router.delete('/campaign/{campaign_guid}', response_model=Dict[str, str])
 async def delete_campaign(campaign_guid):
@@ -32,8 +39,10 @@ async def delete_campaign(campaign_guid):
     return delete_campaign
 
 @router.get('/campaigns', response_model=List[CampaignsOut])
-async def get_campaigns():
+async def get_campaigns(query: dict = Depends(dynamic_search)):
     ''' Get running tasks grouped by campaigns '''
-    all_campaigns = json.loads(Campaigns.objects().to_json())
+    all_campaigns = json.loads(Campaigns.objects(**query).to_json())
     return all_campaigns
+
+
 

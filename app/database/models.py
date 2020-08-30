@@ -1,7 +1,7 @@
 from mongoengine import (connect, Document, StringField, IntField,
     ReferenceField, EmbeddedDocumentListField, ListField, EmbeddedDocument,
     DateTimeField, queryset_manager, EmbeddedDocumentField, UUIDField,
-    BooleanField, DictField)
+    BooleanField, DictField, MapField)
 from mongoengine.errors import ValidationError, DoesNotExist, NotUniqueError, FieldDoesNotExist
 from app.database.schemas import CampaignDenomIn
 from app.environment import config
@@ -16,7 +16,7 @@ connect(db='reternal', host=config['MONGO_HOST'],
 # Fixed options/choices for fields
 PLATFORMS = ('Windows', 'Linux', 'All', 'macOS', 'AWS', 'Azure',
     'GCP', 'Office365', 'SaaS', 'Azure AD')
-STATUSOPTIONS = ('Processed', 'Open', 'Processing')
+STATUSOPTIONS = ('Processed', 'Scheduled', 'Processing')
 SIGMASTATUSOPTIONS = ('stable', 'testing', 'experimental')
 
 
@@ -85,7 +85,7 @@ class Tasks(Document):
     campaign = StringField(max_length=100, required=True)
     dependencies = ListField(StringField(max_length=100, required=True))
     group_id = StringField(required=True)
-    scheduled_date = DateTimeField(default=datetime.now())
+    scheduled_date = DateTimeField()
     start_date = DateTimeField()
     end_date = DateTimeField()
     commands = EmbeddedDocumentListField('TaskCommands', required=True)
@@ -94,7 +94,7 @@ class Tasks(Document):
     state = StringField(max_length=100, required=False, choices=STATUSOPTIONS, default='Open')
     
     def create(schedule_data):
-        new_schedule = Tasks(**schedule_data).save()
+        new_schedule = Tasks(**schedule_data, scheduled_date=datetime.now()).save()
         return {"task": str(new_schedule.id)}
 
 
@@ -117,12 +117,58 @@ class CampaignTasks(EmbeddedDocument):
     meta = {'strict': False}
 
 
+# class Campaigns(Document):
+#     name = StringField(max_length=100, required=True)
+#     group_id = StringField(required=True, unique=True)
+#     saved_date = DateTimeField(default=datetime.now())
+#     tasks = EmbeddedDocumentListField('CampaignTasks', required=True)
+#     dependencies = EmbeddedDocumentListField('Dependencies')
+
+#     def denormalize_tasks(task, campaign_data, group_id):
+#         ''' Commit an individual task in the campaign graph '''
+#         task_content = { 'group_id':group_id, 'task': task['name'], 'campaign': campaign_data['name'],
+#             'commands': task['commands'], 'sleep': task['sleep'], 'agents': task['agents'],
+#             'state': 'Open', 'dependencies': [dep['source'] for dep in \
+#                 campaign_data['dependencies'] if dep['destination'] == task['name']] }
+#         save_task = Tasks.create(task_content)
+#         return save_task
+
+#     def delete(group_id):
+#         get_campaign = Campaigns.objects(group_id=group_id).get()
+#         Campaigns.objects(group_id=group_id).delete()
+#         Tasks.objects(group_id=group_id).delete()
+#         return {'message': 'Succesfully deleted campaign'}
+
+#     def create(campaign_data):
+#         group_id = str(uuid.uuid4())
+#         campaign_tasks = [Campaigns.denormalize_tasks(task, campaign_data, group_id) for task in campaign_data['tasks']]
+#         denormalized_campaign = CampaignDenomIn(**campaign_data, group_id=group_id)
+#         new_campaign = Campaigns(**denormalized_campaign.dict()).save()
+#         return {'campaign': str(new_campaign.id), 'group_id': group_id, 'tasks': campaign_tasks}
+ 
+
+class Edges(EmbeddedDocument):
+    source = StringField(max_length=100, required=True)
+    destination = StringField(max_length=100, required=True)
+
+
+class Nodes(EmbeddedDocument):
+    name = StringField(max_length=100, required=True)
+    commands = EmbeddedDocumentListField('TaskCommands', required=True)
+    sleep = IntField(default=0)
+    agent = EmbeddedDocumentField('Agents', required=True)
+    state = StringField(default='Scheduled', choices=STATUSOPTIONS)
+    scheduled_date = DateTimeField()
+    start_date = DateTimeField()
+    end_date = DateTimeField()
+
+
 class Campaigns(Document):
     name = StringField(max_length=100, required=True)
-    group_id = StringField(required=True, unique=True)
-    saved_date = DateTimeField(default=datetime.now())
-    tasks = EmbeddedDocumentListField('CampaignTasks', required=True)
-    dependencies = EmbeddedDocumentListField('Dependencies')
+    state = StringField(default='Scheduled', choices=STATUSOPTIONS)
+    nodes = EmbeddedDocumentListField('Nodes', required=True)
+    edges = EmbeddedDocumentListField('Edges')
+    saved_date =  DateTimeField()
 
     def denormalize_tasks(task, campaign_data, group_id):
         ''' Commit an individual task in the campaign graph '''
@@ -140,21 +186,25 @@ class Campaigns(Document):
         return {'message': 'Succesfully deleted campaign'}
 
     def create(campaign_data):
-        group_id = str(uuid.uuid4())
-        campaign_tasks = [Campaigns.denormalize_tasks(task, campaign_data, group_id) for task in campaign_data['tasks']]
-        denormalized_campaign = CampaignDenomIn(**campaign_data, group_id=group_id)
-        new_campaign = Campaigns(**denormalized_campaign.dict()).save()
-        return {'campaign': str(new_campaign.id), 'group_id': group_id, 'tasks': campaign_tasks}
+        new_campaign = Campaigns(**campaign_data, saved_date=datetime.now()).save()
+        return json.loads(new_campaign.to_json())
 
-class Edges(EmbeddedDocument):
-    source = StringField(max_length=100, required=True, db_field='from')
-    to = StringField(max_length=100, required=True)
+        # group_id = str(uuid.uuid4())
+        # campaign_tasks = [Campaigns.denormalize_tasks(task, campaign_data, group_id) for task in campaign_data['tasks']]
+        # denormalized_campaign = CampaignDenomIn(**campaign_data, group_id=group_id)
+        # new_campaign = Campaigns(**denormalized_campaign.dict()).save()
+        # return {'campaign': str(new_campaign.id), 'group_id': group_id, 'tasks': campaign_tasks}
 
 
-class Nodes(EmbeddedDocument):
-    id = StringField(max_length=100, required=True)
-    label = StringField(max_length=100, required=True)
-    taskData = EmbeddedDocumentField(TaskData)
+# class Edges(EmbeddedDocument):
+#     source = StringField(max_length=100, required=True, db_field='from')
+#     to = StringField(max_length=100, required=True)
+
+
+# class Nodes(EmbeddedDocument):
+#     id = StringField(max_length=100, required=True)
+#     label = StringField(max_length=100, required=True)
+#     taskData = EmbeddedDocumentField(TaskData)
 
 
 class Graphs(Document):
@@ -394,7 +444,7 @@ class ProductConfiguration(EmbeddedDocument):
 
 class Coverage(Document):
     data_source_name = StringField(max_length=100, required=True, unique=True)
-    date_registered = DateTimeField(default=datetime.now())
+    date_registered = DateTimeField()
     date_connected = DateTimeField()
     available_for_data_analytics = BooleanField(default=False)
     enabled = BooleanField(default=True)
@@ -433,7 +483,8 @@ class Coverage(Document):
     #     return get_validations
 
     def create(*args, **kwargs):
-        new_mapping = Coverage.objects(data_source_name=kwargs['data_source_name']).upsert_one(**kwargs)
+        new_mapping = Coverage.objects(data_source_name=kwargs['data_source_name']).upsert_one(**kwargs,
+            date_registered=datetime.now())
         Coverage.add_to_techniques(kwargs['data_source_name'])
         Coverage.add_to_sigma(kwargs['data_source_name'])
         return {"coverage_id": str(new_mapping.id)}

@@ -13,7 +13,7 @@ api_v1.include_router(api_agents.router,
 )
 
 api_v1.include_router(api_campaigns.router,
-    dependencies=[Depends(validate_token)],
+    # dependencies=[Depends(validate_token)],
     tags=['campaigns']
 )
 

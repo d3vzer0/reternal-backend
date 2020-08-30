@@ -1,7 +1,8 @@
 
 from pydantic import BaseModel, validator, Field
-from typing import List, Dict
+from typing import List, Dict, Any
 from datetime import datetime
+import networkx as nx
 
 class Agents(BaseModel):
     name: str
@@ -9,15 +10,34 @@ class Agents(BaseModel):
     id: str
 
 
-class CampaignTasksOut(BaseModel):
+class CommandIn(BaseModel):
+    reference: str = None
+    reference_name: str = None
+    technique_name: str = None
+    kill_chain_phase: str = None
+    technique_id: str = None
+    category: str
+    integration: str
+    module: str
+    input: Dict
+    sleep: str = 1
+
+
+class DependencyOut(BaseModel):
+    source: str
+    destination: str
+
+
+class CampaignTaskOut(BaseModel):
     name: str
+    sleep: int
+    state: str
+    commands: List[CommandIn]
+    agent: Agents
     scheduled_date: str
     start_date: str = None
     end_date: str = None
-    agents: List[Agents]
-    dependencies: List[str]
-    state: str
-
+    
     @validator('scheduled_date', pre=True, always=True)
     def _get_scheduled_date(cls, v):
         return str(datetime.fromtimestamp(v['$date']/1000))
@@ -33,10 +53,11 @@ class CampaignTasksOut(BaseModel):
 
 class CampaignsOut(BaseModel):
     id: str = Field(None, alias='_id')
-    group_id: str
     name: str
+    state: str
+    nodes: List[CampaignTaskOut]
+    edges: List[DependencyOut]
     saved_date: str
-    tasks: List[CampaignTasksOut]
 
     @validator('id', pre=True, always=True)
     def _get_id(cls, v):
@@ -45,20 +66,6 @@ class CampaignsOut(BaseModel):
     @validator('saved_date', pre=True, always=True)
     def _get_saved_date(cls, v):
         return str(datetime.fromtimestamp(v['$date']/1000))
-
-# Data input
-class CommandIn(BaseModel):
-    reference: str = None
-    reference_name: str = None
-    technique_name: str = None
-    kill_chain_phase: str = None
-    technique_id: str = None
-    category: str
-    integration: str
-    module: str
-    input: Dict
-    sleep: str = 1
-
 
 class DependencyIn(BaseModel):
     source: str
@@ -70,7 +77,7 @@ class CampaignTaskIn(BaseModel):
     sleep: int
     scheduled_date: datetime = None
     commands: List[CommandIn]
-    agents: List[Agents]
+    agent: Agents
 
     @validator('scheduled_date', pre=True, always=True)
     def _set_date(cls, v):
@@ -79,8 +86,19 @@ class CampaignTaskIn(BaseModel):
 
 class CampaignIn(BaseModel):
     name: str
-    tasks: List[CampaignTaskIn]
-    dependencies: List[DependencyIn]
+    nodes: List[CampaignTaskIn]
+    edges: List[DependencyIn]
+    graph: Any = None
+
+    @validator('graph', pre=False, always=True)
+    def _set_graph(cls, v, values):
+        graph = nx.DiGraph()
+        print(values)
+        [graph.add_node(node.name) for node in values['nodes']]
+        [graph.add_edge(edge.source, edge.destination) for edge in values['edges']]
+        if not nx.is_directed_acyclic_graph(graph):
+            raise ValueError('Graph supplied not a directed acyclic graph')
+        return graph
 
 
 # Filtered values for denormalization
@@ -101,7 +119,6 @@ class CampaignDenomIn(BaseModel):
     dependencies: List[DependencyIn]
 
 
-
 class CreateCampaignTasksOut(BaseModel):
     task: str
 
@@ -109,6 +126,7 @@ class CreateCampaignTasksOut(BaseModel):
 class ScheduledTasksOut(BaseModel):
     agent: str
     queue: List[str]
+
 
 class CreateCampaignOut(BaseModel):
     campaign: str
