@@ -1,5 +1,7 @@
 from fastapi import APIRouter
-from app.database.models import Techniques, Actors, Coverage
+from app.database.models.techniques import Techniques
+from app.database.models.actors import Actors
+from app.database.models.coverage import Coverage
 from app.schemas.coverage import CoverageOut, CoverageIn
 from app.schemas.attck import AttckTechniquesOut, AttckAggPhasesOut, AttckActorOut
 from app.schemas.techniques import CreateTechniquesIn, CreateTechniquesOut
@@ -13,8 +15,13 @@ router = APIRouter()
 @router.post('/mitre/techniques', response_model=CreateTechniquesOut)
 async def create_technique(techniques: CreateTechniquesIn):
     ''' Create new MITRE ATTCK technique '''
-    create_technique = Techniques.create(**techniques.dict())
-    return create_technique
+    new_technique = Techniques.objects(technique_id=techniques.technique_id).upsert_one(**techniques.dict())
+    # Denormalize technique data
+    new_technique.update_sigma()
+    new_technique.update_commands()
+    new_technique.update_actors()
+    return new_technique.to_dict()
+
 
 @router.get('/mitre/techniques', response_model=List[str])
 async def get_techniques(technique_id: str):
@@ -49,8 +56,9 @@ async def get_datasources():
 @router.post('/mitre/actors', response_model=CreateActorOut)
 async def create_actor(actor: CreateActorIn):
     ''' Create new MITRE ATTCK actor '''
-    create_actor = Actors.create(**actor.dict())
-    return create_actor
+    new_actor = Actors.objects(actor_id=actor.actor_id).upsert_one(**actor.dict())
+    new_actor.update_techniques()
+    return new_actor.to_dict()
 
 
 @router.get('/mitre/actors', response_model=List[str])
@@ -74,6 +82,7 @@ async def get_products(datasource: str):
     coverage_products = Coverage.objects.get(data_source_name__iexact=datasource)
     json_object = json.loads(coverage_products.to_json())
     return json_object
+
 
 @router.get('/mitre/coverage', response_model=List[CoverageOut])
 async def get_coverages():

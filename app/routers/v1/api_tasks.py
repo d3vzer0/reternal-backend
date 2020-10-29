@@ -1,5 +1,5 @@
 from app.schemas.tasks import TasksOut
-from app.database.models import Tasks
+from app.database.models.tasks import Tasks
 from fastapi import APIRouter
 from typing import List
 import json

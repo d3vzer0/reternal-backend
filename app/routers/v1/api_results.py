@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.schemas.results import ResultsIn, ResultsOut, ResultOut
-from app.database.models import ExecutedModules
+from app.database.models.executedmodules import ExecutedModules
 from typing import List
 import json
 
@@ -11,6 +11,7 @@ async def update_module_result(result_data: List[ResultsIn]):
     ''' Update results of a module that finished running '''
     update_execution = [ExecutedModules.result(result.dict()) for result in result_data]
     return update_execution 
+
 
 @router.get('/results', response_model=List[ResultOut])
 async def get_task_results(group_id: str):

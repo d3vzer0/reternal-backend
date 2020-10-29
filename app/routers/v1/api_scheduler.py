@@ -1,7 +1,8 @@
 from app.utils import celery
 from app.utils.depends import validate_worker
 from app.schemas.schedules import PlanTaskIn, ScheduleOut, PlanTaskOut
-from app.database.models import Tasks, ExecutedModules
+from app.database.models.tasks import Tasks
+from app.database.models.executedmodules import ExecutedModules
 from fastapi import  APIRouter
 from datetime import datetime
 from celery.task.control import inspect
@@ -20,6 +21,7 @@ async def call_integration(module, module_input, agent_id, integration) -> dict:
         'agent':agent_id},)).get()['response']
     return {'module':module, 'external_id': execute_worker['external_id']}
 
+
 async def execute_task(task, group_id, campaign, commands, agent) -> list:
     ''' Run each command present in the task '''
     external_ids = []
@@ -31,6 +33,7 @@ async def execute_task(task, group_id, campaign, commands, agent) -> list:
             external_ids.append({'module': command.module, 'external_id': call_worker_api['external_id']})
     return external_ids
 
+
 @router.get('/scheduler/next', response_model=List[ScheduleOut])
 async def get_task_next() -> list:
     ''' Calculate the next task to be executed, following the graph dependencies '''
@@ -41,6 +44,7 @@ async def get_task_next() -> list:
     result = json.loads(dumps(Tasks.objects(scheduled_date__lte=datetime.now()).aggregate(*pipeline)))
     return result
 
+
 @router.get('/scheduler/queue')
 async def get_task_queue():
     ''' Get the list of tasks that are currently executing '''
@@ -49,6 +53,7 @@ async def get_task_queue():
         scheduled_tasks = [{'name': task['request']['name'], 'eta':task['eta'],
             'options':task['request']['args'], 'id': task['request']['id']} for task in tasks]
     return scheduled_tasks
+
 
 @router.post('/scheduler/plan', response_model=List[PlanTaskOut])
 async def plan_task_next(next_task: List[PlanTaskIn]):

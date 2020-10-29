@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter
 from app.schemas.graphs import Graph, GraphsOut
-from app.database.models import Graphs
+from app.database.models.graphs import Graphs
 import json
 
 router = APIRouter()

@@ -1,6 +1,8 @@
 from app.utils.depends import validate_token
 from fastapi import Depends, APIRouter
-from app.database.models import Techniques, Coverage, Sigma
+from app.database.models.techniques import Techniques
+from app.database.models.coverage import Coverage
+from app.database.models.sigma import Sigma
 
 
 router = APIRouter()

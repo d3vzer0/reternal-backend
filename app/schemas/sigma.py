@@ -1,11 +1,12 @@
 
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, validator, Field, root_validator
 from app.schemas.attck import AttckTechniquesOut
-from app.database.models import Techniques
+from app.database.models.techniques import Techniques
 from typing import List, Dict, Optional
 from datetime import datetime
 import json
-
+import hashlib
+import re
 
 class SigmaActorsOut(BaseModel):
     actor_id: str
@@ -75,7 +76,9 @@ class SigmaRules(BaseModel):
 
 class SigmaIn(BaseModel):
     title: str 
-    sigma_id: str = Field(..., alias='id')
+    id: str = Field(..., alias='id')
+    techniques: Optional[List]
+    hash: str = None
     date: Optional[datetime]
     description: Optional[str]
     author: Optional[str]
@@ -108,6 +111,18 @@ class SigmaIn(BaseModel):
             return datetime.strptime(v, '%Y/%m/%d')
         return v
 
+    @root_validator(pre=True)
+    def _get_techniques(cls, values):
+        related_techniques = [Techniques.objects(references__external_id=tag[-5:].upper()).first() for tag in values.get('tags', [])
+            if re.match(r'attack\.t[0-9]{4}', tag)]
+        values['techniques'] = [json.loads(technique.to_json()) for technique  in related_techniques if technique]
+        return values
+
+    @root_validator(pre=True)
+    def _generate_hash(cls, values):
+        values['hash'] = hashlib.sha256(str({'sigma_id': values['id'], **values['logsource'],
+            **values['detection']}).encode()).hexdigest()
+        return values
 
 class SigmaRelatedOut(BaseModel):
     id: Optional[str] = Field(None, alias='sigma_id')

@@ -1,4 +1,4 @@
-from app.database.models import Products
+from app.database.models.products import Products
 from app.schemas.products import ProductsIn, ProductOut
 from fastapi import APIRouter
 

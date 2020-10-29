@@ -1,7 +1,8 @@
 from app.utils.scheduler import Scheduler
 from app.schemas.campaigns import CampaignsOut, CampaignIn, CreateCampaignOut
 from app.schemas.tasks import TasksOut
-from app.database.models import Tasks, Campaigns
+from app.database.models.tasks import Tasks
+from app.database.models.campaigns import Campaigns
 from fastapi import APIRouter, Depends
 from typing import List, Dict
 from datetime import datetime

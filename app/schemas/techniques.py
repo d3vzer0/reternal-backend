@@ -4,6 +4,11 @@ from typing import List, Dict
 from datetime import datetime
 
 
+class TechniquesEmbeddedActorsOut(BaseModel):
+    actor_id: str
+    name: str
+
+
 class CreateTechniquesReferencesIn(BaseModel):
     external_id: str = None
     url: str = None
@@ -36,6 +41,7 @@ class CreateTechniquesIn(BaseModel):
     detection: str = None
     actors: List[CreateTechniquesActorsIn] = []
     is_subtechnique: bool = False
+
 
 class CreateTechniquesOut(BaseModel):
     id: str = Field(None, alias='_id')

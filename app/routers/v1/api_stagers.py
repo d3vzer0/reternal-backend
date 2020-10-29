@@ -19,6 +19,7 @@ async def get_stagers(worker_name: str, context: dict = Depends(validate_worker)
     ])
     return {'task': str(schedule_task)}
 
+
 @router.get('/state/stagers/get/{job_uuid}')
 async def get_stagers_result(job_uuid: str):
     ''' Get the list of available stagers with their configuration options by c2 framework / worker '''
@@ -39,6 +40,7 @@ async def create_stager(worker_name: str, listener_opts: dict = Body(...), conte
             })
         ])
     return {'task': str(create_stager)}
+
 
 @router.get('/state/stagers/create/{job_uuid}')
 async def create_stager_result(job_uuid: str):

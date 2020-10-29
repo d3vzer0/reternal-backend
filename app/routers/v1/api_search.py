@@ -1,5 +1,5 @@
 from app.utils import celery
-from app.database.models import SourceTypes
+from app.database.models.products import SourceTypes
 from app.utils.depends import validate_search, decode_token
 from fastapi import Depends, APIRouter
 from app.schemas.searchcoverage import TaskOut, SourcetypesOut

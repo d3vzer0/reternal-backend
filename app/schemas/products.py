@@ -1,8 +1,12 @@
 
 from pydantic import BaseModel, validator, Field
-from app.database.models import PLATFORMS, Techniques
+from app.database.models.techniques import Techniques
 from typing import List, Dict
 from datetime import datetime
+
+PLATFORMS = ('Windows', 'Linux', 'All', 'macOS', 'AWS', 'Azure',
+    'GCP', 'Office365', 'SaaS', 'Azure AD')
+
 
 class ProductOut(BaseModel):
     id: str = Field(None, alias='_id')

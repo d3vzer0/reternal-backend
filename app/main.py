@@ -4,7 +4,10 @@ from .environment import config
 from .routers.v1.main import api_v1
 
 # Initialise FastAPI + CORS 
-app = FastAPI()
+app = FastAPI(
+    title='Reternal',
+    description='Reternal API',
+)
 
 # Init CORS
 app.add_middleware(
