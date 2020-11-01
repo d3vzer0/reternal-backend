@@ -15,7 +15,7 @@ async def get_workers(current_user: dict = Depends(decode_token)):
     ''' Get the list of reternal plugins / integrated C2 frameworks '''
     schedule_task = celery.send_task('c2.system.workers', chain=[
         Signature('api.websocket.result.transmit', kwargs={
-            'user': current_user['email'],
+            'user': current_user['sub'],
             'task_type': 'getWorkersC2'
         })
     ])
@@ -35,7 +35,7 @@ async def get_workers_search(current_user: dict = Depends(decode_token)):
     ''' Get the list of reternal plugins / integrated C2 frameworks '''
     schedule_task = celery.send_task('search.system.workers', chain=[
         Signature('api.websocket.result.transmit', kwargs={
-            'user': current_user['email'],
+            'user': current_user['sub'],
             'task_type': 'getWorkersSearch'
         })
     ])

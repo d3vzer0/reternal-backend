@@ -1,8 +1,8 @@
-from app.utils import celery
 from app.database.models.products import SourceTypes
 from app.utils.depends import validate_search, decode_token
 from fastapi import Depends, APIRouter
 from app.schemas.searchcoverage import TaskOut, SourcetypesOut
+from app.utils import celery
 from celery import Signature
 from typing import List
 import datetime
@@ -19,7 +19,7 @@ async def query_sourcetypes(worker_name: str, earliest_time: str = '-900d', late
             chain=[
                 Signature('api.logsources.task.update', args=(worker_name, datetime.datetime.now())),
                 Signature('api.websocket.result.transmit', kwargs={
-                    'user': current_user['email'],
+                    'user': current_user['sub'],
                     'task_type': 'getListeners'
                 })
             ])
@@ -34,7 +34,7 @@ async def query_indices(worker_name: str, earliest_time: str = '-900d', latest_t
             chain=[
                 Signature('api.indices.task.update', args=(worker_name, datetime.datetime.now())),
                 Signature('api.websocket.result.transmit', kwargs={
-                    'user': current_user['email'],
+                    'user': current_user['sub'],
                     'task_type': 'getListeners'
                 })
             ])

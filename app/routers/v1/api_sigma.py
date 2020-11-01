@@ -2,23 +2,41 @@ from ast import parse
 from fastapi import Depends, APIRouter, Query
 from typing import List, Optional, Dict
 from app.utils.exporters import CSVExport
-from app.schemas.sigma import SigmaIn, SigmaOut, SigmaRules, SigmaSearchOut
+from app.utils.sigmaloader import SigmaLoader
+from app.schemas.sigma import SigmaIn, SigmaOut, SigmaSearchOut, TaskOut
+from app.utils.depends import decode_token
 from app.database.models.sigma import Sigma
+from app.utils import celery
+from celery import Signature
+from celery.result import AsyncResult
 import json
 from bson.json_util import dumps
 
+QUERYMAPPING = {
+    'status': 'status',
+    'level': 'level',
+    'tags': 'tags',
+    'technique': 'techniques.references.0.external_id',
+    'technique_name': 'techniques.name',
+    'phase': 'techniques.kill_chain_phases',
+    'actor': 'techniques.actors.name',
+    'data_source': 'techniques.data_sources'
+}
+
+
 router = APIRouter()
 
-async def dynamic_search(search: str = None, level: str = None, phase: str = None, technique: str = None,
+async def dynamic_search(search: str = None, level: str = None, phase: str = None, technique_name: str = None,
     l1usecase: str = None, l2usecase: str = None, datasource: str = None, status: str = None,
-    technique_id: str = None ):
+    technique: str = None, actor: str = None):
 
     query = {
         'title__contains': search,
         'status': status,
         'level': level,
-        'techniques__name': technique,
-        'techniques__references__external_id': technique_id,
+        'techniques__actors__name': actor,
+        'techniques__name': technique_name,
+        'techniques__references__external_id': technique,
         'techniques__kill_chain_phases': phase, 
         'techniques__magma__l1_usecase_name__contains': l1usecase, 
         'techniques__magma__l2_usecase_name__contains': l2usecase,
@@ -41,13 +59,9 @@ async def create_sigma(sigma: SigmaIn):
 
 @router.get('/sigma/distinct', response_model=Dict[str, List[str]])
 async def get_sigma_distinct(query: dict = Depends(dynamic_search), fields: List[str] = Depends(parse_list)):
-    allowed_fields = ['status', 'level', 'tags', 'techniques.name',
-        'techniques.references.0.external_id', 'techniques.kill_chain_phases',
-        'techniques.magma.l1_usecase_name', 'techniques.magma.l2_usecase_name',
-        'techniques.data_sources']
     sigma_object = Sigma.objects(**query)
-    filtered_fields = [field for field in fields if field in allowed_fields]
-    distinct_values = {field: sigma_object.distinct(field) for field in filtered_fields}
+    filtered_fields = [field for field in fields if field in QUERYMAPPING]
+    distinct_values = {field: sigma_object.distinct(QUERYMAPPING[field]) for field in filtered_fields}
     return distinct_values
 
 
@@ -59,24 +73,44 @@ async def get_sigma_rules(query: dict = Depends(dynamic_search), skip: int = 0, 
     return result
 
 
-@router.get('/sigma/convert/{target}')
-async def convert_sigma_rules(query: dict = Depends(dynamic_search), target: str = 'splunk') :
-    ''' Convert selection of sigma rules to specified target platform '''
-    # sigma_rules = json.loads(Sigma.objects(**query).to_json())
-    # target_rules = SigmaLoader(target=target).convert_rules(sigma_rules)
-   
-    return CSVExport().permissions()
-
-
 @router.get('/sigma/package/splunk')
 async def package_sigma_rules_splunk(query: dict = Depends(dynamic_search)) :
     ''' Convert selection of sigma rules to specified target platform '''
     sigma_rules = json.loads(Sigma.objects(**query).to_json())
-    format_rules = SigmaRules(**{'each_rule': sigma_rules}).dict(by_alias=True, exclude_none=True)
-    # target_rules = SigmaLoader().convert_rules(format_rules['each_rule'])
     # target_rules = SigmaLoader().convert_rules(sigma_rules)
+    return target_rules
 
-    # return target_rules
+
+@router.get('/sigma/package', response_model=TaskOut)
+async def package_sigma_rules_splunk2(target: str, query: dict = Depends(dynamic_search), current_user: dict = Depends(decode_token)):
+    ''' Convert Deux '''
+    sigma_rules = json.loads(Sigma.objects(**query).to_json())
+    create_package = celery.send_task('api.sigma.package.create',
+        args=('splunk', sigma_rules),
+        chain=[
+            Signature('api.websocket.result.transmit', kwargs={
+                'user': current_user['sub'],
+                'task_type': 'createSigmaPackage'
+            })
+        ])
+    return {'task': str(create_package)}
+
+
+@router.get('/sigma/package/{job_uuid}')
+async def get_workers_result(job_uuid: str):
+    ''' Get the list of reternal plugins / integrated C2 frameworks '''
+    get_workers = AsyncResult(id=job_uuid, app=celery)
+    workers_result = get_workers.get() if get_workers.state == 'SUCCESS' else None
+    return workers_result
+
+
+
+# @router.get('/sigma/convert/{target}')
+# async def convert_sigma_rules(query: dict = Depends(dynamic_search), target: str = 'splunk') :
+#     ''' Convert selection of sigma rules to specified target platform '''
+#     # sigma_rules = json.loads(Sigma.objects(**query).to_json())
+#     # target_rules = SigmaLoader(target=target).convert_rules(sigma_rules)
+#     return CSVExport().permissions()
 
 
 # TODO Deprecated functions, will be removed later

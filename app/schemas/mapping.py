@@ -23,11 +23,11 @@ class MappingCountOut(BaseModel):
     count: int
 
 
-class MappingTechniquesOut(BaseModel):
+class MappingOut(BaseModel):
     id: str = Field(None, alias='_id')
     name: str
     author: str
-    actors: List[TechniqueActorsOut]
+    actors: Optional[List[TechniqueActorsOut]]
     commands: List[TechniqueCommandsOut]
     integration: str
     description: str
@@ -40,6 +40,9 @@ class MappingTechniquesOut(BaseModel):
     def _get_id(cls, v):
         return v['$oid']
 
+class MappingTechniquesOut(BaseModel):
+    total: int
+    results: List[MappingOut]
 
 class MappingTechniquesIn(BaseModel):
     name: str

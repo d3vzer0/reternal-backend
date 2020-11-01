@@ -38,7 +38,6 @@ class SigmaRelated(BaseModel):
         return v
 
 
-
 class SigmaRule(BaseModel):
     class Config:
         allow_population_by_field_name = True
@@ -124,6 +123,7 @@ class SigmaIn(BaseModel):
             **values['detection']}).encode()).hexdigest()
         return values
 
+
 class SigmaRelatedOut(BaseModel):
     id: Optional[str] = Field(None, alias='sigma_id')
     type: Optional[str] = Field(None, alias='relation_type')
@@ -166,3 +166,7 @@ class SigmaOut(BaseModel):
 class SigmaSearchOut(BaseModel):
     total: int
     results: List[SigmaOut]
+
+
+class TaskOut(BaseModel):
+    task: str

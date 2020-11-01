@@ -53,12 +53,13 @@ async def socketio_connect(sid, environ):
     authorize_user = validate_session(environ)
     sio.enter_room(sid, 'notifications')
     expire_session = (datetime.fromtimestamp(authorize_user['exp']) - datetime.now()).total_seconds()
-    rediscache.set(authorize_user['email'],
+    rediscache.set(authorize_user['sub'],
         ex=int(expire_session),
         value=sid
     )
-    await sio.save_session(sid, { 'email': authorize_user['email'],
-        'family_name': authorize_user['family_name'],
-        'given_name': authorize_user['given_name'], 
-        'ipaddr': authorize_user['ipaddr'], 'name': authorize_user['name']
-    })
+    await sio.save_session(sid, { 'sub': authorize_user['sub'] })
+    # await sio.save_session(sid, { 'email': authorize_user['email'],
+    #     'family_name': authorize_user['family_name'],
+    #     'given_name': authorize_user['given_name'], 
+    #     'ipaddr': authorize_user['ipaddr'], 'name': authorize_user['name']
+    # })

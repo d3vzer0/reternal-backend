@@ -1,4 +1,4 @@
-from app.database.models import Techniques, Actors, Coverage
+from app.database.models.techniques import Techniques
 from typing import List, Dict
 
 

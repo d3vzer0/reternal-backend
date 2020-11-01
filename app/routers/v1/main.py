@@ -33,12 +33,12 @@ api_v1.include_router(api_listeners.router,
 )
 
 api_v1.include_router(api_mapping.router,
-    dependencies=[Depends(validate_token)],
+    # dependencies=[Depends(validate_token)],
     tags=['mapping']
 )
 
 api_v1.include_router(api_mitre.router,
-    dependencies=[Depends(validate_token)],
+    # dependencies=[Depends(validate_token)],
     tags=['mitre']
 )
 
@@ -63,7 +63,7 @@ api_v1.include_router(api_search.router,
 )
 
 api_v1.include_router(api_sigma.router,
-    dependencies=[Depends(validate_token)],
+    # dependencies=[Depends(validate_token)],
     tags=['sigma']
 )
 

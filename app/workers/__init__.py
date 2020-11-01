@@ -17,6 +17,7 @@ celery.conf.timezone = 'UTC'
 
 celery.autodiscover_tasks([
     'app.workers.search',
+    'app.workers.sigma',
     # 'app.workers.scheduler',
     'app.workers.websocket'
 ])
