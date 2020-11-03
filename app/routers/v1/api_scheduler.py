@@ -5,12 +5,12 @@ from app.database.models.tasks import Tasks
 from app.database.models.executedmodules import ExecutedModules
 from fastapi import  APIRouter, Security
 from datetime import datetime
-from celery.task.control import inspect
 from bson.json_util import dumps
+# from celery import app
 from typing import List
 import json
 
-task_inspector = inspect()
+# task_inspector = app.control.inspect()
 router = APIRouter()
 
 async def call_integration(module, module_input, agent_id, integration) -> dict:
@@ -45,14 +45,14 @@ async def get_task_next() -> list:
     return result
 
 
-@router.get('/scheduler/queue', dependencies=[Security(validate_token)])
-async def get_task_queue():
-    ''' Get the list of tasks that are currently executing '''
-    scheduled_tasks = []
-    for worker, tasks in task_inspector.scheduled().items():
-        scheduled_tasks = [{'name': task['request']['name'], 'eta':task['eta'],
-            'options':task['request']['args'], 'id': task['request']['id']} for task in tasks]
-    return scheduled_tasks
+# @router.get('/scheduler/queue', dependencies=[Security(validate_token)])
+# async def get_task_queue():
+#     ''' Get the list of tasks that are currently executing '''
+#     scheduled_tasks = []
+#     for worker, tasks in task_inspector.scheduled().items():
+#         scheduled_tasks = [{'name': task['request']['name'], 'eta':task['eta'],
+#             'options':task['request']['args'], 'id': task['request']['id']} for task in tasks]
+#     return scheduled_tasks
 
 
 @router.post('/scheduler/plan', response_model=List[PlanTaskOut], dependencies=[Security(validate_token, scopes=['write:scheduling'])])
