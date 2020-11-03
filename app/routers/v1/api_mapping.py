@@ -1,7 +1,7 @@
 from fastapi import Depends, APIRouter, Security
 from app.utils.depends import validate_token
 from app.database.models.commandmapping import CommandMapping
-from app.schemas.mapping import MappingCountOut, MappingTechniquesOut, MappingTechniquesIn
+from app.schemas.mapping import MappingOut, MappingTechniquesOut, MappingTechniquesIn
 from bson.json_util import dumps
 from typing import List, Dict
 import json
@@ -34,7 +34,7 @@ async def dynamic_search(search: str = None, phase: str = None, platform: str = 
 async def parse_list(fields: str) -> List:
     return fields.split(',')
 
-@router.post('/mapping', response_model=MappingTechniquesOut, dependencies=[Security(validate_token, scopes=['write:content'])])
+@router.post('/mapping', response_model=MappingOut, dependencies=[Security(validate_token, scopes=['write:content'])])
 async def create_mapping(mapping: MappingTechniquesIn):
     create_mapping = CommandMapping.objects(name=mapping.name).upsert_one(**mapping.dict())
     return create_mapping.to_dict()
