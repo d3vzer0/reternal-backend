@@ -42,7 +42,7 @@ async def create_stager(worker_name: str, listener_opts: dict = Body(...), conte
     return {'task': str(create_stager)}
 
 
-@router.get('/state/stagers/create/{job_uuid}', dependencies=[Security(validate_token)])
+@router.get('/state/stagers/create/{job_uuid}', dependencies=[Security(validate_token, scopes=['write:content'])])
 async def create_stager_result(job_uuid: str):
     ''' Generate a specific stager '''
     get_workers = AsyncResult(id=job_uuid, app=celery)

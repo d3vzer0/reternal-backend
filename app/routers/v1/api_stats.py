@@ -1,6 +1,6 @@
 from app.utils.depends import validate_token
 from fastapi import Security, APIRouter
-from app.database.models.techniques import Techniques
+from app.database.models.commandmapping import CommandMapping
 from app.database.models.coverage import Coverage
 from app.database.models.sigma import Sigma
 
@@ -19,8 +19,8 @@ async def stats_count_coverage():
     return {'count': Coverage.objects(enabled=True).count()}
 
 
-@router.get('/stats/count/techniques', dependencies=[Security(validate_token)])
+@router.get('/stats/count/commands', dependencies=[Security(validate_token)])
 async def stats_count_coverage():
     ''' Get total count of mapped datasources '''
-    return {'count': Techniques.objects().count()}
+    return {'count': CommandMapping.objects().count()}
 
