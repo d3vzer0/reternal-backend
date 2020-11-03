@@ -1,8 +1,8 @@
 from app.utils import celery
-from app.utils.depends import job_uuid, decode_token
+from app.utils.depends import job_uuid, decode_token, validate_token
 from app.schemas.workers import WorkersOut, WorkersSearchOut
 from app.schemas.generic import CeleryTask
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from celery.result import AsyncResult
 from celery import Signature
 from typing import Dict
@@ -10,7 +10,7 @@ from typing import Dict
 router = APIRouter()
 
 
-@router.get('/workers/c2', response_model=CeleryTask)
+@router.get('/workers/c2', response_model=CeleryTask, dependencies=[Security(validate_token)])
 async def get_workers(current_user: dict = Depends(decode_token)):
     ''' Get the list of reternal plugins / integrated C2 frameworks '''
     schedule_task = celery.send_task('c2.system.workers', chain=[
@@ -22,7 +22,7 @@ async def get_workers(current_user: dict = Depends(decode_token)):
     return {'task': str(schedule_task) }
 
 
-@router.get('/workers/c2/{job_uuid}', response_model=Dict[str, WorkersOut])
+@router.get('/workers/c2/{job_uuid}', response_model=Dict[str, WorkersOut], dependencies=[Security(validate_token)])
 async def get_workers_result(job_uuid: str):
     ''' Get the list of reternal plugins / integrated C2 frameworks '''
     get_workers = AsyncResult(id=job_uuid, app=celery)
@@ -30,7 +30,7 @@ async def get_workers_result(job_uuid: str):
     return workers_result
 
 
-@router.get('/workers/search', response_model=CeleryTask)
+@router.get('/workers/search', response_model=CeleryTask, dependencies=[Security(validate_token)])
 async def get_workers_search(current_user: dict = Depends(decode_token)):
     ''' Get the list of reternal plugins / integrated C2 frameworks '''
     schedule_task = celery.send_task('search.system.workers', chain=[
@@ -42,7 +42,7 @@ async def get_workers_search(current_user: dict = Depends(decode_token)):
     return {'task': str(schedule_task) }
 
 
-@router.get('/workers/search/{job_uuid}', response_model=Dict[str, WorkersSearchOut])
+@router.get('/workers/search/{job_uuid}', response_model=Dict[str, WorkersSearchOut], dependencies=[Security(validate_token)])
 async def get_search_workers_result(job_uuid: str):
     ''' Get the list of reternal integrated query/search frameworks '''
     get_workers = AsyncResult(id=job_uuid, app=celery)

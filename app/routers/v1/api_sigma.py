@@ -1,10 +1,8 @@
 from ast import parse
-from fastapi import Depends, APIRouter, Query
+from fastapi import Depends, APIRouter, Security
 from typing import List, Optional, Dict
-from app.utils.exporters import CSVExport
-from app.utils.sigmaloader import SigmaLoader
+from app.utils.depends import validate_token, decode_token
 from app.schemas.sigma import SigmaIn, SigmaOut, SigmaSearchOut, TaskOut
-from app.utils.depends import decode_token
 from app.database.models.sigma import Sigma
 from app.utils import celery
 from celery import Signature
@@ -49,7 +47,7 @@ async def parse_list(fields: str) -> List:
     return fields.split(',')
 
 
-@router.post('/sigma', response_model=SigmaOut)
+@router.post('/sigma', response_model=SigmaOut, dependencies=[Security(validate_token, scopes=['write:content'])])
 async def create_sigma(sigma: SigmaIn):
     sigma_dict = sigma.dict(exclude_none=True, by_alias=True)
     sigma_dict['sigma_id'] = sigma_dict.pop('id')
@@ -57,7 +55,7 @@ async def create_sigma(sigma: SigmaIn):
     return created_sigma_rule.to_dict()
 
 
-@router.get('/sigma/distinct', response_model=Dict[str, List[str]])
+@router.get('/sigma/distinct', response_model=Dict[str, List[str]], dependencies=[Security(validate_token)])
 async def get_sigma_distinct(query: dict = Depends(dynamic_search), fields: List[str] = Depends(parse_list)):
     sigma_object = Sigma.objects(**query)
     filtered_fields = [field for field in fields if field in QUERYMAPPING]
@@ -65,7 +63,7 @@ async def get_sigma_distinct(query: dict = Depends(dynamic_search), fields: List
     return distinct_values
 
 
-@router.get('/sigma', response_model=SigmaSearchOut)
+@router.get('/sigma', response_model=SigmaSearchOut, dependencies=[Security(validate_token, scopes=['write:integrations'])])
 async def get_sigma_rules(query: dict = Depends(dynamic_search), skip: int = 0, limit: int = 10):
     ''' Get all sigma rules that are mapped to ATTCK and have a query available '''
     sigma_objects = Sigma.objects(**query)
@@ -73,7 +71,7 @@ async def get_sigma_rules(query: dict = Depends(dynamic_search), skip: int = 0, 
     return result
 
 
-@router.get('/sigma/package/splunk')
+@router.get('/sigma/package/splunk', dependencies=[Security(validate_token)])
 async def package_sigma_rules_splunk(query: dict = Depends(dynamic_search)) :
     ''' Convert selection of sigma rules to specified target platform '''
     sigma_rules = json.loads(Sigma.objects(**query).to_json())
@@ -81,7 +79,7 @@ async def package_sigma_rules_splunk(query: dict = Depends(dynamic_search)) :
     return target_rules
 
 
-@router.get('/sigma/package', response_model=TaskOut)
+@router.get('/sigma/package', response_model=TaskOut, dependencies=[Security(validate_token)])
 async def package_sigma_rules_splunk2(target: str, query: dict = Depends(dynamic_search), current_user: dict = Depends(decode_token)):
     ''' Convert Deux '''
     sigma_rules = json.loads(Sigma.objects(**query).to_json())
@@ -96,7 +94,7 @@ async def package_sigma_rules_splunk2(target: str, query: dict = Depends(dynamic
     return {'task': str(create_package)}
 
 
-@router.get('/sigma/package/{job_uuid}')
+@router.get('/sigma/package/{job_uuid}', dependencies=[Security(validate_token)])
 async def get_workers_result(job_uuid: str):
     ''' Get the list of reternal plugins / integrated C2 frameworks '''
     get_workers = AsyncResult(id=job_uuid, app=celery)

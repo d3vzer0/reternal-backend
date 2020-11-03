@@ -1,9 +1,9 @@
 from app.utils import celery
-from app.utils.depends import validate_worker
+from app.utils.depends import validate_worker, validate_token
 from app.schemas.schedules import PlanTaskIn, ScheduleOut, PlanTaskOut
 from app.database.models.tasks import Tasks
 from app.database.models.executedmodules import ExecutedModules
-from fastapi import  APIRouter
+from fastapi import  APIRouter, Security
 from datetime import datetime
 from celery.task.control import inspect
 from bson.json_util import dumps
@@ -34,7 +34,7 @@ async def execute_task(task, group_id, campaign, commands, agent) -> list:
     return external_ids
 
 
-@router.get('/scheduler/next', response_model=List[ScheduleOut])
+@router.get('/scheduler/next', response_model=List[ScheduleOut], dependencies=[Security(validate_token)])
 async def get_task_next() -> list:
     ''' Calculate the next task to be executed, following the graph dependencies '''
     pipeline = [ {"$unwind": { "path": "$dependencies", "preserveNullAndEmptyArrays": True} },
@@ -45,7 +45,7 @@ async def get_task_next() -> list:
     return result
 
 
-@router.get('/scheduler/queue')
+@router.get('/scheduler/queue', dependencies=[Security(validate_token)])
 async def get_task_queue():
     ''' Get the list of tasks that are currently executing '''
     scheduled_tasks = []
@@ -55,7 +55,7 @@ async def get_task_queue():
     return scheduled_tasks
 
 
-@router.post('/scheduler/plan', response_model=List[PlanTaskOut])
+@router.post('/scheduler/plan', response_model=List[PlanTaskOut], dependencies=[Security(validate_token, scopes=['write:scheduling'])])
 async def plan_task_next(next_task: List[PlanTaskIn]):
     ''' Get the next scheduled task and run execution '''
     executed_modules = []

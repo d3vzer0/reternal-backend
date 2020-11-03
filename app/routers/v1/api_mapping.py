@@ -1,4 +1,5 @@
-from fastapi import Depends, APIRouter
+from fastapi import Depends, APIRouter, Security
+from app.utils.depends import validate_token
 from app.database.models.commandmapping import CommandMapping
 from app.schemas.mapping import MappingCountOut, MappingTechniquesOut, MappingTechniquesIn
 from bson.json_util import dumps
@@ -15,8 +16,8 @@ QUERYMAPPING = {
     'data_source': 'techniques.data_sources'
 }
 
-
 router = APIRouter() 
+
 
 async def dynamic_search(search: str = None, phase: str = None, platform: str = 'Windows',
     technique: str = None, actor: str = None, integration: str = None):
@@ -33,13 +34,13 @@ async def dynamic_search(search: str = None, phase: str = None, platform: str = 
 async def parse_list(fields: str) -> List:
     return fields.split(',')
 
-@router.post('/mapping', response_model=MappingTechniquesOut)
+@router.post('/mapping', response_model=MappingTechniquesOut, dependencies=[Security(validate_token, scopes=['write:content'])])
 async def create_mapping(mapping: MappingTechniquesIn):
     create_mapping = CommandMapping.objects(name=mapping.name).upsert_one(**mapping.dict())
     return create_mapping.to_dict()
 
 
-@router.get('/mapping/distinct', response_model=Dict[str, List[str]])
+@router.get('/mapping/distinct', response_model=Dict[str, List[str]], dependencies=[Security(validate_token)])
 async def get_sigma_distinct(query: dict = Depends(dynamic_search), fields: List[str] = Depends(parse_list)):
     mapped_techniques = CommandMapping.objects(**query)
     filtered_fields = [field for field in fields if field in QUERYMAPPING]
@@ -47,7 +48,7 @@ async def get_sigma_distinct(query: dict = Depends(dynamic_search), fields: List
     return distinct_values
 
 
-@router.get('/mapping/techniques', response_model=MappingTechniquesOut)
+@router.get('/mapping/techniques', response_model=MappingTechniquesOut, dependencies=[Security(validate_token)])
 async def get_mapped_techniques(query: dict = Depends(dynamic_search), skip: int = 0, limit: int = 10):
     ''' Get all C2 tasks that are mapped to ATTCK '''
     mapped_techniques = CommandMapping.objects(**query)
@@ -55,7 +56,7 @@ async def get_mapped_techniques(query: dict = Depends(dynamic_search), skip: int
     return result
 
 
-@router.get('/mitre/mapping/{mapping_id}')
+@router.get('/mitre/mapping/{mapping_id}', dependencies=[Security(validate_token)])
 async def get_mapping(mapping_id: str):
     ''' Get specific mapping object by id '''
     mitre_technique = json.loads(CommandMapping.objects.get(id=mapping_id).to_json())
