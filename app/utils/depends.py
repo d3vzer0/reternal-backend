@@ -1,4 +1,3 @@
-from codecs import decode
 from app.utils import celery
 from app.environment import config
 from app.utils.jwtdecode import JWT
@@ -35,15 +34,14 @@ async def decode_token(token: str = Depends(oauth2_scheme)):
     return decode_token
 
 async def validate_token(security_scopes: SecurityScopes, token: str = Depends(oauth2_scheme)):
-    # for scope in security_scopes.scopes:
-        # print(scope)
-        # if scope not in token_data.scopes:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_401_UNAUTHORIZED,
-        #         detail="Not enough permissions",
-        #         headers={"WWW-Authenticate": authenticate_value},
     decode_token = JWT(config['OAUTH2_OPENID_CONFIG'], config['OAUTH2_ISSUER'],
         config['OAUTH2_AUDIENCE']).decode(token, verify=True)
+    for scope in security_scopes.scopes:
+        if scope not in decode_token['permissions']:
+            raise HTTPException(
+                status_code=401,
+                detail="Not enough permissions",
+            )
     return decode_token
 
 async def job_uuid(request: Request):

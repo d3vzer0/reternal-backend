@@ -39,7 +39,6 @@ class JWT:
         return get_http.json()
 
     def decode_token_header(self, access_token):
-        print(access_token)
         split_token = f'{access_token.split(".")[0]}=='
         decoded_token = base64.b64decode(split_token)
         return json.loads(decoded_token)
