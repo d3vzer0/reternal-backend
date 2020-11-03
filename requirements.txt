@@ -1,9 +1,9 @@
-amqp==2.5.2
+amqp
 networkx==2.5
 billiard==3.6.1.0
 mongoengine
 pyotp
-celery==4.4.0
+celery==5.0.0
 aioredis
 Click==7.0
 fastapi
