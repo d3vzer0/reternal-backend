@@ -63,7 +63,7 @@ async def get_sigma_distinct(query: dict = Depends(dynamic_search), fields: List
     return distinct_values
 
 
-@router.get('/sigma', response_model=SigmaSearchOut, dependencies=[Security(validate_token, scopes=['write:integrations'])])
+@router.get('/sigma', response_model=SigmaSearchOut, dependencies=[Security(validate_token)])
 async def get_sigma_rules(query: dict = Depends(dynamic_search), skip: int = 0, limit: int = 10):
     ''' Get all sigma rules that are mapped to ATTCK and have a query available '''
     sigma_objects = Sigma.objects(**query)
