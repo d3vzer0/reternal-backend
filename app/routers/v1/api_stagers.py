@@ -13,7 +13,7 @@ async def get_stagers(worker_name: str, context: dict = Depends(validate_worker)
     ''' Get the list of available stagers with their configuration options by c2 framework / worker '''
     schedule_task = celery.send_task(context[worker_name]['stagers']['get'], chain=[
        Signature('api.websocket.result.transmit', kwargs={
-            'user': current_user['email'],
+            'user': current_user['sub'],
             'task_type': 'getStagers'
         })
     ])
@@ -35,7 +35,7 @@ async def create_stager(worker_name: str, listener_opts: dict = Body(...), conte
     create_stager = celery.send_task(context[worker_name]['stagers']['create'],
         args=(listener_opts,), chain=[
             Signature('api.websocket.result.transmit', kwargs={
-                'user': current_user['email'],
+                'user': current_user['sub'],
                 'task_type': 'createStager'
             })
         ])

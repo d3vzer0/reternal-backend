@@ -15,7 +15,7 @@ oauth2_scheme = OAuth2PasswordBearer(
 )
 
 async def validate_worker(worker_name: str):
-    get_workers = celery.send_task('c2.system.workers', task_id='get_active_workers').get()
+    get_workers = celery.send_task('c2.system.workers').get()
     if worker_name in get_workers and get_workers[worker_name]['enabled']:
         return get_workers
     else:

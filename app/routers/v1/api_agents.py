@@ -16,7 +16,7 @@ async def get_agents(worker_name: str, context: dict = Depends(validate_worker),
     ''' Get registered agents by specified worker / c2 implementation '''
     get_agents = celery.send_task(context[worker_name]['agents']['get'], chain=[
         Signature('api.websocket.result.transmit', kwargs={
-            'user': current_user['email'],
+            'user': current_user['sub'],
             'task_type': 'getAgents'
         })
     ])
@@ -37,7 +37,7 @@ async def stop_agent(worker_name: str, agent_id: str, context: dict = Depends(va
     stop_agent = celery.send_task(context[worker_name]['agents']['stop'], 
         args=(agent_id,), chain=[
             Signature('api.websocket.result.transmit', kwargs={
-                'user': current_user['email'],
+                'user': current_user['sub'],
                 'task_type': 'stopAgent'
             })
         ])
@@ -58,13 +58,13 @@ async def delete_agent(worker_name: str, agent_id: str, context: dict = Depends(
     delete_agent = celery.send_task(context[worker_name]['agents']['delete'],
         args=(agent_id,), chain=[
             Signature('api.websocket.result.transmit', kwargs={
-                'user': current_user['email'],
+                'user': current_user['sub'],
                 'task_type': 'deleteAgent'
             })
         ])
     return {'task': str(delete_agent)}
 
-@router.get('/state/agents/stop/{job_uuid}', response_model=List[Dict], dependencies=[Security(validate_token)])
+@router.get('/state/agents/stop/{job_uuid}', response_model=List[Dict], dependencies=[Security(validate_token, scopes=['write:integrations'])])
 async def delete_agent_result(job_uuid: str):
     ''' Deletes agent from backend '''
     get_workers = AsyncResult(id=job_uuid, app=celery)

@@ -15,7 +15,7 @@ async def get_listeners(worker_name: str, context: dict = Depends(validate_worke
     ''' Get configuration options for all potential listeners by worker name / c2 framework '''
     get_listeners = celery.send_task(context[worker_name]['listeners']['get'], chain=[
         Signature('api.websocket.result.transmit', kwargs={
-            'user': current_user['email'],
+            'user': current_user['sub'],
             'task_type': 'getListeners'
         })
     ])
@@ -38,7 +38,7 @@ async def create_listener(worker_name: str, listener_type: str, listener_opts: d
     create_listener = celery.send_task(context[worker_name]['listeners']['create'],
             args=(listener_type, listener_opts,), chain=[
                  Signature('api.websocket.result.transmit', kwargs={
-                    'user': current_user['email'],
+                    'user': current_user['sub'],
                     'task_type': 'createListener'
                 })
             ])
@@ -46,7 +46,7 @@ async def create_listener(worker_name: str, listener_type: str, listener_opts: d
 
 @router.get('/state/listeners/create/{job_uuid}', dependencies=[Security(validate_token)])
 async def create_listener_result(job_uuid: str):
-    ''' Get configuration options for all potential listeners by worker name / c2 framework '''
+    ''' Enable listener for a specific c2 framework '''
     get_workers = AsyncResult(id=job_uuid, app=celery)
     workers_result = get_workers.get() if get_workers.state == 'SUCCESS' else None
     return workers_result['response']
@@ -59,7 +59,7 @@ async def delete_listener(worker_name: str, listener_name: str, context: dict = 
     delete_listener = celery.send_task(context[worker_name]['listeners']['delete'],
         args=(listener_name,), chain=[
              Signature('api.websocket.result.transmit', kwargs={
-                'user': current_user['email'],
+                'user': current_user['sub'],
                 'task_type': 'deleteListener'
             })
         ])
@@ -79,7 +79,7 @@ async def get_listener_options(worker_name: str, context: dict = Depends(validat
     ''' Get all available listeners to run by specific c2 framework '''
     get_listeners = celery.send_task(context[worker_name]['listeners']['options'], chain=[
         Signature('api.websocket.result.transmit', kwargs={
-            'user': current_user['email'],
+            'user': current_user['sub'],
             'task_type': 'getListenerOptions'
         })
     ])
