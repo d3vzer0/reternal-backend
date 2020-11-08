@@ -1,14 +1,14 @@
-from ast import parse
 from fastapi import Depends, APIRouter, Security
-from typing import List, Optional, Dict
+from typing import List, Dict
 from app.utils.depends import validate_token, decode_token
 from app.schemas.sigma import SigmaIn, SigmaOut, SigmaSearchOut, TaskOut
 from app.database.models.sigma import Sigma
 from app.utils import celery
+from app.utils.sigmaloader import Splunk
 from celery import Signature
 from celery.result import AsyncResult
+from starlette.responses import StreamingResponse
 import json
-from bson.json_util import dumps
 
 QUERYMAPPING = {
     'status': 'status',
@@ -71,17 +71,10 @@ async def get_sigma_rules(query: dict = Depends(dynamic_search), skip: int = 0, 
     return result
 
 
-@router.get('/sigma/package/splunk', dependencies=[Security(validate_token)])
-async def package_sigma_rules_splunk(query: dict = Depends(dynamic_search)) :
-    ''' Convert selection of sigma rules to specified target platform '''
-    sigma_rules = json.loads(Sigma.objects(**query).to_json())
-    # target_rules = SigmaLoader().convert_rules(sigma_rules)
-    return target_rules
-
-
-@router.get('/sigma/package', response_model=TaskOut, dependencies=[Security(validate_token)])
-async def package_sigma_rules_splunk2(target: str, query: dict = Depends(dynamic_search), current_user: dict = Depends(decode_token)):
+@router.get('/sigma/package/splunk', response_model=TaskOut, dependencies=[Security(validate_token)])
+async def package_sigma_rules_splunk(query: dict = Depends(dynamic_search), current_user: dict = Depends(decode_token)):
     ''' Convert Deux '''
+    print('test')
     sigma_rules = json.loads(Sigma.objects(**query).to_json())
     create_package = celery.send_task('api.sigma.package.create',
         args=('splunk', sigma_rules),
@@ -94,74 +87,21 @@ async def package_sigma_rules_splunk2(target: str, query: dict = Depends(dynamic
     return {'task': str(create_package)}
 
 
-@router.get('/sigma/package/{job_uuid}', dependencies=[Security(validate_token)])
+@router.get('/sigma/package/splunk/{job_uuid}', dependencies=[Security(validate_token)])
 async def get_workers_result(job_uuid: str):
     ''' Get the list of reternal plugins / integrated C2 frameworks '''
     get_workers = AsyncResult(id=job_uuid, app=celery)
     workers_result = get_workers.get() if get_workers.state == 'SUCCESS' else None
-    return workers_result
+    splunk_object = Splunk(workers_result)
+    splunk_app = splunk_object.to_archive()
+    splunk_app.seek(0)
+    
+    return StreamingResponse(
+        splunk_app,
+        media_type='application/gzip',
+        headers={
+            'Content-Disposition': 'attachment;filename=splunk_sigma_rules.tar.gz'
+        }
+    )
 
 
-
-# @router.get('/sigma/convert/{target}')
-# async def convert_sigma_rules(query: dict = Depends(dynamic_search), target: str = 'splunk') :
-#     ''' Convert selection of sigma rules to specified target platform '''
-#     # sigma_rules = json.loads(Sigma.objects(**query).to_json())
-#     # target_rules = SigmaLoader(target=target).convert_rules(sigma_rules)
-#     return CSVExport().permissions()
-
-
-# TODO Deprecated functions, will be removed later
-# @router.get('/sigma/techniqueids')
-# async def get_sigma_techniques_by_id(query: dict = Depends(dynamic_search)):
-#     ''' Get all unique techniques by ID for available sigma rules '''
-#     unique_techniques = Sigma.objects(**query).filter(**query).distinct('techniques.references.0.external_id')
-#     return unique_techniques
-
-# @router.get('/sigma/phases')
-# async def get_sigma_phases(query: dict = Depends(dynamic_search)):
-#     ''' Get all unique phases for available sigma rules '''
-#     unique_phases = Sigma.objects(**query).distinct('techniques.kill_chain_phases')
-#     return unique_phases
-
-# @router.get('/sigma/tags')
-# async def get_sigma_tags(query: dict = Depends(dynamic_search)):
-#     ''' Get all unique tags for available sigma rules '''
-#     unique_phases = Sigma.objects(**query).distinct('tags')
-#     return unique_phases
-
-# @router.get('/sigma/status')
-# async def get_sigma_status(query: dict = Depends(dynamic_search)):
-#     ''' Get all unique status for available sigma rules '''
-#     unique_status = Sigma.objects(**query).distinct('status')
-#     return unique_status
-
-# @router.get('/sigma/level')
-# async def get_sigma_level(query: dict = Depends(dynamic_search)):
-#     ''' Get all unique level for available sigma rules '''
-#     unique_level = Sigma.objects(**query).distinct('level')
-#     return unique_level
-
-# @router.get('/sigma/datasources')
-# async def get_sigma_datasources(query: dict = Depends(dynamic_search)):
-#     ''' Get all unique datasources for available sigma rules '''
-#     unique_datasources = Sigma.objects(**query).distinct('techniques.data_sources')
-#     return unique_datasources
-
-# @router.get('/sigma/techniques', response_model=List[str])
-# async def get_validation_techniques(query: dict = Depends(dynamic_search)):
-#     ''' Get all unique phases for available sigma rules '''
-#     unique_phases = Sigma.objects(**query).distinct('techniques.technique_name')
-#     return unique_phases
-
-# @router.get('/sigma/l1usecases', response_model=List[str])
-# async def get_l1_usecases(query: dict = Depends(dynamic_search)):
-#     ''' Get all unique L1 usecases for available sigma rules '''
-#     unique_usecases = Sigma.objects(**query).distinct('techniques.magma.l1_usecase_name')
-#     return unique_usecases
-
-# @router.get('/sigma/l2usecases', response_model=List[str])
-# async def get_l2_usecases(query: dict = Depends(dynamic_search)):
-#     ''' Get all unique L2 usecases for available sigma rules '''
-#     unique_usecases = Sigma.objects(**query).distinct('techniques.magma.l2_usecase_name')
-#     return unique_usecases

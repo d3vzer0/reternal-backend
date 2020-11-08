@@ -22,3 +22,4 @@ redis
 sigmatools==0.17.0
 pyjwt
 cryptography
+Jinja2

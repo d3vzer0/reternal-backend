@@ -23,9 +23,13 @@ from sigma.config.exceptions import SigmaConfigParseError, SigmaRuleFilterParseE
 from sigma.backends.base import BackendOptions
 from sigma.backends.exceptions import BackendError, NotSupportedError, PartialMatchError, FullMatchError
 from app.schemas.sigma import SigmaIn, SigmaOut, SigmaRules
+from app.database.models.techniques import Techniques
 import sigma.backends.discovery as backends
+from jinja2 import Template
+import json
 import yaml
 import io
+import tarfile
 
 ERR_SIGMA_PARSING       = 4
 ERR_BACKEND             = 8
@@ -33,18 +37,96 @@ ERR_NOT_SUPPORTED       = 9
 ERR_NOT_IMPLEMENTED     = 42
 
 
-class SigmaLoader:
-    def __init__(self, target='splunk', config='splunk-windows', rule_filter=None):
-        self.rule_filter = rule_filter
-        self.config = config
-        self.target = target
-        
-    def load_config(self):
+class Splunk:
+    def __init__(self, rules):
+        self.rules = rules
+        self.techniques = json.loads(Techniques.objects().to_json())
+
+    def to_archive(self):
+        # Create tar archive in Splunk app format
+        tar_object = io.BytesIO()
+        tar = tarfile.open(fileobj=tar_object, mode='w:gz')
+
+        # Add app.conf
+        app_conf = io.BytesIO(self.app_conf.encode('utf-8'))
+        app_conf_info = tarfile.TarInfo(name='default/app.conf')
+        app_conf_info.size = app_conf.getbuffer().nbytes
+        tar.addfile(tarinfo=app_conf_info, fileobj=app_conf)
+
+        # Add savedsearches.conf
+        saved_searches = io.BytesIO(self.saved_searches.encode('utf-8'))
+        saved_searches_info = tarfile.TarInfo(name='default/savedsearches.conf')
+        saved_searches_info.size = saved_searches.getbuffer().nbytes
+        tar.addfile(tarinfo=saved_searches_info, fileobj=saved_searches)
+
+        # Generate techniques lookup
+        lf_techniques = io.BytesIO(self.lookup_techniques.encode('utf-8'))
+        lf_techniques_info = tarfile.TarInfo(name='lookups/attck_techniques.conf')
+        lf_techniques_info.size = lf_techniques.getbuffer().nbytes
+        tar.addfile(tarinfo=lf_techniques_info, fileobj=lf_techniques)
+
+        # Generate actors to technique lookup
+        lf_actors = io.BytesIO(self.lookup_techniques_by_actors.encode('utf-8'))
+        lf_actors_info = tarfile.TarInfo(name='lookups/attck_actors.conf')
+        lf_actors_info.size = lf_actors.getbuffer().nbytes
+        tar.addfile(tarinfo=lf_actors_info, fileobj=lf_actors)
+    
+        return tar_object
+
+
+    @property
+    def app_conf(self):
+        template = Template(
+            open('app/templates/splunk/default/app.conf.j2').read(),
+            trim_blocks=True,
+            lstrip_blocks=True
+        )
+        # TODO dynamic config
+        appconf = template.render()
+        return appconf
+
+    @property
+    def saved_searches(self):
+        template = Template(
+            open('app/templates/splunk/default/savedsearches.conf.j2').read(),
+            trim_blocks=True,
+            lstrip_blocks=True
+        )
+        searches = template.render(rules=self.rules['success'])
+        return searches
+
+    @property
+    def lookup_techniques(self):
+        template = Template(
+            open('app/templates/splunk/lookups/attck_techniques.csv.j2').read(),
+            trim_blocks=True,
+            lstrip_blocks=True
+        )
+        techniques = template.render(techniques=self.techniques)
+        return techniques
+
+    @property
+    def lookup_techniques_by_actors(self):
+        template = Template(
+            open('app/templates/splunk/lookups/attck_actors.csv.j2').read(),
+            trim_blocks=True,
+            lstrip_blocks=True
+        )
+        techniques = template.render(techniques=self.techniques)
+        return techniques
+
+
+class Sigma:
+    def __init__(self, rules):
+        self.rules = rules
+
+    @staticmethod
+    def __load_config(config='splunk-windows'):
         config_object = SigmaConfigurationChain()
         scm = SigmaConfigurationManager()
 
         order  = 0
-        for conf_name in self.config.split(','):
+        for conf_name in config.split(','):
             sigmaconfig = scm.get(conf_name)
             if sigmaconfig.order is not None:
                 order = sigmaconfig.order
@@ -52,35 +134,19 @@ class SigmaLoader:
 
         return config_object
 
-    def convert_rules(self, rule_list):
-        config_object = self.load_config()
-        backend_class = backends.getBackend(self.target)
+    def export(self, target='splunk', config='splunk-windows', rule_filter=None):
+        config_object = Sigma.__load_config(config)
+        backend_class = backends.getBackend(target)
         backend = backend_class(config_object, BackendOptions(None, None))
         loaded_rules = { 'success': [], 'failed': []}
-        format_rules = SigmaRules(**{'each_rule': rule_list}).dict(by_alias=True, exclude_none=True)
 
+        format_rules = SigmaRules(**{'each_rule': self.rules}).dict(by_alias=True, exclude_none=True)
         for num, rule in enumerate(format_rules['each_rule']):
             sigmaio = io.StringIO(yaml.dump(rule))
             try:
-                parser = SigmaCollectionParser(sigmaio, config_object, self.rule_filter)
+                parser = SigmaCollectionParser(sigmaio, config_object, rule_filter)
                 results = parser.generate(backend)
-                for result in results:
-                    rule_object = rule_list[num]
-                    if 'techniques' in rule_object:
-                        techniques = rule_object['techniques']
-                        # phases = ','.join([','.join(technique['kill_chain_phases']) for technique in techniques])
-                        technique_ids = ','.join([technique['references'][0]['external_id'] for technique in techniques])
-                        # technique_names = ','.join([technique['name'] for technique in techniques])
-                        # platforms = ','.join([','.join(technique['platforms']) for technique in techniques])
-                        # actors = ','.join([actor['name'] for technique in techniques for actor in technique['actors'] ])
-                        # permissions_required = ','.join([','.join(technique['permissions_required']) for technique in techniques])
-
-                        if self.target == 'splunk':
-                            # metadata = f'| eval phases = "{phases}" |eval refs = "{technique_ids}"| eval techniques = "{technique_names}" |eval actors = "{actors}" |eval permissions_required = "{permissions_required}"| eval platforms = "{platforms}"'
-                            metadata = f'| eval techniques="{technique_ids}"'
-                            result += metadata
-
-                    loaded_rules['success'].append(result)
+                loaded_rules['success'].append({'context': self.rules[num], 'export': [result for result in results]})
 
             except (SigmaParseError, SigmaCollectionParseError) as err:
                 error = {'id': rule['id'], 'reason': str(err), 'code': ERR_SIGMA_PARSING}

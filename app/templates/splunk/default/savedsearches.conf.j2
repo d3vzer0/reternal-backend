@@ -1,0 +1,12 @@
+{% for rule in rules %}
+[[RTN-SIGMA] - {{ rule.context.title }}]
+disabled = 1
+{% set enrichment = namespace(techniques=[]) %}
+{% for technique in rule.context.techniques %}
+    {% set enrichment.techniques = enrichment.techniques + [technique.references[0].external_id]%}
+{% endfor %}
+search = {{ rule.export[0] }} | eval level = "{{ rule.context.level }}" | eval status = "{{ rule.context.status }}" | eval techniques = "{{ enrichment.techniques |unique| join(',') }}"
+description = {{ rule.context.description }}
+is_visible = 1
+
+{% endfor %}

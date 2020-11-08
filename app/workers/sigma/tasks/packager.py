@@ -1,9 +1,9 @@
 from app.workers import celery
-from app.utils.sigmaloader import SigmaLoader
+from app.utils.sigmaloader import SigmaLoader, Sigma
 
 # emit an event
 @celery.task(name='api.sigma.package.create')
 def create_package(target, data):
     ''' Convert selection of sigma rules to specified target platform '''
-    target_rules = SigmaLoader().convert_rules(data)
+    target_rules = Sigma(data).export(target=target)
     return target_rules

@@ -1,0 +1,6 @@
+"technique", "data_source"
+{% for technique in techniques %}
+{% for data_source in technique.data_sources %}
+"{{ technique.references[0].external_id }}", "{{ data_source}}"
+{% endfor %}
+{% endfor %}

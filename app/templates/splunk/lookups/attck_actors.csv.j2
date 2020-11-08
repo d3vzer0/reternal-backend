@@ -1,0 +1,6 @@
+"technique", "actor"
+{% for technique in techniques %}
+{% for actor in technique.actors %}
+"{{ technique.references[0].external_id }}", "{{ actor.name }}"
+{% endfor %}
+{% endfor %}
