@@ -1,1 +1,1 @@
-from app.workers.websocket.tasks.results import *
+from app.workers.sigma.tasks.packager import *

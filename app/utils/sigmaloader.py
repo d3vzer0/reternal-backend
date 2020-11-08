@@ -22,9 +22,9 @@ from sigma.config.collection import SigmaConfigurationManager
 from sigma.config.exceptions import SigmaConfigParseError, SigmaRuleFilterParseException
 from sigma.backends.base import BackendOptions
 from sigma.backends.exceptions import BackendError, NotSupportedError, PartialMatchError, FullMatchError
-from app.schemas.sigma import SigmaIn, SigmaOut, SigmaRules
-from app.database.models.techniques import Techniques
 import sigma.backends.discovery as backends
+from app.schemas.sigma import SigmaRules
+from app.database.models.techniques import Techniques
 from jinja2 import Template
 import json
 import yaml

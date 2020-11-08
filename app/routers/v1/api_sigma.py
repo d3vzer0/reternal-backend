@@ -74,7 +74,6 @@ async def get_sigma_rules(query: dict = Depends(dynamic_search), skip: int = 0, 
 @router.get('/sigma/package/splunk', response_model=TaskOut, dependencies=[Security(validate_token)])
 async def package_sigma_rules_splunk(query: dict = Depends(dynamic_search), current_user: dict = Depends(decode_token)):
     ''' Convert Deux '''
-    print('test')
     sigma_rules = json.loads(Sigma.objects(**query).to_json())
     create_package = celery.send_task('api.sigma.package.create',
         args=('splunk', sigma_rules),

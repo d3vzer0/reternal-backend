@@ -1,5 +1,5 @@
 from app.workers import celery
-from app.utils.sigmaloader import SigmaLoader, Sigma
+from app.utils.sigmaloader import Sigma
 
 # emit an event
 @celery.task(name='api.sigma.package.create')
