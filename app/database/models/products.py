@@ -1,7 +1,7 @@
 from mongoengine import (Document, StringField, IntField,
     ReferenceField, DateTimeField, DictField, EmbeddedDocument,
     EmbeddedDocumentListField, ListField)
-from app.database.models.coverage import Coverage
+from mongoengine.base.common import get_document as Model
 import json
 import re
 
@@ -38,9 +38,9 @@ class Indices(Document):
                 'vendor': product['vendor'],
                 'index': indice['index']
             }
-            get_coverage = Coverage.objects(data_source_name=datasource).first()
+            get_coverage = Model('Coverage').objects(data_source_name=datasource).first()
             if not get_coverage:
-                Coverage.create(**{ 'enabled': True, 'data_source_name': datasource,
+                Model('Coverage').create(**{ 'enabled': True, 'data_source_name': datasource,
                     'products': [product_data]})
             else:
                 get_coverage.update(add_to_set__products=product_data)

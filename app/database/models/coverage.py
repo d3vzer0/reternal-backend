@@ -1,6 +1,7 @@
 from mongoengine import (Document, StringField, IntField,
     EmbeddedDocument, EmbeddedDocumentField, EmbeddedDocumentListField,
     ListField, DateTimeField, BooleanField)
+from mongoengine.base.common import get_document as Model
 from datetime import datetime
 import json
 
@@ -36,22 +37,22 @@ class Coverage(Document):
     data_quality = EmbeddedDocumentField('DataQuality')
 
     def add_to_sigma(datasource):
-        get_sigma_rules = Sigma.objects(data_sources__contains=datasource)
+        get_sigma_rules = Model('Sigma').objects(data_sources__contains=datasource)
         get_sigma_rules.update_one(add_to_set__data_sources_available__S=datasource)
         return get_sigma_rules
 
     def pull_from_sigma(datasource):
-        get_sigma_rules = Techniques.objects(data_sources_available__contains=datasource)
+        get_sigma_rules = Model('Techniques').objects(data_sources_available__contains=datasource)
         get_sigma_rules.update(pull__data_sources_available__S=datasource)
         return get_sigma_rules
 
     def add_to_techniques(datasource):
-        get_techniques = Techniques.objects(data_sources__contains=datasource)
+        get_techniques = Model('Techniques').objects(data_sources__contains=datasource)
         get_techniques.update(add_to_set__data_sources_available=datasource)
         return get_techniques
 
     def pull_from_techniques(coverage_name):
-        get_techniques = Techniques.objects(data_sources_available__contains=coverage_name)
+        get_techniques = Model('Techniques').objects(data_sources_available__contains=coverage_name)
         get_techniques.update(pull__data_sources_available=coverage_name)
         return get_techniques
 

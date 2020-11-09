@@ -3,6 +3,7 @@ from pydantic import BaseModel, validator, Field
 from typing import List, Dict
 from datetime import datetime
 
+
 class TaskOut(BaseModel):
     task: str
 
@@ -48,3 +49,15 @@ class IndicesOut(BaseModel):
     @validator('id', pre=True, always=True)
     def _get_id(cls, v):
         return v['$oid']
+
+
+class IndexesIn(BaseModel):
+    index: str
+    source: str
+    sourcetype: str
+    integration: str
+    execution_date: datetime = None
+
+    @validator('execution_date', pre=True, always=True)
+    def _get_execution_date(cls, v):
+        return datetime.utcnow()

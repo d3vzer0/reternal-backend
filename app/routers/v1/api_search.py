@@ -41,6 +41,7 @@ async def query_indices(worker_name: str, earliest_time: str = '-900d', latest_t
             ])
     return {'task': str(get_logsources)}
 
+
 @router.get('/search/{worker_name}/sourcetypes', response_model=List[SourcetypesOut], dependencies=[Security(validate_token)])
 async def get_validations():
     ''' Get all sourcetypes known by Splunk '''
