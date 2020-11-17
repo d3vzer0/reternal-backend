@@ -13,7 +13,8 @@ QUERYMAPPING = {
     'technique_name': 'techniques.name',
     'phase': 'techniques.kill_chain_phases',
     'actor': 'techniques.actors.name',
-    'data_source': 'techniques.data_sources'
+    'data_source': 'techniques.data_sources',
+    'name': 'name'
 }
 
 router = APIRouter() 
