@@ -27,5 +27,8 @@ routes = {
     },
     'search.*': {
         'queue': os.getenv('RT_SEARCH_ROUTE', 'search')
+    },
+    'nodes.*': {
+        'queue': os.getenv('NODES_ROUTE', 'nodes')
     }
 }

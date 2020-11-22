@@ -3,12 +3,16 @@ from app.utils.depends import validate_token
 from . import (api_agents, api_campaigns, api_coverage,
     api_graph, api_listeners, api_mapping, api_mitre, api_modules,
     api_results, api_scheduler, api_search, api_sigma, api_stagers,
-    api_states, api_stats, api_tasks, api_workers)
+    api_states, api_stats, api_tasks, api_workers, api_nodes)
 
 api_v1 = APIRouter()
 
 api_v1.include_router(api_agents.router,
     tags=['agents']
+)
+
+api_v1.include_router(api_nodes.router,
+    tags=['nodes']
 )
 
 api_v1.include_router(api_campaigns.router,
