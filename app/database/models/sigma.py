@@ -16,7 +16,7 @@ class TechniqueReferences(EmbeddedDocument):
     description = StringField(max_length=1000)
 
 
-class TechniqueActors(EmbeddedDocument):
+class EmbeddedSigmaActors(EmbeddedDocument):
     actor_id = StringField(max_length=100, required=False, unique=False)
     name = StringField(max_length=100, required=True)
 
@@ -29,20 +29,15 @@ class Magma(EmbeddedDocument):
 
 
 class EmbeddedSigmaTechniques(EmbeddedDocument):
-    references = EmbeddedDocumentListField('TechniqueReferences')
+    meta = { 'strict': False }
     platforms = ListField(StringField(max_length=50, default="all"))
     kill_chain_phases = ListField(StringField(max_length=100))
     permissions_required = ListField(StringField(max_length=100))
     technique_id = StringField(max_length=100, required=True)
     name = StringField(max_length=100, required=True)
     magma = EmbeddedDocumentField('Magma', required=False)
-    description = StringField(max_length=9000)
     data_sources = ListField(StringField(max_length=100))
-    data_sources_available = ListField(StringField(max_length=100), default=[])
-    detection = StringField(max_length=1000)
-    actors = EmbeddedDocumentListField('TechniqueActors')
     is_subtechnique =  BooleanField(default=False)
-    meta = {'strict': False}
     
 
 class SigmaLogsource(EmbeddedDocument):
@@ -75,6 +70,7 @@ class Sigma(Document):
     falsepositives = ListField(StringField(max_length=400, required=False))
     fields = ListField(StringField(max_length=100, required=True))
     techniques = EmbeddedDocumentListField(EmbeddedSigmaTechniques)
+    actors = EmbeddedDocumentListField(EmbeddedSigmaActors)
     data_sources = ListField(StringField(max_length=100))
     data_sources_available = ListField(StringField(max_length=100), default=[])
 

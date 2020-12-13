@@ -17,7 +17,7 @@ QUERYMAPPING = {
     'technique': 'techniques.references.0.external_id',
     'technique_name': 'techniques.name',
     'phase': 'techniques.kill_chain_phases',
-    'actor': 'techniques.actors.name',
+    'actor': 'actors.name',
     'data_source': 'techniques.data_sources'
 }
 
@@ -32,7 +32,7 @@ async def dynamic_search(search: str = None, level: str = None, phase: str = Non
         'title__contains': search,
         'status': status,
         'level': level,
-        'techniques__actors__name': actor,
+        'actors__name': actor,
         'techniques__name': technique_name,
         'techniques__references__external_id': technique,
         'techniques__kill_chain_phases': phase, 

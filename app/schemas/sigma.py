@@ -1,12 +1,28 @@
 
 from pydantic import BaseModel, validator, Field, root_validator
-from app.schemas.attck import AttckTechniquesOut
 from app.database.models.techniques import Techniques
 from typing import List, Dict, Optional
 from datetime import datetime
 import json
 import hashlib
 import re
+
+class AttcktechniquesMagmaOut(BaseModel):
+    l1_usecase_name: str
+    l1_usecase_id: str
+    l2_usecase_name: str
+    l2_usecase_id: str
+
+class SigmaTechniquesOut(BaseModel):
+    platforms: List[str]
+    permissions_required:  List[str]
+    kill_chain_phases: List[str]
+    technique_id: str
+    name: str
+    magma: AttcktechniquesMagmaOut = None
+    data_sources: List[str]
+    data_sources_available: List[str] = []
+    is_subtechnique: bool = False
 
 class SigmaActorsOut(BaseModel):
     actor_id: str
@@ -153,7 +169,8 @@ class SigmaOut(BaseModel):
     tags: Optional[List[str]]
     falsepositives: Optional[List[str]]
     sigma_fields: Optional[List[str]] = Field(None, alias='fields')
-    techniques: Optional[List[AttckTechniquesOut]] 
+    techniques: Optional[List[SigmaTechniquesOut]]
+    actors: Optional[List[SigmaActorsOut]] 
 
     @validator('date', pre=True, always=True)
     def _get_date(cls, v):

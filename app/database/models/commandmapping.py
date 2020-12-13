@@ -8,18 +8,13 @@ PLATFORMS = ('Windows', 'Linux', 'All', 'macOS', 'AWS', 'Azure',
 
 
 class EmbeddedCommandTechniques(EmbeddedDocument):
-    references = EmbeddedDocumentListField('TechniqueReferences')
     platforms = ListField(StringField(max_length=50, default="all"))
     kill_chain_phases = ListField(StringField(max_length=100))
     permissions_required = ListField(StringField(max_length=100))
     technique_id = StringField(max_length=100, required=True)
     name = StringField(max_length=100, required=True)
     magma = EmbeddedDocumentField('Magma', required=False)
-    description = StringField(max_length=9000)
     data_sources = ListField(StringField(max_length=100))
-    data_sources_available = ListField(StringField(max_length=100), default=[])
-    detection = StringField(max_length=1000)
-    actors = EmbeddedDocumentListField('EmbeddedTechniqueActors')
     is_subtechnique =  BooleanField(default=False)
     meta = {'strict': False}
 

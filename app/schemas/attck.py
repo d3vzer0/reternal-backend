@@ -42,20 +42,30 @@ class AttckTechniquesOut(BaseModel):
         return v['$oid'] if v else None
 
 
+
 class EmbeddedTechniquesOut(BaseModel):
-    references: List[AttckSubReferencesOut] = []
     platforms: List[str]
     permissions_required:  List[str]
     kill_chain_phases: List[str]
     technique_id: str
     name: str
     magma: AttcktechniquesMagmaOut = None
-    description: str
     data_sources: List[str]
-    data_sources_available: List[str] = []
-    actors: List[AttckSubActorsOut]
     is_subtechnique: bool = False
 
+# class EmbeddedTechniquesOut(BaseModel):
+#     references: List[AttckSubReferencesOut] = []
+#     platforms: List[str]
+#     permissions_required:  List[str]
+#     kill_chain_phases: List[str]
+#     technique_id: str
+#     name: str
+#     magma: AttcktechniquesMagmaOut = None
+#     description: str
+#     data_sources: List[str]
+#     data_sources_available: List[str] = []
+#     # actors: List[AttckSubActorsOut]
+#     is_subtechnique: bool = False
 
 class EmbeddedActorTechniquesOut(BaseModel):
     platforms: List[str]
@@ -63,7 +73,8 @@ class EmbeddedActorTechniquesOut(BaseModel):
     kill_chain_phases: List[str]
     technique_id: str
     name: str
-    description: str
+    magma: AttcktechniquesMagmaOut = None
+    data_sources: List[str]
     is_subtechnique: bool = False
 
 # class AttckTechniquesOut(BaseModel):

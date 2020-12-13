@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Security
 from app.utils.depends import validate_token
+# from app.database.graphs.neo4j import Technique as TGraph, Reference
 from app.database.models.techniques import Techniques
 from app.database.models.actors import Actors
 from app.database.models.coverage import Coverage
@@ -17,11 +18,11 @@ router = APIRouter()
 @router.post('/mitre/techniques', response_model=CreateTechniquesOut, dependencies=[Security(validate_token, scopes=['write:content'])])
 async def create_technique(techniques: CreateTechniquesIn):
     ''' Create new MITRE ATTCK technique '''
-    new_technique = Techniques.objects(technique_id=techniques.technique_id).upsert_one(**techniques.dict())
-    # Denormalize technique data
-    new_technique.update_sigma()
-    new_technique.update_commands()
-    new_technique.update_actors()
+    technique = Techniques.objects(technique_id=techniques.technique_id)
+    new_technique = technique.upsert_one(**techniques.dict())
+    technique.update_sigma()
+    technique.update_actors()
+    technique.update_commands()
     return new_technique.to_dict()
 
 
@@ -60,6 +61,8 @@ async def create_actor(actor: CreateActorIn):
     ''' Create new MITRE ATTCK actor '''
     new_actor = Actors.objects(actor_id=actor.actor_id).upsert_one(**actor.dict())
     new_actor.update_techniques()
+    new_actor.update_sigma()
+    new_actor.update_commands()
     return new_actor.to_dict()
 
 
