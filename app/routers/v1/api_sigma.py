@@ -1,7 +1,7 @@
 from fastapi import Depends, APIRouter, Security
 from typing import List, Dict
 from app.utils.depends import validate_token, decode_token
-from app.schemas.sigma import SigmaIn, SigmaOut, SigmaSearchOut, TaskOut
+from app.schemas.sigma import SigmaIn, SigmaOut, SigmaSearchOut, TaskOut, SigmaConfig
 from app.database.models.sigma import Sigma
 from app.utils import celery
 from app.utils.sigmaloader import Splunk
@@ -71,12 +71,12 @@ async def get_sigma_rules(query: dict = Depends(dynamic_search), skip: int = 0, 
     return result
 
 
-@router.get('/sigma/package/splunk', response_model=TaskOut, dependencies=[Security(validate_token)])
-async def package_sigma_rules_splunk(query: dict = Depends(dynamic_search), current_user: dict = Depends(decode_token)):
+@router.post('/sigma/package/splunk', response_model=TaskOut, dependencies=[Security(validate_token)])
+async def package_sigma_rules_splunk(config: SigmaConfig, query: dict = Depends(dynamic_search), current_user: dict = Depends(decode_token)):
     ''' Convert Deux '''
     sigma_rules = json.loads(Sigma.objects(**query).to_json())
     create_package = celery.send_task('api.sigma.package.create',
-        args=('splunk', sigma_rules),
+        args=('splunk', sigma_rules, config.dict()),
         chain=[
             Signature('api.websocket.result.transmit', kwargs={
                 'user': current_user['sub'],

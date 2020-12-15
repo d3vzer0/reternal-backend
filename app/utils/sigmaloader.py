@@ -38,8 +38,10 @@ ERR_NOT_IMPLEMENTED     = 42
 
 
 class Splunk:
-    def __init__(self, rules):
+    def __init__(self, rules, collect=True, collect_index='applications-sigma-alerts'):
         self.rules = rules
+        self.collect_index = collect_index
+        self.collect = collect
         self.techniques = json.loads(Techniques.objects().to_json())
 
     def to_archive(self):
@@ -92,7 +94,8 @@ class Splunk:
             trim_blocks=True,
             lstrip_blocks=True
         )
-        searches = template.render(rules=self.rules['success'])
+        searches = template.render(rules=self.rules['success'], collect=self.collect,
+            collect_index=self.collect_index)
         return searches
 
     @property
@@ -121,20 +124,22 @@ class Sigma:
         self.rules = rules
 
     @staticmethod
-    def __load_config(config='splunk-windows'):
+    def __load_config(config):
         config_object = SigmaConfigurationChain()
-        scm = SigmaConfigurationManager()
+        if config: config = yaml.dump(config)
+        sigmaconfig = SigmaConfiguration(configyaml=config)
+        config_object.append(sigmaconfig)
 
-        order  = 0
-        for conf_name in config.split(','):
-            sigmaconfig = scm.get(conf_name)
-            if sigmaconfig.order is not None:
-                order = sigmaconfig.order
-            config_object.append(sigmaconfig)
+        # order  = 0
+        # for conf_name in config.split(','):
+        #     sigmaconfig = scm.get(conf_name)
+        #     if sigmaconfig.order is not None:
+        #         order = sigmaconfig.order
+        #     config_object.append(sigmaconfig)
 
         return config_object
 
-    def export(self, target='splunk', config='splunk-windows', rule_filter=None):
+    def export(self, target='splunk', config=None, rule_filter=None):
         config_object = Sigma.__load_config(config)
         backend_class = backends.getBackend(target)
         backend = backend_class(config_object, BackendOptions(None, None))

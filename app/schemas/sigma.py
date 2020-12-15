@@ -187,3 +187,12 @@ class SigmaSearchOut(BaseModel):
 
 class TaskOut(BaseModel):
     task: str
+
+class SigmaConfig(BaseModel):
+    title: str
+    order: int
+    backends: List[str]
+    fieldmappings: Dict
+    logsources: Dict
+    logsourcemerging: str = 'and'
+    defaultindex: str = 'main'
