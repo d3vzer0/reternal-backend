@@ -11,5 +11,4 @@ esio = socketio.RedisManager(config['REDIS_PATH_SOCKETIO'], write_only=True)
 @celery.task(name='api.websocket.result.transmit', bind=True)
 def transmit_result(self, task_response, task_type=None, user=None):
     user_session = rediscache.get(user).decode('utf-8')
-    esio.emit(task_type, {'task': self.request.id.__str__()}, room=user_session)
-    return task_response
+    esio.emit(task_type, {'task': self.request.parent_id}, room=user_session)

@@ -17,6 +17,9 @@ QUERYMAPPING = {
     'technique': 'techniques.references.0.external_id',
     'technique_name': 'techniques.name',
     'phase': 'techniques.kill_chain_phases',
+    'category': 'logsource.category',
+    'product': 'logsource.product',
+    'service': 'logsource.service',
     'actor': 'actors.name',
     'data_source': 'techniques.data_sources'
 }
@@ -26,12 +29,15 @@ router = APIRouter()
 
 async def dynamic_search(search: str = None, level: str = None, phase: str = None, technique_name: str = None,
     l1usecase: str = None, l2usecase: str = None, datasource: str = None, status: str = None,
-    technique: str = None, actor: str = None):
+    technique: str = None, actor: str = None, category = None, product = None, service = None):
 
     query = {
         'title__contains': search,
         'status': status,
         'level': level,
+        'logsource__category': category,
+        'logsource__product': product,
+        'logsource_service': service,
         'actors__name': actor,
         'techniques__name': technique_name,
         'techniques__references__external_id': technique,

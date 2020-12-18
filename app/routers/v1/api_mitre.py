@@ -18,12 +18,12 @@ router = APIRouter()
 @router.post('/mitre/techniques', response_model=CreateTechniquesOut, dependencies=[Security(validate_token, scopes=['write:content'])])
 async def create_technique(techniques: CreateTechniquesIn):
     ''' Create new MITRE ATTCK technique '''
-    technique = Techniques.objects(technique_id=techniques.technique_id)
-    new_technique = technique.upsert_one(**techniques.dict())
+    technique = Techniques.objects(technique_id=techniques.technique_id).upsert_one(**techniques.dict())
+    # new_technique = technique.upsert_one(**techniques.dict())
     technique.update_sigma()
-    technique.update_actors()
-    technique.update_commands()
-    return new_technique.to_dict()
+    # technique.update_actors()
+    # technique.update_commands()
+    return technique.to_dict()
 
 
 @router.get('/mitre/techniques', response_model=List[str], dependencies=[Security(validate_token)])

@@ -30,6 +30,7 @@ class Magma(EmbeddedDocument):
 
 class EmbeddedSigmaTechniques(EmbeddedDocument):
     meta = { 'strict': False }
+    references = EmbeddedDocumentListField('TechniqueReferences')
     platforms = ListField(StringField(max_length=50, default="all"))
     kill_chain_phases = ListField(StringField(max_length=100))
     permissions_required = ListField(StringField(max_length=100))

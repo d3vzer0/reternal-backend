@@ -49,12 +49,12 @@ class SigmaTechniques(EmbeddedDocument):
 
 
 class CustomQuerySet(QuerySet):
-    def update_sigma(self):
-        for doc in self:
-            get_related_sigma = Model('Sigma').objects(techniques__technique_id__contains=doc.technique_id)
-            if get_related_sigma:
-                embedded_technique = EmbeddedTechniquesOut(**doc.to_dict())
-                get_related_sigma.update(set__techniques__S=Model('EmbeddedSigmaTechniques')(**embedded_technique.dict()))
+    # def update_sigma(self):
+    #     for doc in self:
+    #         get_related_sigma = Model('Sigma').objects(techniques__technique_id__contains=doc.technique_id)
+    #         if get_related_sigma:
+    #             embedded_technique = EmbeddedTechniquesOut(**doc.to_dict())
+    #             get_related_sigma.update(set__techniques__S=Model('EmbeddedSigmaTechniques')(**embedded_technique.dict()))
 
     def update_commands(self):
         for doc in self:
@@ -72,7 +72,7 @@ class CustomQuerySet(QuerySet):
 
 
 class Techniques(Document):
-    meta = {'queryset_class': CustomQuerySet}
+    # meta = {'queryset_class': CustomQuerySet}
     references = EmbeddedDocumentListField('TechniqueReferences')
     platforms = ListField(StringField(max_length=50, default="all"))
     kill_chain_phases = ListField(StringField(max_length=100))
@@ -89,6 +89,14 @@ class Techniques(Document):
 
     def to_dict(self):
         return json.loads(self.to_json())
+
+    def update_sigma(self):
+        get_related_sigma = Model('Sigma').objects(techniques__technique_id__contains=self.technique_id)
+        if get_related_sigma:
+            print(get_related_sigma)
+            embedded_technique = EmbeddedTechniquesOut(**self.to_dict())
+            get_related_sigma.update(set__techniques__S=Model('EmbeddedSigmaTechniques')(**embedded_technique.dict()))
+
 
     @queryset_manager
     def delete(doc_cls, queryset, technique_id=None, *args, **kwargs):

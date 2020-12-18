@@ -169,5 +169,7 @@ class Sigma:
                 error = {'id': rule['id'], 'reason': str(err), 'code': ERR_BACKEND}
                 loaded_rules['failed'].append(error)
 
+        print(len(loaded_rules['success']))
+        print(loaded_rules['failed'])
         return loaded_rules
 
