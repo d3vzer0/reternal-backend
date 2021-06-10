@@ -2,7 +2,7 @@ amqp==5.0.2
 networkx==2.5
 mongoengine==0.21.0
 celery==5.0.0
-fastapi==0.62.0
+fastapi==0.65.2
 uvicorn==0.11.7
 python-socketio==5.0.1
 redis==3.5.3
